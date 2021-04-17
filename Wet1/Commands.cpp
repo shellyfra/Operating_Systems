@@ -177,9 +177,15 @@ void ChangeDirCommand::execute()
   const char *first_arg = args[1];
   const char *path = (strlen(first_arg) == 1 && *(first_arg) == '-') ? *plastPwd : first_arg;
 
-  if (chdir(path))
+  if(path ==nullptr)
+  {
+    log_error("cd: OLDPWD not set");
+    
+  }
+  else if (chdir(path))
   { // Error
     log_error("chdir failed");
+    
   }
   else
   { // cd successfull

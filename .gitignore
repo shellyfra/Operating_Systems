@@ -30,8 +30,8 @@
 *.exe
 *.out
 *.app
-/build/*
-/Wet1/build/*
+build/*
+Wet1/build/*
 Wet1/build/CMakeList.txt
 Wet1/build/Smash
 Wet1/build/CMakeFiles/cmake.check_cache

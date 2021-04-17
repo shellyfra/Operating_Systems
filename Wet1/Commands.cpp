@@ -37,10 +37,15 @@ string _trim(const std::string &s)
   return _rtrim(_ltrim(s));
 }
 
+void log_error(const char *text)
+{
+  cout << "smash error: " << text << endl;
+}
 int _parseCommandLine(const char *cmd_line, char **args)
 {
   FUNC_ENTRY()
   int i = 0;
+  
   std::istringstream iss(_trim(string(cmd_line)).c_str());
   for (std::string s; iss >> s;)
   {
@@ -85,16 +90,19 @@ void _removeBackgroundSign(char *cmd_line)
 
 SmallShell::SmallShell()
 {
-  // TODO: add your implementation
+  this->last_wd = nullptr;
 }
 
 SmallShell::~SmallShell()
 {
   // TODO: add your implementation
+  free(last_wd);
 }
 
-BuiltInCommand::BuiltInCommand(const char *cmd_line) : Command(cmd_line), argc(_parseCommandLine(cmd_line, args))
+BuiltInCommand::BuiltInCommand(const char *cmd_line) : Command(cmd_line)
 {
+  this->args = (char **)malloc(sizeof(char *) * COMMAND_MAX_ARGS);
+  this->argc = _parseCommandLine(cmd_line, this->args);
 }
 
 BuiltInCommand::~BuiltInCommand()
@@ -103,6 +111,7 @@ BuiltInCommand::~BuiltInCommand()
   {
     free(args[i]);
   }
+  free(args);
 }
 /**
 * Creates and returns a pointer to Command class which matches the given command line (cmd_line)
@@ -122,6 +131,10 @@ Command *SmallShell::CreateCommand(const char *cmd_line)
   {
     return new ShowPidCommand(cmd_line);
   }
+  else if (firstWord.compare(CHANGE_DIRECTORY_COMMAND_STR) == 0)
+  {
+    return new ChangeDirCommand(cmd_line, &last_wd);
+  }
   else
   {
     //return new ExternalCommand(cmd_line);
@@ -135,10 +148,44 @@ void SmallShell::executeCommand(const char *cmd_line)
   // TODO: Add your implementation here
   // for example:
   Command *cmd = CreateCommand(cmd_line);
-  // cmd->execute();
+  if (cmd)
+  {
+    cmd->execute();
+  }
+
   // Please note that you must fork smash process for some commands (e.g., external commands....)
 }
-void ShowPidCommand::execute() const
+void ShowPidCommand::execute()
 {
-  cout << "smash pid is " << getpid();
+  cout << "smash pid is " << getpid() << endl;
+}
+
+void ChangeDirCommand::execute()
+{
+  if (argc < 2)
+  {
+    log_error("cd: too few arguments"); // CHECK with staff!
+    return;
+  }
+  else if (this->argc > 2)
+  {
+    log_error("cd: too many arguments");
+    return;
+  }
+  const char *first_arg = args[1];
+  const char *path = (strlen(first_arg) == 1 && *(first_arg) == '-') ? *plastPwd : first_arg;
+
+  if (chdir(path))
+  { // Error
+    // Use perror
+  }
+  else
+  { // cd successfull
+    if (! *plastPwd)
+    {
+      (*plastPwd) = (char *)malloc(COMMAND_ARGS_MAX_LENGTH + 1);
+    }
+    strcpy(*plastPwd, path);
+  }
+
 } // Shai test

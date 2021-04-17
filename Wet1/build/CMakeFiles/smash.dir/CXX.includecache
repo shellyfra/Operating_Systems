@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/student/Desktop/HW/WET1/Commands.cpp
+/home/student/Desktop/OSshelly/Wet1/Commands.cpp
 unistd.h
 -
 string.h
@@ -22,25 +22,25 @@ sys/wait.h
 iomanip
 -
 Commands.h
-/home/student/Desktop/HW/WET1/Commands.h
+/home/student/Desktop/OSshelly/Wet1/Commands.h
 
-/home/student/Desktop/HW/WET1/Commands.h
+/home/student/Desktop/OSshelly/Wet1/Commands.h
 vector
 -
 
-/home/student/Desktop/HW/WET1/signals.cpp
+/home/student/Desktop/OSshelly/Wet1/signals.cpp
 iostream
 -
 signal.h
 -
 signals.h
-/home/student/Desktop/HW/WET1/signals.h
+/home/student/Desktop/OSshelly/Wet1/signals.h
 Commands.h
-/home/student/Desktop/HW/WET1/Commands.h
+/home/student/Desktop/OSshelly/Wet1/Commands.h
 
-/home/student/Desktop/HW/WET1/signals.h
+/home/student/Desktop/OSshelly/Wet1/signals.h
 
-/home/student/Desktop/HW/WET1/smash.cpp
+/home/student/Desktop/OSshelly/Wet1/smash.cpp
 iostream
 -
 unistd.h
@@ -50,7 +50,7 @@ sys/wait.h
 signal.h
 -
 Commands.h
-/home/student/Desktop/HW/WET1/Commands.h
+/home/student/Desktop/OSshelly/Wet1/Commands.h
 signals.h
-/home/student/Desktop/HW/WET1/signals.h
+/home/student/Desktop/OSshelly/Wet1/signals.h
 

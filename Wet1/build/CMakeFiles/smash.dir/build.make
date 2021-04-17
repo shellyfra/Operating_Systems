@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/student/Desktop/HW/WET1
+CMAKE_SOURCE_DIR = /home/student/Desktop/OSshelly/Wet1
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/student/Desktop/HW/WET1/build
+CMAKE_BINARY_DIR = /home/student/Desktop/OSshelly/Wet1/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/smash.dir/depend.make
@@ -59,16 +59,16 @@ include CMakeFiles/smash.dir/flags.make
 
 CMakeFiles/smash.dir/Commands.cpp.o: CMakeFiles/smash.dir/flags.make
 CMakeFiles/smash.dir/Commands.cpp.o: ../Commands.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/student/Desktop/HW/WET1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/smash.dir/Commands.cpp.o"
-	/usr/bin/x86_64-linux-gnu-g++-7  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/smash.dir/Commands.cpp.o -c /home/student/Desktop/HW/WET1/Commands.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/student/Desktop/OSshelly/Wet1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/smash.dir/Commands.cpp.o"
+	/usr/bin/x86_64-linux-gnu-g++-7  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/smash.dir/Commands.cpp.o -c /home/student/Desktop/OSshelly/Wet1/Commands.cpp
 
 CMakeFiles/smash.dir/Commands.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/smash.dir/Commands.cpp.i"
-	/usr/bin/x86_64-linux-gnu-g++-7 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/student/Desktop/HW/WET1/Commands.cpp > CMakeFiles/smash.dir/Commands.cpp.i
+	/usr/bin/x86_64-linux-gnu-g++-7 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/student/Desktop/OSshelly/Wet1/Commands.cpp > CMakeFiles/smash.dir/Commands.cpp.i
 
 CMakeFiles/smash.dir/Commands.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/smash.dir/Commands.cpp.s"
-	/usr/bin/x86_64-linux-gnu-g++-7 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/student/Desktop/HW/WET1/Commands.cpp -o CMakeFiles/smash.dir/Commands.cpp.s
+	/usr/bin/x86_64-linux-gnu-g++-7 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/student/Desktop/OSshelly/Wet1/Commands.cpp -o CMakeFiles/smash.dir/Commands.cpp.s
 
 CMakeFiles/smash.dir/Commands.cpp.o.requires:
 
@@ -83,16 +83,16 @@ CMakeFiles/smash.dir/Commands.cpp.o.provides.build: CMakeFiles/smash.dir/Command
 
 CMakeFiles/smash.dir/signals.cpp.o: CMakeFiles/smash.dir/flags.make
 CMakeFiles/smash.dir/signals.cpp.o: ../signals.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/student/Desktop/HW/WET1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/smash.dir/signals.cpp.o"
-	/usr/bin/x86_64-linux-gnu-g++-7  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/smash.dir/signals.cpp.o -c /home/student/Desktop/HW/WET1/signals.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/student/Desktop/OSshelly/Wet1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/smash.dir/signals.cpp.o"
+	/usr/bin/x86_64-linux-gnu-g++-7  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/smash.dir/signals.cpp.o -c /home/student/Desktop/OSshelly/Wet1/signals.cpp
 
 CMakeFiles/smash.dir/signals.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/smash.dir/signals.cpp.i"
-	/usr/bin/x86_64-linux-gnu-g++-7 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/student/Desktop/HW/WET1/signals.cpp > CMakeFiles/smash.dir/signals.cpp.i
+	/usr/bin/x86_64-linux-gnu-g++-7 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/student/Desktop/OSshelly/Wet1/signals.cpp > CMakeFiles/smash.dir/signals.cpp.i
 
 CMakeFiles/smash.dir/signals.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/smash.dir/signals.cpp.s"
-	/usr/bin/x86_64-linux-gnu-g++-7 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/student/Desktop/HW/WET1/signals.cpp -o CMakeFiles/smash.dir/signals.cpp.s
+	/usr/bin/x86_64-linux-gnu-g++-7 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/student/Desktop/OSshelly/Wet1/signals.cpp -o CMakeFiles/smash.dir/signals.cpp.s
 
 CMakeFiles/smash.dir/signals.cpp.o.requires:
 
@@ -107,16 +107,16 @@ CMakeFiles/smash.dir/signals.cpp.o.provides.build: CMakeFiles/smash.dir/signals.
 
 CMakeFiles/smash.dir/smash.cpp.o: CMakeFiles/smash.dir/flags.make
 CMakeFiles/smash.dir/smash.cpp.o: ../smash.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/student/Desktop/HW/WET1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/smash.dir/smash.cpp.o"
-	/usr/bin/x86_64-linux-gnu-g++-7  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/smash.dir/smash.cpp.o -c /home/student/Desktop/HW/WET1/smash.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/student/Desktop/OSshelly/Wet1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/smash.dir/smash.cpp.o"
+	/usr/bin/x86_64-linux-gnu-g++-7  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/smash.dir/smash.cpp.o -c /home/student/Desktop/OSshelly/Wet1/smash.cpp
 
 CMakeFiles/smash.dir/smash.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/smash.dir/smash.cpp.i"
-	/usr/bin/x86_64-linux-gnu-g++-7 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/student/Desktop/HW/WET1/smash.cpp > CMakeFiles/smash.dir/smash.cpp.i
+	/usr/bin/x86_64-linux-gnu-g++-7 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/student/Desktop/OSshelly/Wet1/smash.cpp > CMakeFiles/smash.dir/smash.cpp.i
 
 CMakeFiles/smash.dir/smash.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/smash.dir/smash.cpp.s"
-	/usr/bin/x86_64-linux-gnu-g++-7 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/student/Desktop/HW/WET1/smash.cpp -o CMakeFiles/smash.dir/smash.cpp.s
+	/usr/bin/x86_64-linux-gnu-g++-7 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/student/Desktop/OSshelly/Wet1/smash.cpp -o CMakeFiles/smash.dir/smash.cpp.s
 
 CMakeFiles/smash.dir/smash.cpp.o.requires:
 
@@ -143,7 +143,7 @@ smash: CMakeFiles/smash.dir/signals.cpp.o
 smash: CMakeFiles/smash.dir/smash.cpp.o
 smash: CMakeFiles/smash.dir/build.make
 smash: CMakeFiles/smash.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/student/Desktop/HW/WET1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable smash"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/student/Desktop/OSshelly/Wet1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable smash"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/smash.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -162,6 +162,6 @@ CMakeFiles/smash.dir/clean:
 .PHONY : CMakeFiles/smash.dir/clean
 
 CMakeFiles/smash.dir/depend:
-	cd /home/student/Desktop/HW/WET1/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/student/Desktop/HW/WET1 /home/student/Desktop/HW/WET1 /home/student/Desktop/HW/WET1/build /home/student/Desktop/HW/WET1/build /home/student/Desktop/HW/WET1/build/CMakeFiles/smash.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/student/Desktop/OSshelly/Wet1/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/student/Desktop/OSshelly/Wet1 /home/student/Desktop/OSshelly/Wet1 /home/student/Desktop/OSshelly/Wet1/build /home/student/Desktop/OSshelly/Wet1/build /home/student/Desktop/OSshelly/Wet1/build/CMakeFiles/smash.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/smash.dir/depend
 

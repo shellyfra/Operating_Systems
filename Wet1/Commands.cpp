@@ -39,7 +39,9 @@ string _trim(const std::string &s)
 
 void log_error(const char *text)
 {
-  cout << "smash error: " << text << endl;
+  string text_str(text);
+  string message = "smash error: " + text_str;
+  perror(message.c_str());
 }
 int _parseCommandLine(const char *cmd_line, char **args)
 {
@@ -177,7 +179,7 @@ void ChangeDirCommand::execute()
 
   if (chdir(path))
   { // Error
-    // Use perror
+    log_error("chdir failed");
   }
   else
   { // cd successfull
@@ -188,4 +190,4 @@ void ChangeDirCommand::execute()
     strcpy(*plastPwd, path);
   }
 
-} // Shai test
+} 

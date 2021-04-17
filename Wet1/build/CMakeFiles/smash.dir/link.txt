@@ -1,0 +1,1 @@
+/usr/bin/x86_64-linux-gnu-g++-7  -g  -rdynamic CMakeFiles/smash.dir/Commands.cpp.o CMakeFiles/smash.dir/signals.cpp.o CMakeFiles/smash.dir/smash.cpp.o  -o smash 

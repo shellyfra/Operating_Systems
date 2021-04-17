@@ -5,29 +5,37 @@
 
 #define COMMAND_ARGS_MAX_LENGTH (200)
 #define COMMAND_MAX_ARGS (20)
-#define WHITESPACE " "
+
+#define WHITESPACE ' '
+#define SHOW_PID_COMMAND_STR "showpid"
+#define CHANGE_DIRECTORY_COMMAND_STR "cd"
+
 class Command {
 // TODO: Add your data members
+  const char* cmd_line;
  public:
-  Command(const char* cmd_line);
-  virtual ~Command();
-  virtual void execute() = 0;
+  Command(const char* cmd_line) : cmd_line(cmd_line) {};
+  virtual ~Command() = default;
+  virtual void execute() const = 0;
   //virtual void prepare();
   //virtual void cleanup();
   // TODO: Add your extra methods if needed
 };
 
 class BuiltInCommand : public Command {
+private:
+  char **args; // Need to release memory!
+  const int argc;
  public:
   BuiltInCommand(const char* cmd_line);
-  virtual ~BuiltInCommand() {}
+  virtual ~BuiltInCommand();
 };
 
 class ExternalCommand : public Command {
  public:
   ExternalCommand(const char* cmd_line);
   virtual ~ExternalCommand() {}
-  void execute() override;
+  void execute() const override;
 };
 
 class PipeCommand : public Command {
@@ -35,7 +43,7 @@ class PipeCommand : public Command {
  public:
   PipeCommand(const char* cmd_line);
   virtual ~PipeCommand() {}
-  void execute() override;
+  void execute() const override;
 };
 
 class RedirectionCommand : public Command {
@@ -43,7 +51,7 @@ class RedirectionCommand : public Command {
  public:
   explicit RedirectionCommand(const char* cmd_line);
   virtual ~RedirectionCommand() {}
-  void execute() override;
+  void execute() const override;
   //void prepare() override;
   //void cleanup() override;
 };
@@ -52,21 +60,21 @@ class ChangeDirCommand : public BuiltInCommand {
 // TODO: Add your data members public:
   ChangeDirCommand(const char* cmd_line, char** plastPwd);
   virtual ~ChangeDirCommand() {}
-  void execute() override;
+  void execute() const override;
 };
 
 class GetCurrDirCommand : public BuiltInCommand {
  public:
   GetCurrDirCommand(const char* cmd_line);
   virtual ~GetCurrDirCommand() {}
-  void execute() override;
+  void execute() const override;
 };
 
 class ShowPidCommand : public BuiltInCommand {
  public:
-  ShowPidCommand(const char* cmd_line);
+  ShowPidCommand(const char* cmd_line) : BuiltInCommand(cmd_line){} ;
   virtual ~ShowPidCommand() {}
-  void execute() override;
+  void execute() const override ;
 };
 
 class JobsList;
@@ -74,7 +82,7 @@ class QuitCommand : public BuiltInCommand {
 // TODO: Add your data members public:
   QuitCommand(const char* cmd_line, JobsList* jobs);
   virtual ~QuitCommand() {}
-  void execute() override;
+  void execute() const override;
 };
 
 
@@ -105,7 +113,7 @@ class JobsCommand : public BuiltInCommand {
  public:
   JobsCommand(const char* cmd_line, JobsList* jobs);
   virtual ~JobsCommand() {}
-  void execute() override;
+  void execute() const override;
 };
 
 class KillCommand : public BuiltInCommand {
@@ -113,7 +121,7 @@ class KillCommand : public BuiltInCommand {
  public:
   KillCommand(const char* cmd_line, JobsList* jobs);
   virtual ~KillCommand() {}
-  void execute() override;
+  void execute() const override;
 };
 
 class ForegroundCommand : public BuiltInCommand {
@@ -121,7 +129,7 @@ class ForegroundCommand : public BuiltInCommand {
  public:
   ForegroundCommand(const char* cmd_line, JobsList* jobs);
   virtual ~ForegroundCommand() {}
-  void execute() override;
+  void execute() const override;
 };
 
 class BackgroundCommand : public BuiltInCommand {
@@ -129,14 +137,14 @@ class BackgroundCommand : public BuiltInCommand {
  public:
   BackgroundCommand(const char* cmd_line, JobsList* jobs);
   virtual ~BackgroundCommand() {}
-  void execute() override;
+  void execute() const override;
 };
 
 class CatCommand : public BuiltInCommand {
  public:
   CatCommand(const char* cmd_line);
   virtual ~CatCommand() {}
-  void execute() override;
+  void execute() const override;
 };
 
 

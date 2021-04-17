@@ -118,6 +118,22 @@ BuiltInCommand::~BuiltInCommand()
 /**
 * Creates and returns a pointer to Command class which matches the given command line (cmd_line)
 */
+std::string SmallShell::getPromptName() {
+    return prompt_name;
+}
+void SmallShell::changePrompt(const char *cmd_line) {
+    char ** args = (char **)malloc(sizeof(char *) * COMMAND_MAX_ARGS);
+    int argc = _parseCommandLine(cmd_line, args);
+    if (argc < 1) {
+        log_error("cd: too few arguments"); // CHECK with staff!
+    }
+    else if (argc == 1) {
+        prompt_name = DEFALT_PROMPT;
+    }
+    else {
+        prompt_name = args[1];
+    }
+}
 Command *SmallShell::CreateCommand(const char *cmd_line)
 {
   // For example:
@@ -127,7 +143,7 @@ Command *SmallShell::CreateCommand(const char *cmd_line)
 
   if (firstWord.compare("pwd") == 0)
   {
-    //return new GetCurrDirCommand(cmd_line);
+    return new GetCurrDirCommand(cmd_line);
   }
   else if (firstWord.compare(SHOW_PID_COMMAND_STR) == 0)
   {
@@ -136,6 +152,10 @@ Command *SmallShell::CreateCommand(const char *cmd_line)
   else if (firstWord.compare(CHANGE_DIRECTORY_COMMAND_STR) == 0)
   {
     return new ChangeDirCommand(cmd_line, &last_wd);
+  }
+  else if (firstWord.compare(CHANGE_PROMPT_COMMAND_STR) == 0)
+  {
+      changePrompt(cmd_line);
   }
   else
   {
@@ -196,4 +216,28 @@ void ChangeDirCommand::execute()
     strcpy(*plastPwd, path);
   }
 
-} 
+}
+
+void GetCurrDirCommand::execute() {
+    if (argc < 1) {
+        log_error("cd: too few arguments"); // CHECK with staff!
+        return;
+    }
+    int start_size = PWD_PATH_START_SIZE;
+    char * val = nullptr;
+    char* buff;
+
+    while (val == nullptr) {
+        buff = (char * )malloc(sizeof(char)*start_size );
+        val = getcwd( buff, start_size );
+        if (val != nullptr) {
+            break;
+        }
+        free(buff);
+        start_size = start_size*2;
+        cout << "attempt..." << endl;
+    }
+    std::string cwd( buff );
+    cout << cwd << endl;
+    return;
+}

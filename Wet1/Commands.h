@@ -7,8 +7,11 @@
 #define COMMAND_MAX_ARGS (20)
 
 #define WHITESPACE ' '
+#define DEFALT_PROMPT "smash"
 #define SHOW_PID_COMMAND_STR "showpid"
 #define CHANGE_DIRECTORY_COMMAND_STR "cd"
+#define CHANGE_PROMPT_COMMAND_STR "chprompt"
+#define PWD_PATH_START_SIZE 150
 
 class Command
 {
@@ -77,7 +80,7 @@ public:
 class GetCurrDirCommand : public BuiltInCommand
 {
 public:
-  GetCurrDirCommand(const char *cmd_line);
+  explicit GetCurrDirCommand(const char *cmd_line) : BuiltInCommand(cmd_line) {}
   virtual ~GetCurrDirCommand() {}
   void execute() override;
 };
@@ -169,6 +172,7 @@ class SmallShell
 {
 private:
   char *last_wd;
+  std::string prompt_name = std::string("smash");
   SmallShell();
 
 public:
@@ -184,6 +188,8 @@ public:
   ~SmallShell();
   void executeCommand(const char *cmd_line);
   // TODO: add extra methods as needed
+  void changePrompt(const char *cmd_line);
+  std::string getPromptName();
 };
 
 #endif //SMASH_COMMAND_H_

@@ -9,6 +9,7 @@
 #define WHITESPACE ' '
 #define SHOW_PID_COMMAND_STR "showpid"
 #define CHANGE_DIRECTORY_COMMAND_STR "cd"
+#define CHANGE_DIRECTORY_LAST_ARG '-'
 
 class Command
 {

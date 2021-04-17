@@ -175,7 +175,7 @@ void ChangeDirCommand::execute()
     return;
   }
   const char *first_arg = args[1];
-  const char *path = (strlen(first_arg) == 1 && *(first_arg) == '-') ? *plastPwd : first_arg;
+  const char *path = (strlen(first_arg) == 1 && *(first_arg) == CHANGE_DIRECTORY_LAST_ARG) ? *plastPwd : first_arg;
 
   if(path ==nullptr)
   {

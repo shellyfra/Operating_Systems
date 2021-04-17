@@ -30,6 +30,7 @@
 *.exe
 *.out
 *.app
+.vscode/*
 build/*
 Wet1/build/*
 Wet1/build/CMakeList.txt

@@ -1,11 +1,7 @@
-cmake_minimum_required(VERSION 3.0.0)
-project(smash VERSION 0.1.0)
+cmake_minimum_required(VERSION 3.10)
+project(Operating_Systems)
 
-include(CTest)
-enable_testing()
+set(CMAKE_CXX_STANDARD 11)
+add_compile_options(-std=c++11 -Wall )
+add_executable(Operating_Systems Commands.cpp Commands.h signals.h signals.cpp smash.cpp)
 
-add_executable(smash Commands.cpp signals.cpp smash.cpp)
-
-set(CPACK_PROJECT_NAME ${PROJECT_NAME})
-set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-include(CPack)

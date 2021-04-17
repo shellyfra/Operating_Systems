@@ -4,8 +4,6 @@
 #include <signal.h>
 #include "Commands.h"
 #include "signals.h"
-#include "signals.cpp"
-#include "Commands.cpp"
 
 int main(int argc, char* argv[]) {
     if(signal(SIGTSTP , ctrlZHandler)==SIG_ERR) {
@@ -19,7 +17,7 @@ int main(int argc, char* argv[]) {
 
     SmallShell& smash = SmallShell::getInstance();
     while(true) {
-        std::cout << "smash> ";
+        std::cout << smash.getPromptName() << "> ";
         std::string cmd_line;
         std::getline(std::cin, cmd_line);
         smash.executeCommand(cmd_line.c_str());

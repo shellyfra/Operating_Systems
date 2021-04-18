@@ -9,6 +9,7 @@
 #include "Commands.h"
 
 using namespace std;
+using std::vector;
 
 #if 0
 #define FUNC_ENTRY() \
@@ -48,7 +49,7 @@ int _parseCommandLine(const char *cmd_line, char **args)
 {
   FUNC_ENTRY()
   int i = 0;
-  
+
   std::istringstream iss(_trim(string(cmd_line)).c_str());
   for (std::string s; iss >> s;)
   {
@@ -122,21 +123,26 @@ BuiltInCommand::~BuiltInCommand()
 /**
 * Creates and returns a pointer to Command class which matches the given command line (cmd_line)
 */
-std::string SmallShell::getPromptName() {
-    return prompt_name;
+std::string SmallShell::getPromptName()
+{
+  return prompt_name;
 }
-void SmallShell::changePrompt(const char *cmd_line) {
-    char ** args = (char **)malloc(sizeof(char *) * COMMAND_MAX_ARGS);
-    int argc = _parseCommandLine(cmd_line, args);
-    if (argc < 1) {
-        log_error("chprompt: too few arguments"); // CHECK with staff!
-    }
-    else if (argc == 1) {
-        prompt_name = DEFAULT_PROMPT;
-    }
-    else {
-        prompt_name = args[1];
-    }
+void SmallShell::changePrompt(const char *cmd_line)
+{
+  char **args = (char **)malloc(sizeof(char *) * COMMAND_MAX_ARGS);
+  int argc = _parseCommandLine(cmd_line, args);
+  if (argc < 1)
+  {
+    log_error("chprompt: too few arguments"); // CHECK with staff!
+  }
+  else if (argc == 1)
+  {
+    prompt_name = DEFAULT_PROMPT;
+  }
+  else
+  {
+    prompt_name = args[1];
+  }
 }
 Command *SmallShell::CreateCommand(const char *cmd_line)
 {
@@ -159,11 +165,11 @@ Command *SmallShell::CreateCommand(const char *cmd_line)
   }
   else if (firstWord.compare(CHANGE_PROMPT_COMMAND_STR) == 0)
   {
-      changePrompt(cmd_line);
+    changePrompt(cmd_line);
   }
   else if (firstWord.compare(JOBS_COMMAND_STR) == 0)
   {
-    //return new JobsCommand(,)
+    return new JobsCommand(cmd_line, jobs_list);
   }
   else
   {
@@ -177,11 +183,12 @@ void SmallShell::executeCommand(const char *cmd_line)
 {
   // TODO: Add your implementation here
   // for example:
+  jobs_list->removeFinishedJobs();
   Command *cmd = CreateCommand(cmd_line);
   if (cmd)
   {
-    BuiltInCommand* temp_cmd =  dynamic_cast< BuiltInCommand* >( cmd );
-    if(temp_cmd)
+    BuiltInCommand *temp_cmd = dynamic_cast<BuiltInCommand *>(cmd);
+    if (temp_cmd)
     {
       // Command is NOT built in
       cmd->execute();
@@ -189,9 +196,7 @@ void SmallShell::executeCommand(const char *cmd_line)
     else
     {
       // We should fork here
-
     }
-    
   }
 
   // Please note that you must fork smash process for some commands (e.g., external commands....)
@@ -200,7 +205,11 @@ void ShowPidCommand::execute()
 {
   cout << "smash pid is " << getpid() << endl;
 }
-
+void JobsCommand::execute()
+{
+  jobs->removeFinishedJobs();
+  jobs->printJobsList();
+}
 void ChangeDirCommand::execute()
 {
   if (argc < 2)
@@ -216,40 +225,99 @@ void ChangeDirCommand::execute()
   const char *first_arg = args[1];
   const char *path = (strlen(first_arg) == 1 && *(first_arg) == CHANGE_DIRECTORY_LAST_ARG) ? *plastPwd : first_arg;
 
-  if(path ==nullptr)
+  if (path == nullptr)
   {
     log_error("cd: OLDPWD not set");
-    
   }
   else if (chdir(path))
   { // Error
     log_error("chdir failed");
-    
   }
   else
   { // cd successfull
-    if (! *plastPwd)
+    if (!*plastPwd)
     {
       (*plastPwd) = (char *)malloc(COMMAND_ARGS_MAX_LENGTH + 1);
     }
     strcpy(*plastPwd, path);
   }
-
 }
 
-void GetCurrDirCommand::execute() {
-    if (argc < 1) {
-        log_error("cd: too few arguments"); // CHECK with staff!
-        return;
-    }
-
-    char buff[PATH_MAX];
-    char * val = getcwd( buff, PATH_MAX );
-    if (val == nullptr) {
-        log_error("pwd: getcwd failed"); // CHECK with staff!
-        return;
-    }
-    std::string cwd( buff );
-    cout << cwd << endl;
+void GetCurrDirCommand::execute()
+{
+  if (argc < 1)
+  {
+    log_error("cd: too few arguments"); // CHECK with staff!
     return;
+  }
+
+  char buff[PATH_MAX];
+  char *val = getcwd(buff, PATH_MAX);
+  if (val == nullptr)
+  {
+    log_error("pwd: getcwd failed"); // CHECK with staff!
+    return;
+  }
+  std::string cwd(buff);
+  cout << cwd << endl;
+  return;
+}
+std::ostream &operator<<(std::ostream &os, const JobsList::JobEntry &job_entry)
+{
+  string suffix = job_entry.job_stopped ? " (stopped)" : "";
+  os << '[' << job_entry.job_id << "] " << job_entry.cmd << " : " << job_entry.pid
+     << difftime(time(NULL), job_entry.start_time) << " secs" << suffix;
+  return os;
+}
+void JobsList::printJobsList() const
+{
+  for (auto job_entry = jobs_list.rbegin(); job_entry != jobs_list.rend(); ++job_entry)
+  {
+    cout << *job_entry << endl;
+  }
+}
+const unsigned int JobsList::removeFinishedJobs()
+{
+  // Due to complexity concers, move all vector to new vector
+  unsigned int max_job_id=JOB_ID_INITIAL_VALUE;
+  std::vector<JobEntry> new_job_list;
+  for (auto &job_entry : jobs_list)
+  {
+    if(kill(job_entry.GetPid(), 0)) // process didn't finish
+    {
+        new_job_list.push_back(job_entry);
+    }
+    else if(const unsigned int new_id = job_entry.GetJobId() > max_job_id)
+    {
+      max_job_id = new_id;
+    }
+    
+  }
+  jobs_list=new_job_list;
+  return max_job_id;
+}
+void JobsList::removeJobById(const unsigned int &jobId)
+{
+  unsigned int count=0;
+  for (auto &job_entry : jobs_list)
+  {
+    if(job_entry.GetJobId() == jobId)
+    {
+      jobs_list.erase(jobs_list.begin()+count);
+      return;
+    }
+    count++;
+  }
+
+}
+JobsList::JobEntry *JobsList::getLastStoppedJob(int *jobId) const
+{
+  for (std::reverse_iterator<std::vector<JobsList::JobEntry>::iterator> job_entry = jobs_list.rbegin(); job_entry != jobs_list.rend(); ++job_entry)
+  {// Consider creating array for pointer in order to support complexity of O(1)...
+    if(job_entry->IsStopped())
+    {
+      *jobId = job_entry->GetJobId();
+      return &(*job_entry); // dereference iterator and pass as pointer
+    }
+  }
 }

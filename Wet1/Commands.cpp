@@ -5,6 +5,7 @@
 #include <sstream>
 #include <sys/wait.h>
 #include <iomanip>
+#include <climits>
 #include "Commands.h"
 
 using namespace std;
@@ -126,7 +127,7 @@ void SmallShell::changePrompt(const char *cmd_line) {
     char ** args = (char **)malloc(sizeof(char *) * COMMAND_MAX_ARGS);
     int argc = _parseCommandLine(cmd_line, args);
     if (argc < 1) {
-        log_error("cd: too few arguments"); // CHECK with staff!
+        log_error("chprompt: too few arguments"); // CHECK with staff!
     }
     else if (argc == 1) {
         prompt_name = DEFAULT_PROMPT;
@@ -224,19 +225,12 @@ void GetCurrDirCommand::execute() {
         log_error("cd: too few arguments"); // CHECK with staff!
         return;
     }
-    int start_size = PWD_PATH_START_SIZE;
-    char * val = nullptr;
-    char* buff;
 
-    while (val == nullptr) {
-        buff = (char * )malloc(sizeof(char)*start_size );
-        val = getcwd( buff, start_size );
-        if (val != nullptr) {
-            break;
-        }
-        free(buff);
-        start_size = start_size*2;
-        cout << "attempt..." << endl;
+    char buff[PATH_MAX];
+    char * val = getcwd( buff, PATH_MAX );
+    if (val == nullptr) {
+        log_error("pwd: getcwd failed"); // CHECK with staff!
+        return;
     }
     std::string cwd( buff );
     cout << cwd << endl;

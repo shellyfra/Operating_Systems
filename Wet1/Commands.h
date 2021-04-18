@@ -9,13 +9,15 @@
 #define WHITESPACE ' '
 #define DEFAULT_PROMPT "smash"
 #define SHOW_PID_COMMAND_STR "showpid"
+#define PRINT_WORKING_DIRECTORY_STR "pwd"
 #define CHANGE_DIRECTORY_COMMAND_STR "cd"
 #define CHANGE_DIRECTORY_LAST_ARG '-'
 #define CHANGE_PROMPT_COMMAND_STR "chprompt"
+#define JOBS_COMMAND_STR "jobs"
 #define PWD_PATH_START_SIZE 150
 
 class Command
-{
+{ 
   // TODO: Add your data members
   const char *cmd_line;
 
@@ -105,24 +107,39 @@ class QuitCommand : public BuiltInCommand
 
 class JobsList
 {
+  
+
 public:
   class JobEntry
   {
+    private:
+      const Command *cmd;
+      const unsigned int job_id;
+      const unsigned int pid;
+      const time_t start_time;
+      bool job_stopped;
+      JobEntry() = default;
+      ~JobEntry() = default;
     // TODO: Add your data members
   };
+    private:
+ 
+    std::vector<JobEntry> jobs_list;
+
   // TODO: Add your data members
 public:
-  JobsList();
+  JobsList()=default;
   ~JobsList();
-  void addJob(Command *cmd, bool isStopped = false);
-  void printJobsList();
-  void killAllJobs();
-  void removeFinishedJobs();
-  JobEntry *getJobById(int jobId);
-  void removeJobById(int jobId);
-  JobEntry *getLastJob(int *lastJobId);
-  JobEntry *getLastStoppedJob(int *jobId);
+  void addJob(Command *cmd, bool isStopped = false); // Shelly
+  void printJobsList(); // Shai
+  void killAllJobs(); // Shelly
+  void removeFinishedJobs(); // Shai
+  JobEntry *getJobById(int jobId); // Shelly
+  void removeJobById(int jobId); // Shai
+  JobEntry *getLastJob(int *lastJobId); // For fg or for figuring out what is the maximal ID, Shelly
+  JobEntry *getLastStoppedJob(int *jobId); // For bg , Shai
   // TODO: Add extra methods or modify exisitng ones as needed
+  // TODO add operators
 };
 
 class JobsCommand : public BuiltInCommand
@@ -174,7 +191,8 @@ class SmallShell
 private:
   char *last_wd;
   std::string prompt_name;
-  
+  JobsList * jobs_list;
+
   SmallShell();
 
 public:

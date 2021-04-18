@@ -95,12 +95,14 @@ SmallShell::SmallShell()
 {
   this->prompt_name = DEFAULT_PROMPT;
   this->last_wd = nullptr;
+  this->jobs_list = new JobsList();
 }
 
 SmallShell::~SmallShell()
 {
   // TODO: add your implementation
   free(last_wd);
+  delete this->jobs_list;
 }
 
 BuiltInCommand::BuiltInCommand(const char *cmd_line) : Command(cmd_line)
@@ -143,7 +145,7 @@ Command *SmallShell::CreateCommand(const char *cmd_line)
   string cmd_s = _trim(string(cmd_line));
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
 
-  if (firstWord.compare("pwd") == 0)
+  if (firstWord.compare(PRINT_WORKING_DIRECTORY_STR) == 0)
   {
     return new GetCurrDirCommand(cmd_line);
   }
@@ -158,6 +160,10 @@ Command *SmallShell::CreateCommand(const char *cmd_line)
   else if (firstWord.compare(CHANGE_PROMPT_COMMAND_STR) == 0)
   {
       changePrompt(cmd_line);
+  }
+  else if (firstWord.compare(JOBS_COMMAND_STR) == 0)
+  {
+    //return new JobsCommand(,)
   }
   else
   {
@@ -174,7 +180,18 @@ void SmallShell::executeCommand(const char *cmd_line)
   Command *cmd = CreateCommand(cmd_line);
   if (cmd)
   {
-    cmd->execute();
+    BuiltInCommand* temp_cmd =  dynamic_cast< BuiltInCommand* >( cmd );
+    if(temp_cmd)
+    {
+      // Command is NOT built in
+      cmd->execute();
+    }
+    else
+    {
+      // We should fork here
+
+    }
+    
   }
 
   // Please note that you must fork smash process for some commands (e.g., external commands....)

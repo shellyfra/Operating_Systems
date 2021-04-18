@@ -7,7 +7,7 @@
 #define COMMAND_MAX_ARGS (20)
 
 #define WHITESPACE ' '
-#define DEFALT_PROMPT "smash"
+#define DEFAULT_PROMPT "smash"
 #define SHOW_PID_COMMAND_STR "showpid"
 #define CHANGE_DIRECTORY_COMMAND_STR "cd"
 #define CHANGE_DIRECTORY_LAST_ARG '-'
@@ -173,7 +173,8 @@ class SmallShell
 {
 private:
   char *last_wd;
-  std::string prompt_name = std::string("smash");
+  std::string prompt_name;
+  
   SmallShell();
 
 public:

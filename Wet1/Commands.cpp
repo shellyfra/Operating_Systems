@@ -92,6 +92,7 @@ void _removeBackgroundSign(char *cmd_line)
 
 SmallShell::SmallShell()
 {
+  this->prompt_name = DEFAULT_PROMPT;
   this->last_wd = nullptr;
 }
 
@@ -128,7 +129,7 @@ void SmallShell::changePrompt(const char *cmd_line) {
         log_error("cd: too few arguments"); // CHECK with staff!
     }
     else if (argc == 1) {
-        prompt_name = DEFALT_PROMPT;
+        prompt_name = DEFAULT_PROMPT;
     }
     else {
         prompt_name = args[1];

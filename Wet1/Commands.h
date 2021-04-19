@@ -119,10 +119,14 @@ public:
     const unsigned int pid;
     const time_t start_time;
     bool job_stopped;
+
+  public:
     JobEntry(const Command *cmd, const unsigned int job_id, const unsigned int pid, const bool is_stopped)
         : cmd(cmd), job_id(job_id), pid(pid), start_time(time(NULL)), job_stopped(is_stopped) {}
     ~JobEntry() = default;
-  public:
+    JobEntry(JobEntry const &) = default; // CHECK!    
+    JobEntry & operator=(JobEntry & other) {return  }
+    //void operator=(const JobEntry &) = default; // check!
     const unsigned int GetPid() const {return pid;}
     const unsigned int GetJobId() const {return job_id;}
     const bool IsStopped() const {return job_stopped;}

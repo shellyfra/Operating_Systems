@@ -16,7 +16,6 @@
 #define CHANGE_PROMPT_COMMAND_STR "chprompt"
 #define JOBS_COMMAND_STR "jobs"
 #define JOB_ID_INITIAL_VALUE 1
-//#define PWD_PATH_START_SIZE 150
 
 class Command
 {
@@ -24,12 +23,15 @@ class Command
   const char *cmd_line;
 
 public:
+  
   Command(const char *cmd_line) : cmd_line(cmd_line){};
   virtual ~Command() = default;
   virtual void execute() = 0;
+  friend std::ostream &operator<<(std::ostream &, const Command &);
   //virtual void prepare();
   //virtual void cleanup();
   // TODO: Add your extra methods if needed
+  
 };
 
 class BuiltInCommand : public Command
@@ -111,25 +113,26 @@ class JobsList
 {
 
 public:
-  class JobEntry
+  struct JobEntry
   {
-  private:
-    const Command *cmd;
-    const unsigned int job_id;
-    const unsigned int pid;
-    const time_t start_time;
+  
+    Command *cmd;
+    unsigned int job_id;
+    pid_t pid;
+    time_t start_time;
     bool job_stopped;
 
-  public:
-    JobEntry(const Command *cmd, const unsigned int job_id, const unsigned int pid, const bool is_stopped)
+  
+    JobEntry(Command *cmd, const unsigned int job_id, const pid_t pid, const bool is_stopped)
         : cmd(cmd), job_id(job_id), pid(pid), start_time(time(NULL)), job_stopped(is_stopped) {}
     ~JobEntry() = default;
     JobEntry(JobEntry const &) = default; // CHECK!    
-    JobEntry & operator=(JobEntry & other) {return  }
-    //void operator=(const JobEntry &) = default; // check!
-    const unsigned int GetPid() const {return pid;}
-    const unsigned int GetJobId() const {return job_id;}
-    const bool IsStopped() const {return job_stopped;}
+     //JobEntry &operator=(const JobEntry &JobEntry);
+    //JobEntry & operator=(JobEntry & other) {return  }
+    JobEntry & operator=(const JobEntry &other) =default ; // check!
+    //const unsigned int GetPid() const {return pid;}
+    //const unsigned int GetJobId() const {return job_id;}
+    //const bool IsStopped() const {return job_stopped;}
     friend std::ostream &operator<<(std::ostream &, const JobEntry &);
 
     // TODO: Add your data members
@@ -140,16 +143,25 @@ private:
 
   // TODO: Add your data members
 public:
-  JobsList() = default;
-  ~JobsList();
+  //JobsList() = default;
+  JobsList()
+  {
+    Command* cmd1 = new GetCurrDirCommand("pwd 1");
+    Command* cmd2 = new GetCurrDirCommand("pwd 2");
+    Command* cmd3 = new GetCurrDirCommand("pwd 3");
+    jobs_list.push_back(JobEntry(cmd1, 2, 1000, true));
+    jobs_list.push_back(JobEntry(cmd2, 4, 2000, false));
+    jobs_list.push_back(JobEntry(cmd3, 6, 2000, false));
+  }
+  ~JobsList() = default;
   void addJob(Command *cmd,const bool &isStopped = false); // Shelly, don't forget to call removeFinishedJobs before adding
-  void printJobsList() const; // Done
+  void printJobsList() const;
   void killAllJobs();                            // Shelly
-  const unsigned int removeFinishedJobs();                     // Done
+  const unsigned int removeFinishedJobs();                     
   JobEntry *getJobById(const unsigned int & jobId) const;         // Shelly
-  void removeJobById(const unsigned int &jobId);                 // Done
-  JobEntry *getLastJob(int *lastJobId) const;    // For fg or for figuring out what is the maximal ID, Shelly
-  JobEntry *getLastStoppedJob(int *jobId) const; // For bg , Shai
+  void removeJobById(const unsigned int &jobId);                 
+  JobEntry *getLastJob(int *lastJobId);    // For fg or for figuring out what is the maximal ID, Shelly
+  JobEntry *getLastStoppedJob(int *jobId);
   // TODO: Add extra methods or modify exisitng ones as needed
   // TODO add operators
 };
@@ -175,9 +187,9 @@ public:
 
 class ForegroundCommand : public BuiltInCommand
 {
-  // TODO: Add your data members
+  JobsList *jobs;
 public:
-  ForegroundCommand(const char *cmd_line, JobsList *jobs);
+  ForegroundCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line) , jobs(jobs) {}
   virtual ~ForegroundCommand() {}
   void execute() override;
 };

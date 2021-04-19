@@ -320,4 +320,5 @@ JobsList::JobEntry *JobsList::getLastStoppedJob(int *jobId) const
       return &(*job_entry); // dereference iterator and pass as pointer
     }
   }
+  return nullptr;
 }

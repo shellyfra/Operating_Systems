@@ -311,8 +311,11 @@ std::ostream &operator<<(std::ostream &os, const JobsList::JobEntry &job_entry)
 JobsList::JobEntry &JobsList::JobEntry::operator=(const JobsList::JobEntry &other) {
     if (this == &other)
         return *this;
-    JobEntry new_job = JobEntry(other.cmd,other.job_id, other.GetPid(), other.job_stopped);
-    *this = new_job;
+    this->job_stopped = other.job_stopped;
+    this->cmd = other.cmd;
+    this->job_id = other.job_id;
+    this->pid = other.GetPid();
+    this->start_time = other.start_time;
     return *this;
 }
 
@@ -351,6 +354,7 @@ void JobsList::removeJobById(const unsigned int &jobId)
     {
         if(job_entry.job_id == jobId)
         {
+
             jobs_list.erase(jobs_list.begin()+count);
             return;
         }
@@ -469,26 +473,27 @@ static bool is_number(const std::string& s)
 void KillCommand::execute()
 {
     if (this->argc != 3 ){
-        c_error("smash error: kill: invalid arguments");
+        c_error(" kill: invalid arguments");
         return;
     }
     std::string first_arg = std::string(args[1]);
     char first_char = first_arg.at(0);
     first_arg.erase (first_arg.begin());
     std::string req_job_id_str = std::string(args[2]);
-    const unsigned int req_job_id = int(*args[2]);
+    const unsigned int req_job_id = *args[2] - '0';
 
     //parse args
     if (first_char != '-' || !is_number(first_arg) ||!is_number(req_job_id_str) ){
-        c_error("smash error: kill: invalid arguments");
+        c_error("kill: invalid arguments");
         return;
     }
     JobsList::JobEntry entry = jobs->getJobById(req_job_id);
     if (entry.IsEmpty()){
-        std::string message = "smash error: kill: job-id " + req_job_id_str + " does not exist";
+        std::string message = "kill: job-id " + req_job_id_str + " does not exist";
         c_error(message);
+        return;
     }
-    if (kill(entry.GetPid(), int(first_arg.at(0))))
+    if (kill(entry.GetPid(), int(first_arg.at(0))) != 0) // kill failed
     {
         log_error("kill: kill failed"); // CHECK with staff!
         return;

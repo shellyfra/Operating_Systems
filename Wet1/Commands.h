@@ -18,6 +18,7 @@
 #define KILL_COMMAND_STR "kill"
 #define BG_COMMAND_STR "bg"
 #define JOB_ID_INITIAL_VALUE 1
+#define EXTERNAL_CMD_ARGS_COUNT 2
 
 class Command
 {
@@ -51,7 +52,7 @@ class ExternalCommand : public Command
 {
 protected:
     char **args;
-    int argc;
+    bool is_background;
 
 public:
     ExternalCommand(const char *cmd_line);

@@ -234,8 +234,9 @@ BuiltInCommand::BuiltInCommand(const char *cmd_line) : Command(cmd_line)
 }
 ExternalCommand::ExternalCommand(const char *cmd_line) : Command(cmd_line)
 {
-    this->args = (char **)malloc(sizeof(char *) * COMMAND_MAX_ARGS);
-    this->argc = _parseCommandLine(cmd_line, this->args);
+    this->args = (char **)malloc(sizeof(char *) * EXTERNAL_CMD_ARGS_COUNT);
+    args[0] = "-C";
+
 }
 BuiltInCommand::~BuiltInCommand()
 {

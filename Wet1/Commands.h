@@ -15,10 +15,36 @@
 #define CHANGE_DIRECTORY_LAST_ARG '-'
 #define CHANGE_PROMPT_COMMAND_STR "chprompt"
 #define JOBS_COMMAND_STR "jobs"
+#define FOREGROUND_COMMAND_STR "fg"
 #define KILL_COMMAND_STR "kill"
+#define QUIT_COMMAND_STR "quit"
 #define BG_COMMAND_STR "bg"
 #define JOB_ID_INITIAL_VALUE 1
 #define EXTERNAL_CMD_ARGS_COUNT 2
+
+
+//#define DO_SYS(syscall, prefix)                             \
+//    do                                                      \
+//    {                                                       \
+//        /* safely invoke a system call */                   \
+//        if ((syscall) == -1)                                \
+//        {                                                   \
+//            const char *message = strcat(prefix, #syscall); \
+//            perror(message);                                \
+//            return;                                         \
+//        }                                                   \
+//    } while (0)
+
+#define DO_SYS(syscall)                   \
+    do                                    \
+    {                                     \
+        /* safely invoke a system call */ \
+        if ((syscall) == -1)              \
+        {                                 \
+            perror(#syscall);             \
+            return;                       \
+        }                                 \
+    } while (0)
 
 class Command
 {
@@ -40,6 +66,7 @@ public:
 class BuiltInCommand : public Command
 {
 protected:
+    
     char **args;
     int argc;
 
@@ -108,13 +135,7 @@ public:
 };
 
 class JobsList;
-class QuitCommand : public BuiltInCommand
-{
-    // TODO: Add your data members public:
-    QuitCommand(const char *cmd_line, JobsList *jobs);
-    virtual ~QuitCommand() {}
-    void execute() override;
-};
+
 
 class JobsList
 {
@@ -176,12 +197,24 @@ public:
     // TODO add operators
 };
 
+class QuitCommand : public BuiltInCommand
+{
+
+   bool &should_run;
+    JobsList *jobs; // Not const since will remove jobs
+public:
+    QuitCommand(const char *cmd_line, JobsList *jobs , bool & should_run) : BuiltInCommand(cmd_line) ,should_run(should_run), jobs(jobs) {}
+    virtual ~QuitCommand() {}
+    void execute() override;
+};
+
 class JobsCommand : public BuiltInCommand
 {
+    
     // TODO: Add your data members
     JobsList *jobs; // Not const since will remove jobs
 public:
-    JobsCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line) , jobs(jobs) {}
+    JobsCommand(const char *cmd_line, JobsList *jobs ) : BuiltInCommand(cmd_line) , jobs(jobs)  {}
     virtual ~JobsCommand() {}
     void execute() override;
 };
@@ -226,11 +259,12 @@ public:
 class SmallShell
 {
 private:
+    bool should_run;
     char *last_wd;
     std::string prompt_name;
     JobsList *jobs_list;
 
-    SmallShell();
+    SmallShell() : should_run(true) ,  last_wd(nullptr) ,prompt_name(DEFAULT_PROMPT), jobs_list(new JobsList()) {}
 
 public:
     Command *CreateCommand(const char *cmd_line);
@@ -247,6 +281,7 @@ public:
     // TODO: add extra methods as needed
     void changePrompt(const char *cmd_line);
     std::string getPromptName();
+     bool & ShouldRun() {return this->should_run;} 
 };
 
 #endif //SMASH_COMMAND_H_

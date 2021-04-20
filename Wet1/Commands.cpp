@@ -33,7 +33,7 @@ int _parseCommandLine(const char *cmd_line, char **args);
 bool _isBackgroundComamnd(const char *cmd_line);
 void _removeBackgroundSign(char *cmd_line);
 static bool is_number(const std::string& s);
-
+static void log_error(std::string text, const bool use_perror = false);
 
 // String manipulation
 string _ltrim(const string &s)
@@ -53,16 +53,15 @@ string _trim(const string &s)
     return _rtrim(_ltrim(s));
 }
 
-static void log_error(std::string text)
+static void log_error(std::string text, const bool use_perror)
 {
     string message = "smash error: " + text;
-    perror(message.c_str());
+    if(use_perror)
+        perror(message.c_str());
+    else
+        cerr << message << endl;   
 }
-static void c_error(std::string text)
-{
-    string message = "smash error: " + text;
-    cerr << message;
-}
+
 int _parseCommandLine(const char *cmd_line, char **args)
 {
     FUNC_ENTRY()
@@ -108,12 +107,12 @@ void _removeBackgroundSign(char *cmd_line)
     cmd_line[str.find_last_not_of(WHITESPACE, idx) + 1] = 0;
 }
 
-bool is_number(const char* str)
+bool is_number(char* str)
 {
-    char it = *str-1;
-    while (++it)
+    char* it = str;
+    while (char current = (*it++))
     {
-        if (!std::isdigit(it) &&  it != '-')
+        if (!std::isdigit(current) &&  current != '-')
         {
             return false;
         }
@@ -122,12 +121,6 @@ bool is_number(const char* str)
 
 }
 
-SmallShell::SmallShell()
-{
-    this->prompt_name = DEFAULT_PROMPT;
-    this->last_wd = nullptr;
-    this->jobs_list = new JobsList();
-}
 
 SmallShell::~SmallShell()
 {
@@ -186,6 +179,14 @@ Command *SmallShell::CreateCommand(const char *cmd_line)
     else if (firstWord.compare(KILL_COMMAND_STR) == 0)
     {
         return new KillCommand(cmd_line, jobs_list);
+    }
+    else if (firstWord.compare(FOREGROUND_COMMAND_STR) == 0)
+    {
+        return new ForegroundCommand(cmd_line, jobs_list);
+    }
+    else if (firstWord.compare(QUIT_COMMAND_STR) == 0)
+    {
+        return new QuitCommand(cmd_line, jobs_list,  ShouldRun());
     }
     else
     {
@@ -361,18 +362,18 @@ void JobsList::removeJobById(const unsigned int &jobId)
         count++;
     }
 }
-JobsList::JobEntry *JobsList::getLastStoppedJob(int *jobId) const
+JobsList::JobEntry *JobsList::getLastStoppedJob(int *jobId)
 {
-//  for (vector<JobsList::JobEntry>::reverse_iterator job_entry = jobs_list.rbegin(); job_entry != jobs_list.rend(); ++job_entry)
-//  { // Consider creating array for pointer in order to support complexity of O(1)...
-//    if (job_entry->job_stopped)
-//    {
-//      *jobId = job_entry->job_id;
-//      return &(*job_entry); // dereference iterator and pass as pointer
-//    }
-//
-//
-//  }
+  for (vector<JobsList::JobEntry>::reverse_iterator job_entry = jobs_list.rbegin(); job_entry != jobs_list.rend(); ++job_entry)
+  { // Consider creating array for pointer in order to support complexity of O(1)...
+    if (job_entry->job_stopped)
+    {
+      *jobId = job_entry->job_id;
+      return &(*job_entry); // dereference iterator and pass as pointer
+    }
+
+
+  }
     return nullptr;
 }
 
@@ -404,12 +405,8 @@ void ForegroundCommand::execute()
         else
         {
             pid_t job_pid =job_entry.pid;
-            if(kill(job_pid,SIGCONT)==-1)
-            {
-                log_error("fg: kill failed");
-                return;
-            }
-
+            DO_SYS(kill(job_pid,SIGCONT));
+            
             // SIGCONT succeeded
             cout << job_entry.cmd << " : " << job_entry;
             this->jobs->removeJobById(job_id);
@@ -432,9 +429,11 @@ void JobsList::addJob(Command *cmd, const bool &isStopped) {
 
 void JobsList::killAllJobs(){
     unsigned int count = 0;
+    cout << "smash: sending SIGKILL signal to " <<jobs_list.size() << " jobs:" <<endl;
     for (auto &job_entry : jobs_list)
     {
-        if (kill(job_entry.GetPid(), 9) != 0)
+        cout<< job_entry.pid << ": " << job_entry.cmd;
+        if (kill(job_entry.GetPid(), SIGKILL) != 0)
         {
             log_error("killAllJobs: kill job failed"); // CHECK with staff!
             continue; // not sure what to do here
@@ -473,7 +472,7 @@ static bool is_number(const std::string& s)
 void KillCommand::execute()
 {
     if (this->argc != 3 ){
-        c_error(" kill: invalid arguments");
+        log_error("kill: invalid arguments");
         return;
     }
     std::string first_arg = std::string(args[1]);
@@ -484,13 +483,13 @@ void KillCommand::execute()
 
     //parse args
     if (first_char != '-' || !is_number(first_arg) ||!is_number(req_job_id_str) ){
-        c_error("kill: invalid arguments");
+        log_error("kill: invalid arguments");
         return;
     }
     JobsList::JobEntry entry = jobs->getJobById(req_job_id);
     if (entry.IsEmpty()){
         std::string message = "kill: job-id " + req_job_id_str + " does not exist";
-        c_error(message);
+        log_error(message);
         return;
     }
     if (kill(entry.GetPid(), int(first_arg.at(0))) != 0) // kill failed
@@ -499,4 +498,12 @@ void KillCommand::execute()
         return;
     }
     cout << "signal number " + first_arg + " was sent to pid " + string(reinterpret_cast<const char *>(entry.GetPid()));
+}
+void QuitCommand::execute()
+{
+    if(strcmp(args[1], "kill"))
+    {
+        jobs->killAllJobs();
+    }
+    should_run = false;
 }

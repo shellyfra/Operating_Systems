@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <time.h>
+#include <string.h>
 
 #define COMMAND_ARGS_MAX_LENGTH (200)
 #define COMMAND_MAX_ARGS (20)
@@ -19,21 +20,10 @@
 #define KILL_COMMAND_STR "kill"
 #define QUIT_COMMAND_STR "quit"
 #define BG_COMMAND_STR "bg"
-#define JOB_ID_INITIAL_VALUE 1
-#define EXTERNAL_CMD_ARGS_COUNT 2
+#define JOB_ID_INITIAL_VALUE (1)
+#define EXTERNAL_CMD_ARGS_COUNT (3)
 
 
-//#define DO_SYS(syscall, prefix)                             \
-//    do                                                      \
-//    {                                                       \
-//        /* safely invoke a system call */                   \
-//        if ((syscall) == -1)                                \
-//        {                                                   \
-//            const char *message = strcat(prefix, #syscall); \
-//            perror(message);                                \
-//            return;                                         \
-//        }                                                   \
-//    } while (0)
 
 #define DO_SYS(syscall)                   \
     do                                    \
@@ -78,13 +68,15 @@ public:
 class ExternalCommand : public Command
 {
 protected:
-    char **args;
+    
+    //char args[EXTERNAL_CMD_ARGS_COUNT][COMMAND_ARGS_MAX_LENGTH];
+     char **argv;
     bool is_background;
 
 public:
     ExternalCommand(const char *cmd_line);
-    virtual ~ExternalCommand() {free(args);}
-    void execute() override {}
+    virtual ~ExternalCommand() {delete argv;}
+    void execute() override;
 };
 
 class PipeCommand : public Command

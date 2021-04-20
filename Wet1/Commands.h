@@ -18,6 +18,30 @@
 #define KILL_COMMAND_STR "kill"
 #define JOB_ID_INITIAL_VALUE 1
 
+
+//#define DO_SYS(syscall, prefix)                             \
+//    do                                                      \
+//    {                                                       \
+//        /* safely invoke a system call */                   \
+//        if ((syscall) == -1)                                \
+//        {                                                   \
+//            const char *message = strcat(prefix, #syscall); \
+//            perror(message);                                \
+//            return;                                         \
+//        }                                                   \
+//    } while (0)
+
+#define DO_SYS(syscall)                   \
+    do                                    \
+    {                                     \
+        /* safely invoke a system call */ \
+        if ((syscall) == -1)              \
+        {                                 \
+            perror(#syscall);             \
+            return;                       \
+        }                                 \
+    } while (0)
+
 class Command
 {
     // TODO: Add your data members
@@ -38,6 +62,7 @@ public:
 class BuiltInCommand : public Command
 {
 protected:
+    
     char **args;
     int argc;
 

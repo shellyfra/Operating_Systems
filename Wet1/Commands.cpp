@@ -108,12 +108,12 @@ void _removeBackgroundSign(char *cmd_line)
     cmd_line[str.find_last_not_of(WHITESPACE, idx) + 1] = 0;
 }
 
-bool is_unsigned_number(const char* str)
+bool is_number(const char* str)
 {
     char it = *str-1;
     while (++it)
     {
-        if (!std::isdigit(it))
+        if (!std::isdigit(it) &&  it != '-')
         {
             return false;
         }
@@ -291,6 +291,7 @@ const string GetCurrentWorkingDirectory()
 {
     char buff[PATH_MAX];
 
+
     if (!getcwd(buff, PATH_MAX))
     {
         log_error("pwd: getcwd failed"); // CHECK with staff!
@@ -383,21 +384,22 @@ void ForegroundCommand::execute()
     {
         log_error("fg: jobs list is empty");
     }
-    else if(argc > 2 || !is_unsigned_number(args[1]) )
+    else if(argc > 2 || !is_number(args[1]) )
     {
         log_error("fg: invalid arguments");
     }
     else
     {
-        const unsigned int job_id= std::stoi(args[1]);
-        JobsList::JobEntry job_p = this->jobs->getJobById(job_id);
-        if(job_p.IsEmpty())
+        const int job_id= std::stoi(args[1]);
+        JobsList::JobEntry job_entry = this->jobs->getJobById(job_id);
+        if(job_id < 0 || job_entry.IsEmpty())
         {
-            log_error("fg: job-id <job-id> does not exist");
+            string error_msg = "fg: job-id "+std::to_string(job_id)+" does not exist";
+            log_error(error_msg);
         }
         else
         {
-            pid_t job_pid =job_p.pid;
+            pid_t job_pid =job_entry.pid;
             if(kill(job_pid,SIGCONT)==-1)
             {
                 log_error("fg: kill failed");
@@ -405,14 +407,14 @@ void ForegroundCommand::execute()
             }
 
             // SIGCONT succeeded
-            cout << job_p.cmd << " : " << job_pid;
+            cout << job_entry.cmd << " : " << job_entry;
             this->jobs->removeJobById(job_id);
             int *status = nullptr;
-            if (waitpid(job_pid,status,0)==-1)
-            {
-                log_error("fg: waitpid failed");
-                return;
-            }
+
+            DO_SYS(waitpid(job_pid,status,0));
+
+            
+           
         }
 
     }

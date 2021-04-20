@@ -501,7 +501,7 @@ void KillCommand::execute()
 }
 void QuitCommand::execute()
 {
-    if(strcmp(args[1], "kill"))
+    if(strcmp(args[1], "kill")==0)
     {
         jobs->killAllJobs();
     }

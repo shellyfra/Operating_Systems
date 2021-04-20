@@ -208,16 +208,9 @@ void SmallShell::executeCommand(const char *cmd_line)
     Command *cmd = CreateCommand(cmd_line);
     if (cmd)
     {
-        BuiltInCommand *temp_cmd = dynamic_cast<BuiltInCommand *>(cmd);
-        if (temp_cmd)
-        {
+
             // Command is built in
             cmd->execute();
-        }
-        else
-        {
-            // We should fork here
-        }
     }
 
     // Please note that you must fork smash process for some commands (e.g., external commands....)
@@ -235,9 +228,10 @@ BuiltInCommand::BuiltInCommand(const char *cmd_line) : Command(cmd_line)
 }
 ExternalCommand::ExternalCommand(const char *cmd_line) : Command(cmd_line)
 {
+   
     this->args = (char **)malloc(sizeof(char *) * EXTERNAL_CMD_ARGS_COUNT);
-    args[0] = "-C";
-
+    args[0] = "-c";
+    args[1] =   std::istringstream iss(_trim(string(cmd_line)).c_str()); 
 }
 BuiltInCommand::~BuiltInCommand()
 {

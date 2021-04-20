@@ -16,6 +16,7 @@
 #define CHANGE_PROMPT_COMMAND_STR "chprompt"
 #define JOBS_COMMAND_STR "jobs"
 #define KILL_COMMAND_STR "kill"
+#define BG_COMMAND_STR "bg"
 #define JOB_ID_INITIAL_VALUE 1
 
 class Command
@@ -48,10 +49,14 @@ public:
 
 class ExternalCommand : public Command
 {
+protected:
+    char **args;
+    int argc;
+
 public:
     ExternalCommand(const char *cmd_line);
-    virtual ~ExternalCommand() {}
-    void execute() override;
+    virtual ~ExternalCommand() {free(args);}
+    void execute() override {}
 };
 
 class PipeCommand : public Command
@@ -165,7 +170,7 @@ public:
     JobEntry getJobById(const unsigned int & jobId) const;         //Done
     void removeJobById(const unsigned int &jobId);                 // Done
     JobEntry getLastJob() const;    //Done, For fg or for figuring out what is the maximal ID
-    JobEntry *getLastStoppedJob(int *jobId) const; // For bg , Shai
+    JobEntry getLastStoppedJob() ; // For bg , Shai
     // TODO: Add extra methods or modify exisitng ones as needed
     // TODO add operators
 };
@@ -202,8 +207,9 @@ public:
 class BackgroundCommand : public BuiltInCommand
 {
     // TODO: Add your data members
+    JobsList *jobs;
 public:
-    BackgroundCommand(const char *cmd_line, JobsList *jobs);
+    BackgroundCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line) , jobs(jobs) {}
     virtual ~BackgroundCommand() {}
     void execute() override;
 };

@@ -60,7 +60,7 @@ static void log_error(std::string text)
 }
 static void c_error(std::string text)
 {
-    string message = "smash error: " + text;
+    string message = "smash error: " + text + "\n";
     cerr << message;
 }
 int _parseCommandLine(const char *cmd_line, char **args)
@@ -187,9 +187,13 @@ Command *SmallShell::CreateCommand(const char *cmd_line)
     {
         return new KillCommand(cmd_line, jobs_list);
     }
+    else if (firstWord.compare(BG_COMMAND_STR) == 0)
+    {
+        return new BackgroundCommand(cmd_line, jobs_list);
+    }
     else
     {
-        //return new ExternalCommand(cmd_line);
+        return new ExternalCommand(cmd_line);
     }
 
     return nullptr;
@@ -221,10 +225,18 @@ void SmallShell::executeCommand(const char *cmd_line)
 
 BuiltInCommand::BuiltInCommand(const char *cmd_line) : Command(cmd_line)
 {
+    char * new_cmd = const_cast<char *>(cmd_line);
+    if (_isBackgroundComamnd(new_cmd)){
+        _removeBackgroundSign(new_cmd);
+    }
+    this->args = (char **)malloc(sizeof(char *) * COMMAND_MAX_ARGS);
+    this->argc = _parseCommandLine(new_cmd, this->args);
+}
+ExternalCommand::ExternalCommand(const char *cmd_line) : Command(cmd_line)
+{
     this->args = (char **)malloc(sizeof(char *) * COMMAND_MAX_ARGS);
     this->argc = _parseCommandLine(cmd_line, this->args);
 }
-
 BuiltInCommand::~BuiltInCommand()
 {
     for (int i = 0; i < argc; i++)
@@ -240,7 +252,7 @@ void ShowPidCommand::execute()
 }
 void JobsCommand::execute()
 {
-    jobs->removeFinishedJobs();
+    //jobs->removeFinishedJobs();
     jobs->printJobsList();
 }
 void ChangeDirCommand::execute()
@@ -360,19 +372,16 @@ void JobsList::removeJobById(const unsigned int &jobId)
         count++;
     }
 }
-JobsList::JobEntry *JobsList::getLastStoppedJob(int *jobId) const
+JobsList::JobEntry JobsList::getLastStoppedJob()
 {
-//  for (vector<JobsList::JobEntry>::reverse_iterator job_entry = jobs_list.rbegin(); job_entry != jobs_list.rend(); ++job_entry)
-//  { // Consider creating array for pointer in order to support complexity of O(1)...
-//    if (job_entry->job_stopped)
-//    {
-//      *jobId = job_entry->job_id;
-//      return &(*job_entry); // dereference iterator and pass as pointer
-//    }
-//
-//
-//  }
-    return nullptr;
+  for (auto job_entry = jobs_list.rbegin(); job_entry != jobs_list.rend(); ++job_entry)
+  { // Consider creating array for pointer in order to support complexity of O(1)...
+    if (job_entry->job_stopped)
+    {
+      return *job_entry; // dereference iterator and pass as pointer
+    }
+  }
+    return JobEntry();
 }
 
 std::ostream & operator<<(std::ostream & os, const Command & cmd)
@@ -497,4 +506,48 @@ void KillCommand::execute()
         return;
     }
     cout << "signal number " + first_arg + " was sent to pid " + string(reinterpret_cast<const char *>(entry.GetPid()));
+}
+
+void BackgroundCommand::execute() {
+    if (this->argc < 1 || this->argc > 2 )
+    {
+        c_error(" kill: invalid arguments");
+        return;
+    }
+    JobsList::JobEntry move_bg_job;
+    if (this->argc == 1)
+    { // resume last stopped
+        move_bg_job = this->jobs->getLastStoppedJob();
+        if (move_bg_job.IsEmpty())
+        {
+            c_error("bg: there is no stopped jobs to resume");
+            return;
+        }
+    }
+    else
+    { // argc = 2
+        std::string req_job_id_str = std::string(args[1]);
+        const unsigned int req_job_id = *args[1] - '0';
+        move_bg_job = this->jobs->getJobById(req_job_id);
+        if (move_bg_job.IsEmpty())
+        {
+            std::string msg = "bg: job-id " + string(reinterpret_cast<const char *>(req_job_id)) + " does not exist";
+            c_error(msg);
+            return;
+        }
+        else if (!move_bg_job.job_stopped) { // already running in the background
+            std::string msg = "bg: job-id " + req_job_id_str + " is already running in the background";
+            c_error(msg);
+            return;
+        }
+    }
+    pid_t job_pid =move_bg_job.pid;
+
+    if(kill(job_pid,SIGCONT)==-1)
+    {
+        log_error("bg: kill failed");
+        return;
+    }
+    cout << move_bg_job.cmd << " : " << job_pid;
+    move_bg_job.job_stopped = false; // job was resumed
 }

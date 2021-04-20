@@ -491,7 +491,7 @@ void KillCommand::execute()
         c_error(message);
         return;
     }
-    if (kill(entry.GetPid(), int(first_arg.at(0))))
+    if (kill(entry.GetPid(), int(first_arg.at(0))) != 0) // kill failed
     {
         log_error("kill: kill failed"); // CHECK with staff!
         return;

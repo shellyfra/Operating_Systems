@@ -224,17 +224,18 @@ BuiltInCommand::BuiltInCommand(const char *cmd_line) : Command(cmd_line)
 }
 ExternalCommand::ExternalCommand(const char *cmd_line) : Command(cmd_line)
 {
-
-    argv = new char *[EXTERNAL_CMD_ARGS_COUNT];
-    argv[0] = (char *)"bash";
-    argv[1] = (char *)"-c";
+    
+   // argv = new char *[EXTERNAL_CMD_ARGS_COUNT];
+ //   argv[0] = (char *)"bash";
+   // argv[1] = (char *)"-c";
 
     char *new_cmd = const_cast<char *>(cmd_line);
+    
     this->is_background = (_isBackgroundComamnd(new_cmd));
     _removeBackgroundSign(new_cmd);
 
-    argv[2] =strcat(strcat("\"", new_cmd),"\"");
-    // execv("/bin/bash",)
+   // args_w_quotes = const_cast<char *>(("\"" +string(new_cmd)+"\"").c_str());
+   args_w_quotes = new_cmd;
 }
 BuiltInCommand::~BuiltInCommand()
 {
@@ -567,27 +568,30 @@ void BackgroundCommand::execute()
 void ExternalCommand::execute()
 {
     int stat;
-    std::cout << argv[0] << "$"<< argv[1]; // Why this doesn't work?
+    pid_t parent_pid = getpid();
+
+    char * arguments[] = { "/bin/bash","-c",args_w_quotes , NULL };
     if (pid_t pid = fork() < 0)
     {
         perror("fork failed");
     }
-    else if (pid == 0)
-    { // child
-
-        
-        execv("/bin/bash", this->argv);
-        perror("execv failed");
-    }
-    else
+    else  if (getpid() == parent_pid)
     { // parent
-        if (wait(&stat) < 0)
+        if (!this->is_background && wait(&stat) < 0)
         {
             perror("wait failed");
-        }
+        } // TODO add to job list if in background
         else
         {
             //chkStatus(pid, stat);
-        }
+        } 
     }
+    else
+    { // child
+
+        setpgrp();
+        execve("/bin/bash", arguments, NULL);
+        perror("execv failed");
+    }
+    
 }

@@ -6,10 +6,12 @@
 using namespace std;
 
 void ctrlZHandler(int sig_num) {
-	// TODO: Add your implementation
+	// TODO: SHAI
 }
 
 void ctrlCHandler(int sig_num) {
+  
+  // TODO: SHelly
   exit(1);
 }
 

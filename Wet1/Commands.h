@@ -70,12 +70,13 @@ class ExternalCommand : public Command
 protected:
     
     //char args[EXTERNAL_CMD_ARGS_COUNT][COMMAND_ARGS_MAX_LENGTH];
-     char **argv;
+
+    char * args_w_quotes;
     bool is_background;
 
 public:
     ExternalCommand(const char *cmd_line);
-    virtual ~ExternalCommand() {delete argv;}
+    virtual ~ExternalCommand() =default;
     void execute() override;
 };
 

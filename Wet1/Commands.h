@@ -20,7 +20,7 @@
 #define KILL_COMMAND_STR "kill"
 #define QUIT_COMMAND_STR "quit"
 #define BG_COMMAND_STR "bg"
-#define JOB_ID_INITIAL_VALUE (1)
+#define JOB_ID_INITIAL_VALUE (0)
 #define EXTERNAL_CMD_ARGS_COUNT (3)
 
 
@@ -38,17 +38,20 @@
 
 class Command
 {
+protected:
     // TODO: Add your data members
-    const char *cmd_line;
+    char *cmd_line;
 
 public:
-
-    Command(const char *cmd_line) : cmd_line(cmd_line){};
-    virtual ~Command() = default;
+    Command(const char *usr_cmd_line) : cmd_line(new char[80]){
+        strcpy(this->cmd_line, usr_cmd_line);
+    };
+    virtual ~Command(){ delete[] cmd_line;}
     virtual void execute() = 0;
     friend std::ostream &operator<<(std::ostream &, const Command &);
     //virtual void prepare();
     //virtual void cleanup();
+    const char * GetCmd() const {return this->cmd_line;}
     // TODO: Add your extra methods if needed
 
 };
@@ -65,20 +68,6 @@ public:
     virtual ~BuiltInCommand();
 };
 
-class ExternalCommand : public Command
-{
-protected:
-    
-    //char args[EXTERNAL_CMD_ARGS_COUNT][COMMAND_ARGS_MAX_LENGTH];
-
-    char * cmd;
-    bool is_background;
-
-public:
-    ExternalCommand(const char *cmd_line);
-    virtual ~ExternalCommand() =default;
-    void execute() override;
-};
 
 class PipeCommand : public Command
 {
@@ -136,7 +125,6 @@ class JobsList
 public:
     struct JobEntry
     {
-
         const Command *cmd;
         unsigned int job_id;
         pid_t pid;
@@ -166,19 +154,19 @@ private:
 
     // TODO: Add your data members
 public:
-    //JobsList() = default;
-    JobsList()
-    {
-        Command* cmd1 = new GetCurrDirCommand("pwd 1");
-        Command* cmd2 = new GetCurrDirCommand("pwd 2");
-        Command* cmd3 = new GetCurrDirCommand("pwd 3");
-        jobs_list.push_back(JobEntry(cmd1, 2, 1000, true));
-        jobs_list.push_back(JobEntry(cmd2, 4, 2000, false));
-        jobs_list.push_back(JobEntry(cmd3, 6, 2000, false));
-    }
+    JobsList() = default;
+//    JobsList()
+//    {
+//        Command* cmd1 = new GetCurrDirCommand("pwd 1");
+//        Command* cmd2 = new GetCurrDirCommand("pwd 2");
+//        Command* cmd3 = new GetCurrDirCommand("pwd 3");
+//        jobs_list.push_back(JobEntry(cmd1, 2, 1000, true));
+//        jobs_list.push_back(JobEntry(cmd2, 4, 2000, false));
+//        jobs_list.push_back(JobEntry(cmd3, 6, 2000, false));
+//    }
     ~JobsList() = default;
     JobsList& operator=(const JobsList& other) = default; // for now
-    void addJob(Command *cmd,const bool &isStopped = false); // Done
+    void addJob(Command *cmd, pid_t child_pid, const bool &isStopped = false); // Done
     void printJobsList() const; // Done
     void killAllJobs();                            // Done
     const unsigned int removeFinishedJobs();                     // Done
@@ -188,6 +176,22 @@ public:
     JobEntry getLastStoppedJob() ; // For bg , Shai
     // TODO: Add extra methods or modify exisitng ones as needed
     // TODO add operators
+};
+
+class ExternalCommand : public Command
+{
+protected:
+
+    //char args[EXTERNAL_CMD_ARGS_COUNT][COMMAND_ARGS_MAX_LENGTH];
+    //const char *cmd_line;
+    char * cmd;
+    bool is_background;
+    JobsList *jobs;
+
+public:
+    ExternalCommand(const char *cmd_line, JobsList *jobs);
+    virtual ~ExternalCommand() =default;
+    void execute() override;
 };
 
 class QuitCommand : public BuiltInCommand

@@ -89,6 +89,7 @@ bool _isBackgroundComamnd(const char *cmd_line)
 void _removeBackgroundSign(char *cmd_line)
 {
     const string str(cmd_line);
+    if(str.empty()) return;
     // find last character other than spaces
     unsigned int idx = str.find_last_not_of(WHITESPACE);
     // if all characters are spaces then return
@@ -192,7 +193,7 @@ Command *SmallShell::CreateCommand(const char *cmd_line)
     }
     else
     {
-        return new ExternalCommand(cmd_line);
+        return new ExternalCommand(cmd_line, jobs_list);
     }
 
     return nullptr;
@@ -222,7 +223,7 @@ BuiltInCommand::BuiltInCommand(const char *cmd_line) : Command(cmd_line)
     this->args = (char **)malloc(sizeof(char *) * COMMAND_MAX_ARGS);
     this->argc = _parseCommandLine(new_cmd, this->args);
 }
-ExternalCommand::ExternalCommand(const char *cmd_line) : Command(cmd_line)
+ExternalCommand::ExternalCommand(const char *cmd_line, JobsList *jobs) : Command(cmd_line) , jobs(jobs)
 {
     
    // argv = new char *[EXTERNAL_CMD_ARGS_COUNT];
@@ -232,7 +233,6 @@ ExternalCommand::ExternalCommand(const char *cmd_line) : Command(cmd_line)
     char *new_cmd = const_cast<char *>(cmd_line);
     
     this->is_background = (_isBackgroundComamnd(new_cmd));
-    _removeBackgroundSign(new_cmd);
 
    // args_w_quotes = const_cast<char *>(("\"" +string(new_cmd)+"\"").c_str());
    this->cmd = new_cmd;
@@ -335,6 +335,7 @@ void JobsList::printJobsList() const
 {
     for (auto job_entry = jobs_list.rbegin(); job_entry != jobs_list.rend(); ++job_entry)
     {
+        //cout << "jobid = " << job_entry->job_id << endl;
         cout << *job_entry << endl;
     }
 }
@@ -346,14 +347,30 @@ const unsigned int JobsList::removeFinishedJobs()
     for (auto &job_entry : this->jobs_list)
     {
         // if(kill(job_entry.GetPid(), 0)) // process didn't finish
-        if (1)
-        {
+        int status;
+        //cout << "job pid = " <<job_entry.GetPid() << endl;
+        int parent_pid = getpid();
+        pid_t result = waitpid(job_entry.GetPid(), &status, WNOHANG);
+        if (result == 0) {
+            // Child still alive
             new_job_list.push_back(job_entry);
+            if (const unsigned int new_id = job_entry.job_id > max_job_id)
+            {
+                max_job_id = new_id;
+            }
+        } else if (result == -1) {
+            // Error
+        } else {
+            cout << "child ended";
         }
-        else if (const unsigned int new_id = job_entry.job_id > max_job_id)
-        {
-            max_job_id = new_id;
-        }
+//        if (kill(job_entry.GetPid(), 0) == 0) // if returned 0 then pid exsists -> not killed
+//        {
+//            new_job_list.push_back(job_entry);
+//            if (const unsigned int new_id = job_entry.job_id > max_job_id)
+//            {
+//                max_job_id = new_id;
+//            }
+//        }
     }
     jobs_list = new_job_list;
     return max_job_id;
@@ -424,10 +441,10 @@ void ForegroundCommand::execute()
     }
 }
 
-void JobsList::addJob(Command *cmd, const bool &isStopped)
+void JobsList::addJob(Command *cmd, pid_t child_pid, const bool &isStopped)
 {
     unsigned int new_job_id = removeFinishedJobs() + 1;
-    JobEntry new_job = JobEntry(cmd, new_job_id, getpid(), isStopped);
+    JobEntry new_job = JobEntry(cmd, new_job_id, child_pid, isStopped);
     this->jobs_list.push_back(new_job);
 }
 
@@ -437,13 +454,13 @@ void JobsList::killAllJobs()
     cout << "smash: sending SIGKILL signal to " << jobs_list.size() << " jobs:" << endl;
     for (auto &job_entry : jobs_list)
     {
-        cout << job_entry.pid << ": " << job_entry.cmd;
+        cout << job_entry.pid << ": " << job_entry.cmd->GetCmd();
         if (kill(job_entry.GetPid(), SIGKILL) != 0)
         {
             log_error("killAllJobs: kill job failed"); // CHECK with staff!
             continue;                                  // not sure what to do here
-        }
-        wait(NULL);
+        } 
+        DO_SYS(wait(NULL));
         jobs_list.erase(jobs_list.begin() + count);
         count++;
     }
@@ -465,7 +482,14 @@ JobsList::JobEntry JobsList::getLastJob() const
 {
     if (!jobs_list.empty())
     {
-        return jobs_list.back();
+        unsigned int max_job_id = 0;
+        JobsList::JobEntry return_job;
+        for (auto &job_entry : jobs_list){
+            if (job_entry.job_id > max_job_id){
+                return_job = job_entry;
+            }
+        }
+        return return_job;
     }
     return JobEntry();
 }
@@ -570,9 +594,9 @@ void ExternalCommand::execute()
     int stat;
     pid_t parent_pid = getpid();
 
-    
-    char * arguments[] = { "/bin/bash","-c",cmd , NULL };
-    if (  fork() < 0 )
+    char * arguments[] = { "/bin/bash","-c",this->cmd , nullptr };
+    pid_t pid = fork();
+    if (pid< 0)
     {
         perror("fork failed");
     }
@@ -585,14 +609,13 @@ void ExternalCommand::execute()
         else
         {
             //chkStatus(pid, stat);
+            this->jobs->addJob(this, pid, false);
         } 
     }
     else
     { // child
-
         setpgrp();
         execve("/bin/bash", arguments, NULL);
         perror("execv failed");
     }
-    
 }

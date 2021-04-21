@@ -22,7 +22,7 @@
 #define BG_COMMAND_STR "bg"
 #define JOB_ID_INITIAL_VALUE (0)
 #define EXTERNAL_CMD_ARGS_COUNT (3)
-
+enum Redirect_type {OVERRIDE = 1, APPEND} ;
 
 
 #define DO_SYS(syscall)                   \
@@ -80,6 +80,7 @@ public:
 class RedirectionCommand : public Command
 {
     // TODO: Add your data members
+    Redirect_type redirect;
 public:
     explicit RedirectionCommand(const char *cmd_line);
     virtual ~RedirectionCommand() {}
@@ -116,7 +117,6 @@ public:
 };
 
 class JobsList;
-
 
 class JobsList
 {

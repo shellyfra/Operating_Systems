@@ -7,6 +7,7 @@
 
 #define COMMAND_ARGS_MAX_LENGTH (200)
 #define COMMAND_MAX_ARGS (20)
+#define COMMAND_MAX_LENGTH (80)
 
 #define WHITESPACE ' '
 #define DEFAULT_PROMPT "smash"
@@ -41,12 +42,11 @@ class Command
 protected:
     // TODO: Add your data members
     char *cmd_line;
+    char *cmd_line_wo_ampersand;
 
 public:
-    Command(const char *usr_cmd_line) : cmd_line(new char[80]){
-        strcpy(this->cmd_line, usr_cmd_line);
-    };
-    virtual ~Command(){ delete[] cmd_line;}
+    Command(const char *usr_cmd_line);
+    virtual ~Command();
     virtual void execute() = 0;
     friend std::ostream &operator<<(std::ostream &, const Command &);
     //virtual void prepare();
@@ -140,9 +140,7 @@ public:
         //JobEntry &operator=(const JobEntry &JobEntry);
         //JobEntry & operator=(JobEntry & other) {return  }
         JobEntry& operator=(const JobEntry& other);  // check!
-        const unsigned int GetPid() const {return pid;}
-        const unsigned int GetJobId() const {return job_id;}
-        const bool IsStopped() const {return job_stopped;}
+      
         const bool IsEmpty() const {return (cmd == nullptr);}
         friend std::ostream &operator<<(std::ostream &, const JobEntry &);
 
@@ -182,9 +180,6 @@ class ExternalCommand : public Command
 {
 protected:
 
-    //char args[EXTERNAL_CMD_ARGS_COUNT][COMMAND_ARGS_MAX_LENGTH];
-    //const char *cmd_line;
-    char * cmd;
     bool is_background;
     JobsList *jobs;
 

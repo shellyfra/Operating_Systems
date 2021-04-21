@@ -1,5 +1,4 @@
 #include <unistd.h>
-
 #include <iostream>
 #include <vector>
 #include <sstream>
@@ -12,6 +11,7 @@
 using namespace std;
 using std::string;
 using std::vector;
+
 
 #if 0
 #define FUNC_ENTRY() \
@@ -32,20 +32,20 @@ string _trim(const string &s);
 int _parseCommandLine(const char *cmd_line, char **args);
 bool _isBackgroundComamnd(const char *cmd_line);
 void _removeBackgroundSign(char *cmd_line);
-static bool is_number(const std::string &s);
-static void log_error(std::string text, const bool use_perror = false);
+static bool _isNumber(const std::string &s);
+static void _logError(std::string text);
 
 // String manipulation
 string _ltrim(const string &s)
 {
     size_t start = s.find_first_not_of(WHITESPACE);
-    return (start == string::npos) ? "" : s.substr(start);
+    return (start == string::npos) ? EMPTY_STRING : s.substr(start);
 }
 
 string _rtrim(const string &s)
 {
     size_t end = s.find_last_not_of(WHITESPACE);
-    return (end == string::npos) ? "" : s.substr(0, end + 1);
+    return (end == string::npos) ? EMPTY_STRING : s.substr(0, end + 1);
 }
 
 string _trim(const string &s)
@@ -53,12 +53,10 @@ string _trim(const string &s)
     return _rtrim(_ltrim(s));
 }
 
-static void log_error(std::string text, const bool use_perror)
+static void _logError(std::string text)
 {
-    string message = "smash error: " + text;
-    if (use_perror)
-        perror(message.c_str());
-    else
+    string message = ERROR_PREFIX + text;
+
         cerr << message << endl;
 }
 
@@ -83,7 +81,7 @@ int _parseCommandLine(const char *cmd_line, char **args)
 bool _isBackgroundComamnd(const char *cmd_line)
 {
     const string str(cmd_line);
-    return str[str.find_last_not_of(WHITESPACE)] == '&';
+    return str[str.find_last_not_of(WHITESPACE)] == BACKGROUND_IDENTIFIER;
 }
 
 void _removeBackgroundSign(char *cmd_line)
@@ -109,12 +107,12 @@ void _removeBackgroundSign(char *cmd_line)
     cmd_line[str.find_last_not_of(WHITESPACE, idx) + 1] = 0;
 }
 
-bool is_number(char *str)
+bool _isNumber(char *str)
 {
     char *it = str;
     while (char current = (*it++))
     {
-        if (!std::isdigit(current) && current != '-')
+        if (!std::isdigit(current) && current != MINUS_SIGN)
         {
             return false;
         }
@@ -143,23 +141,8 @@ string SmallShell::getPromptName()
 {
     return prompt_name;
 }
-void SmallShell::changePrompt(const char *cmd_line)
-{
-    char **args = (char **)malloc(sizeof(char *) * COMMAND_MAX_ARGS);
-    int argc = _parseCommandLine(cmd_line, args);
-    if (argc < 1)
-    {
-        log_error("chprompt: too few arguments"); // CHECK with staff!
-    }
-    else if (argc == 1)
-    {
-        prompt_name = DEFAULT_PROMPT;
-    }
-    else
-    {
-        prompt_name = args[1];
-    }
-}
+
+
 Command *SmallShell::CreateCommand(const char *cmd_line)
 {
     // For example:
@@ -181,7 +164,7 @@ Command *SmallShell::CreateCommand(const char *cmd_line)
     }
     else if (firstWord.compare(CHANGE_PROMPT_COMMAND_STR) == 0)
     {
-        changePrompt(cmd_line);
+        return new ChangePromptCommand(cmd_line, &this->prompt_name);
     }
     else if (firstWord.compare(JOBS_COMMAND_STR) == 0)
     {
@@ -228,12 +211,8 @@ void SmallShell::executeCommand(const char *cmd_line)
 
 BuiltInCommand::BuiltInCommand(const char *cmd_line) : Command(cmd_line)
 {
-    char *new_cmd = const_cast<char *>(cmd_line);
-
-    _removeBackgroundSign(new_cmd);
-
     this->args = (char **)malloc(sizeof(char *) * COMMAND_MAX_ARGS);
-    this->argc = _parseCommandLine(new_cmd, this->args);
+    this->argc = _parseCommandLine(cmd_line_wo_ampersand, this->args);
 }
 ExternalCommand::ExternalCommand(const char *cmd_line, JobsList *jobs) : Command(cmd_line), jobs(jobs)
 {
@@ -261,12 +240,12 @@ void ChangeDirCommand::execute()
 {
     if (argc < 2)
     {
-        log_error("cd: too few arguments"); // CHECK with staff!
+        _logError("cd: too few arguments"); // CHECK with staff!
         return;
     }
     else if (this->argc > 2)
     {
-        log_error("cd: too many arguments");
+        _logError("cd: too many arguments");
         return;
     }
     const char *first_arg = args[1];
@@ -275,27 +254,24 @@ void ChangeDirCommand::execute()
     const char *current_dir = temp.c_str();
     if (path == nullptr)
     {
-        log_error("cd: OLDPWD not set");
+        _logError("cd: OLDPWD not set");
+        return;
     }
-    else if (chdir(path))
-    { // Error
-        log_error("chdir failed");
-    }
-    else
-    { // cd successfull
+    DO_SYS(chdir(path));    
+     // cd successfull
         if (!*plastPwd)
         {
             (*plastPwd) = (char *)malloc(COMMAND_ARGS_MAX_LENGTH + 1);
         }
         strcpy(*plastPwd, current_dir);
-    }
+    
 }
 
 void GetCurrDirCommand::execute()
 {
     if (argc < 1)
     {
-        log_error("cd: too few arguments"); // CHECK with staff!
+        _logError("cd: too few arguments"); // CHECK with staff!
         return;
     }
     cout << GetCurrentWorkingDirectory() << endl;
@@ -307,7 +283,7 @@ const string GetCurrentWorkingDirectory()
 
     if (!getcwd(buff, PATH_MAX))
     {
-        log_error("pwd: getcwd failed"); // CHECK with staff!
+        _logError("pwd: getcwd failed"); // CHECK with staff!
         return "";                       // Won't reach this if cd was successful
     }
 
@@ -315,49 +291,33 @@ const string GetCurrentWorkingDirectory()
 }
 std::ostream &operator<<(std::ostream &os, const JobsList::JobEntry &job_entry)
 {
-    string suffix = job_entry.job_stopped ? " (stopped)" : "";
+    string suffix = job_entry.job_stopped ? " (stopped)" : EMPTY_STRING;
     os << '[' << job_entry.job_id << "] " << *(job_entry.cmd) << " : " << job_entry.pid << ' '
        << difftime(time(NULL), job_entry.start_time) << " secs" << suffix;
     return os;
 }
-
-JobsList::JobEntry &JobsList::JobEntry::operator=(const JobsList::JobEntry &other)
-{
-    if (this == &other)
-        return *this;
-    this->job_stopped = other.job_stopped;
-    this->cmd = other.cmd;
-    this->job_id = other.job_id;
-    this->pid = other.pid;
-    this->start_time = other.start_time;
-    return *this;
-}
-
 void JobsList::printJobsList() const
 {
     for (auto job_entry = jobs_list.rbegin(); job_entry != jobs_list.rend(); ++job_entry)
-    {
-        //cout << "jobid = " << job_entry->job_id << endl;
-        cout << *job_entry << endl;
+    {        
+        cout << (**job_entry) << endl;
     }
 }
 const unsigned int JobsList::removeFinishedJobs()
 {
     // Due to complexity concers, move all vector to new vector
     unsigned int max_job_id = JOB_ID_INITIAL_VALUE;
-    vector<JobEntry> new_job_list;
+    vector<JobEntry*> new_job_list;
     for (auto &job_entry : this->jobs_list)
     {
-        // if(kill(job_entry.GetPid(), 0)) // process didn't finish
+       
         int status;
-        //cout << "job pid = " <<job_entry.GetPid() << endl;
-        pid_t parent_pid = getpid();
-        pid_t result = waitpid(job_entry.pid, &status, WNOHANG);
-        if (status == 0)
+        pid_t result = waitpid(job_entry->pid, &status, WNOHANG);
+        if (result == 0)
         {
             // Child still alive
             new_job_list.push_back(job_entry);
-            if (const unsigned int new_id = job_entry.job_id > max_job_id)
+            if (const unsigned int new_id = job_entry->job_id > max_job_id)
             {
                 max_job_id = new_id;
             }
@@ -365,19 +325,12 @@ const unsigned int JobsList::removeFinishedJobs()
         else if (result == -1)
         {
             // Error
+        } else {
+            if (WEXITSTATUS(status)){
+                cout << ("Exited Normally\n");
+            }
         }
-        else
-        {
-            cout << "child ended";
-        }
-        //        if (kill(job_entry.GetPid(), 0) == 0) // if returned 0 then pid exsists -> not killed
-        //        {
-        //            new_job_list.push_back(job_entry);
-        //            if (const unsigned int new_id = job_entry.job_id > max_job_id)
-        //            {
-        //                max_job_id = new_id;
-        //            }
-        //        }
+       
     }
     jobs_list = new_job_list;
     return max_job_id;
@@ -387,7 +340,7 @@ void JobsList::removeJobById(const unsigned int &jobId)
     unsigned int count = 0;
     for (auto &job_entry : jobs_list)
     {
-        if (job_entry.job_id == jobId)
+        if (job_entry->job_id == jobId)
         {
 
             jobs_list.erase(jobs_list.begin() + count);
@@ -396,16 +349,16 @@ void JobsList::removeJobById(const unsigned int &jobId)
         count++;
     }
 }
-JobsList::JobEntry JobsList::getLastStoppedJob()
+JobsList::JobEntry* JobsList::getLastStoppedJob()
 {
     for (auto job_entry = jobs_list.rbegin(); job_entry != jobs_list.rend(); ++job_entry)
     { // Consider creating array for pointer in order to support complexity of O(1)...
-        if (job_entry->job_stopped)
+        if ((*job_entry)->job_stopped)
         {
             return *job_entry; // dereference iterator and pass as pointer
         }
     }
-    return JobEntry();
+    return nullptr;
 }
 
 std::ostream &operator<<(std::ostream &os, const Command &cmd)
@@ -416,30 +369,30 @@ std::ostream &operator<<(std::ostream &os, const Command &cmd)
 
 void ForegroundCommand::execute()
 {
-    if (this->jobs->getLastJob().IsEmpty()) // No jobs
+    if (! this->jobs->getLastJob()) // No jobs
     {
-        log_error("fg: jobs list is empty");
+        _logError("fg: jobs list is empty");
     }
-    else if (argc > 2 || !is_number(args[1]))
+    else if (argc > 2 || !_isNumber(args[1]))
     {
-        log_error("fg: invalid arguments");
+        _logError("fg: invalid arguments");
     }
     else
     {
         const int job_id = std::stoi(args[1]);
-        JobsList::JobEntry job_entry = this->jobs->getJobById(job_id);
-        if (job_id < 0 || job_entry.IsEmpty())
+        JobsList::JobEntry* job_entry = this->jobs->getJobById(job_id);
+        if (job_id < 0 || !job_entry)
         {
             string error_msg = "fg: job-id " + std::to_string(job_id) + " does not exist";
-            log_error(error_msg);
+            _logError(error_msg);
         }
         else
         {
-            pid_t job_pid = job_entry.pid;
+            pid_t job_pid = job_entry->pid;
             DO_SYS(kill(job_pid, SIGCONT));
 
             // SIGCONT succeeded
-            cout << job_entry.cmd << " : " << job_entry;
+            cout << job_entry->cmd << " : " << (*job_entry);
             this->jobs->removeJobById(job_id);
             int *status = nullptr;
 
@@ -451,7 +404,7 @@ void ForegroundCommand::execute()
 void JobsList::addJob(Command *cmd, pid_t child_pid, const bool &isStopped)
 {
     unsigned int new_job_id = removeFinishedJobs() + 1;
-    JobEntry new_job = JobEntry(cmd, new_job_id, child_pid, isStopped);
+    JobEntry* new_job = new JobEntry(cmd, new_job_id, child_pid, isStopped);
     this->jobs_list.push_back(new_job);
 }
 
@@ -461,10 +414,10 @@ void JobsList::killAllJobs()
     cout << "smash: sending SIGKILL signal to " << jobs_list.size() << " jobs:" << endl;
     for (auto &job_entry : jobs_list)
     {
-        cout << job_entry.pid << ": " << job_entry.cmd->GetCmd();
-        if (kill(job_entry.pid, SIGKILL) != 0)
+        cout << job_entry->pid << ": " << job_entry->cmd;
+        if (kill(job_entry->pid, SIGKILL) != 0)
         {
-            log_error("killAllJobs: kill job failed"); // CHECK with staff!
+            _logError("killAllJobs: kill job failed"); // CHECK with staff!
             continue;                                  // not sure what to do here
         }
         DO_SYS(wait(NULL));
@@ -473,48 +426,56 @@ void JobsList::killAllJobs()
     }
 }
 
-JobsList::JobEntry JobsList::getJobById(const unsigned int &jobId) const
+JobsList::JobEntry* JobsList::getJobById(const unsigned int &jobId) const
 {
     for (auto &job_entry : jobs_list)
     {
-        if (job_entry.job_id == jobId)
+        if (job_entry->job_id == jobId)
         {
             return job_entry;
         }
     }
-    return JobEntry();
+    return nullptr;
 }
 
-JobsList::JobEntry JobsList::getLastJob() const
+JobsList::JobEntry * JobsList::getLastJob() const
 {
-    if (!jobs_list.empty())
-    {
+   // if (!jobs_list.empty())
+  //  {
+        /*
         unsigned int max_job_id = 0;
-        JobsList::JobEntry return_job;
+        JobsList::JobEntry* return_job;
         for (auto &job_entry : jobs_list)
         {
-            if (job_entry.job_id > max_job_id)
+            if (job_entry->job_id > max_job_id)
             {
                 return_job = job_entry;
             }
         }
         return return_job;
-    }
-    return JobEntry();
+        */
+   //    return jobs_list.back();
+   // }
+    return jobs_list.empty() ? nullptr : jobs_list.back();
 }
-static bool is_number(const std::string &s)
+static bool _isNumber(const std::string &s)
 {
     std::string::const_iterator it = s.begin();
     while (it != s.end() && std::isdigit(*it))
         ++it;
     return !s.empty() && it == s.end();
 }
-
+void ChangePromptCommand::execute()
+{
+    // args[1] always exist
+        *prompt_name_p = argc == 1 ? DEFAULT_PROMPT :args[1];
+    
+}
 void KillCommand::execute()
 {
     if (this->argc != 3)
     {
-        log_error("kill: invalid arguments");
+        _logError("kill: invalid arguments");
         return;
     }
     std::string first_arg = std::string(args[1]);
@@ -524,24 +485,26 @@ void KillCommand::execute()
     const unsigned int req_job_id = *args[2] - '0';
 
     //parse args
-    if (first_char != '-' || !is_number(first_arg) || !is_number(req_job_id_str))
+    if (first_char != '-' || !_isNumber(first_arg) || !_isNumber(req_job_id_str))
     {
-        log_error("kill: invalid arguments");
+        _logError("kill: invalid arguments");
         return;
     }
-    JobsList::JobEntry entry = jobs->getJobById(req_job_id);
-    if (entry.IsEmpty())
+    JobsList::JobEntry* entry = jobs->getJobById(req_job_id);
+    if (!entry)
     {
         std::string message = "kill: job-id " + req_job_id_str + " does not exist";
-        log_error(message);
+        _logError(message);
         return;
     }
-    if (kill(entry.pid, int(first_arg.at(0))) != 0) // kill failed
+    if (kill(entry->pid, int(first_arg.at(0))) != 0) // kill failed
     {
-        log_error("kill: kill failed"); // CHECK with staff!
+        _logError("kill: kill failed"); // CHECK with staff!
         return;
     }
-    cout << "signal number " + first_arg + " was sent to pid " + string(reinterpret_cast<const char *>(entry.pid));
+    //cout << "signal number " + first_arg + " was sent to pid " + string(reinterpret_cast<const char *>(entry->pid));
+    // The magic of concatenating:
+    cout << "signal number " << first_arg << " was sent to pid " << entry->pid;
 }
 void QuitCommand::execute()
 {
@@ -555,48 +518,48 @@ void QuitCommand::execute()
 void BackgroundCommand::execute()
 {
 
-    if (this->argc < 1 || this->argc > 2)
+    if (this->argc > 2 || !_isNumber(args[1]))
     {
-        log_error(" kill: invalid arguments");
+        _logError("bg: invalid arguments");
         return;
     }
-    JobsList::JobEntry move_bg_job;
+    JobsList::JobEntry* move_bg_job;
     if (this->argc == 1)
     { // resume last stopped
         move_bg_job = this->jobs->getLastStoppedJob();
-        if (move_bg_job.IsEmpty())
+        if (!move_bg_job)
         {
-            log_error("bg: there is no stopped jobs to resume");
+            _logError("bg: there is no stopped jobs to resume");
             return;
         }
     }
     else
     { // argc = 2
-        std::string req_job_id_str = std::string(args[1]);
-        const unsigned int req_job_id = *args[1] - '0';
+       
+       
+        const unsigned int req_job_id = stoi(args[1]);
         move_bg_job = this->jobs->getJobById(req_job_id);
-        if (move_bg_job.IsEmpty())
-        {
-            std::string msg = "bg: job-id " + string(reinterpret_cast<const char *>(req_job_id)) + " does not exist";
-            log_error(msg);
+        if (!move_bg_job)
+        {            
+            _logError("bg: job-id " + to_string(req_job_id) + " does not exist");
             return;
         }
-        else if (!move_bg_job.job_stopped)
+        else if (!move_bg_job->job_stopped)
         { // already running in the background
-            std::string msg = "bg: job-id " + req_job_id_str + " is already running in the background";
-            log_error(msg);
+            
+            _logError("bg: job-id " + to_string(req_job_id) + " is already running in the background");
             return;
         }
     }
-    pid_t job_pid = move_bg_job.pid;
+    pid_t job_pid = move_bg_job->pid;
 
     if (kill(job_pid, SIGCONT) == -1)
     {
-        log_error("bg: kill failed");
+        _logError("bg: kill failed");
         return;
     }
-    cout << move_bg_job.cmd << " : " << job_pid;
-    move_bg_job.job_stopped = false; // job was resumed
+    cout << move_bg_job->cmd << " : " << job_pid;
+    move_bg_job->job_stopped = false; // job was resumed
 }
 void ExternalCommand::execute()
 {
@@ -604,27 +567,22 @@ void ExternalCommand::execute()
     pid_t parent_pid = getpid();
 
     char *arguments[] = {"/bin/bash", "-c", this->cmd_line_wo_ampersand, nullptr};
-    pid_t pid = fork();
-    if (pid < 0)
-    {
-        perror("fork failed");
-    }
-    else if (getpid() == parent_pid)
+    pid_t pid; 
+    DO_SYS_VAL(fork(),pid);
+    if (getpid() == parent_pid)
     { // parent
-        if (!this->is_background && wait(&stat) < 0)
+        if(is_background)
         {
-            perror("wait failed");
-        } // TODO add to job list if in background
+             this->jobs->addJob(this, pid, false);
+        }
         else
         {
-            //chkStatus(pid, stat);
-            this->jobs->addJob(this, pid, false);
-        }
+            DO_SYS(wait(&stat));
+        }      
     }
     else
     { // child
         setpgrp();
-        execve("/bin/bash", arguments, NULL);
-        perror("execv failed");
+        DO_SYS(execve("/bin/bash", arguments, NULL));        
     }
 }

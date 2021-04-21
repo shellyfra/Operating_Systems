@@ -1,11 +1,13 @@
 #include <unistd.h>
 #include <iostream>
 #include <vector>
+#include <map>
 #include <sstream>
 #include <sys/wait.h>
 #include <iomanip>
 #include <climits>
 #include <ctype.h>
+#include <fcntl.h>
 #include "Commands.h"
 
 using namespace std;
@@ -23,6 +25,8 @@ using std::vector;
 #define FUNC_ENTRY()
 #define FUNC_EXIT()
 #endif
+
+
 
 const string GetCurrentWorkingDirectory();
 string _ltrim(const string &s);
@@ -185,6 +189,10 @@ Command *SmallShell::CreateCommand(const char *cmd_line)
     else if (firstWord.compare(BG_COMMAND_STR) == 0)
     {
         return new BackgroundCommand(cmd_line, jobs_list);
+    }
+    else if (firstWord.compare(CAT_COMMAND_STR) == 0)
+    {
+        return new CatCommand(cmd_line);
     }
     else
     {
@@ -412,7 +420,7 @@ void JobsList::killAllJobs()
     cout << "smash: sending SIGKILL signal to " << jobs_list.size() << " jobs:" << endl;
     for (auto &job_entry : jobs_list)
     {
-        cout << job_entry->pid << ": " << job_entry->cmd;
+        cout << job_entry->pid << ": " << (*job_entry->cmd) << endl;
         if (kill(job_entry->pid, SIGKILL) != 0)
         {
             _logError("killAllJobs: kill job failed"); // CHECK with staff!
@@ -481,8 +489,8 @@ void KillCommand::execute()
     char first_char = first_arg.at(0);
     first_arg.erase(first_arg.begin());
     std::string req_job_id_str = std::string(args[2]);
-    const unsigned int req_job_id = *args[2] - '0';
-
+   // const unsigned int req_job_id = *args[2] - '0'; // won't work if ID is two digits..
+    const unsigned int req_job_id = stoi(args[2]);
     //parse args
     if (first_char != '-' || !_isNumber(first_arg) || !_isNumber(req_job_id_str))
     {
@@ -496,14 +504,8 @@ void KillCommand::execute()
         _logError(message);
         return;
     }
-    if (kill(entry->pid, int(first_arg.at(0))) != 0) // kill failed
-    {
-        _logError("kill: kill failed"); // CHECK with staff!
-        return;
-    }
-    //cout << "signal number " + first_arg + " was sent to pid " + string(reinterpret_cast<const char *>(entry->pid));
-    // The magic of concatenating:
-    cout << "signal number " << first_arg << " was sent to pid " << entry->pid;
+    DO_SYS(kill(entry->pid, int(first_arg.at(0))));
+    cout << "signal number " << first_arg << " was sent to pid " << entry->pid <<endl;
 }
 void QuitCommand::execute()
 {
@@ -568,7 +570,9 @@ void ExternalCommand::execute()
     int stat;
     pid_t parent_pid = getpid();
 
-    char *arguments[] = {"/bin/bash", "-c", this->cmd_line_wo_ampersand, nullptr};
+    char * bash_args= "-c";
+    char * bash_bin = "/bin/bash";
+    char *arguments[] = {bash_bin, bash_args, this->cmd_line_wo_ampersand, nullptr};
     pid_t pid; 
     DO_SYS_VAL(fork(),pid);
     if (getpid() == parent_pid)
@@ -587,4 +591,32 @@ void ExternalCommand::execute()
         setpgrp();
         DO_SYS(execve("/bin/bash", arguments, NULL));        
     }
+}
+void CatCommand::execute()
+{
+    if(argc ==1)
+    {
+        _logError("cat: not enough arguements");
+        return;
+    }
+    for (unsigned short i = 1; i < argc; i++)
+    {
+        int ch_buffer;
+        const char* file_path = args[i];
+        int fd;
+        DO_SYS_VAL_NO_RETURN(open(file_path,O_RDONLY),fd);
+        if(fd!=-1)
+        {
+            while(read(fd,&ch_buffer,1)) // Read bytes one by one
+            {
+                int write_status;
+                DO_SYS_VAL_NO_RETURN(write(STDOUT_FILENO,&ch_buffer,1),write_status);
+                if(write_status<0) 
+                    break; // Continue to next file
+            }
+		    close(fd);                          
+        }
+        
+    }
+    
 }

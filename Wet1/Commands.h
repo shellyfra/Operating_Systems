@@ -28,7 +28,9 @@ const char *const FOREGROUND_COMMAND_STR = "fg";
 const char *const KILL_COMMAND_STR = "kill";
 const char *const QUIT_COMMAND_STR = "quit";
 const char *const BG_COMMAND_STR = "bg";
+const char *const CAT_COMMAND_STR = "cat";
 const char *const ERROR_PREFIX = "smash error: ";
+
 enum Redirect_type {OVERRIDE = 1, APPEND} ;
 
 #define DO_SYS(syscall)                                                           \
@@ -60,6 +62,19 @@ enum Redirect_type {OVERRIDE = 1, APPEND} ;
         }                                                                         \
     } while (0)
 
+#define DO_SYS_VAL_NO_RETURN(syscall, var)                                                  \
+    do                                                                            \
+    {                                                                             \
+        /* safely invoke a system call */                                         \
+        var = (syscall);                                                          \
+        if (var == -1)                                                            \
+        {                                                                         \
+            string syscall_call = string(#syscall);                               \
+            string syscall_name = syscall_call.substr(0, syscall_call.find('(')); \
+            string error_msg = string(ERROR_PREFIX) + syscall_name + " failed";   \
+            perror(error_msg.c_str());                                            \
+        }                                                                         \
+    } while (0)
 class Command
 {
 protected:
@@ -262,7 +277,7 @@ public:
 class CatCommand : public BuiltInCommand
 {
 public:
-    CatCommand(const char *cmd_line);
+    CatCommand(const char *cmd_line) : BuiltInCommand(cmd_line) {}
     virtual ~CatCommand() {}
     void execute() override;
 };

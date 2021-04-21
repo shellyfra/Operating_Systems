@@ -235,7 +235,7 @@ ExternalCommand::ExternalCommand(const char *cmd_line) : Command(cmd_line)
     _removeBackgroundSign(new_cmd);
 
    // args_w_quotes = const_cast<char *>(("\"" +string(new_cmd)+"\"").c_str());
-   args_w_quotes = new_cmd;
+   this->cmd = new_cmd;
 }
 BuiltInCommand::~BuiltInCommand()
 {
@@ -570,8 +570,9 @@ void ExternalCommand::execute()
     int stat;
     pid_t parent_pid = getpid();
 
-    char * arguments[] = { "/bin/bash","-c",args_w_quotes , NULL };
-    if (pid_t pid = fork() < 0)
+    
+    char * arguments[] = { "/bin/bash","-c",cmd , NULL };
+    if (  fork() < 0 )
     {
         perror("fork failed");
     }

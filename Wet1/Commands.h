@@ -71,7 +71,7 @@ protected:
     
     //char args[EXTERNAL_CMD_ARGS_COUNT][COMMAND_ARGS_MAX_LENGTH];
 
-    char * args_w_quotes;
+    char * cmd;
     bool is_background;
 
 public:

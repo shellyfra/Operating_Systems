@@ -231,9 +231,8 @@ ExternalCommand::ExternalCommand(const char *cmd_line, JobsList *jobs) : Command
    // argv[1] = (char *)"-c";
 
     char *new_cmd = const_cast<char *>(cmd_line);
-    
     this->is_background = (_isBackgroundComamnd(new_cmd));
-
+    _removeBackgroundSign(new_cmd);
    // args_w_quotes = const_cast<char *>(("\"" +string(new_cmd)+"\"").c_str());
    args_w_quotes = new_cmd;
 }
@@ -361,7 +360,9 @@ const unsigned int JobsList::removeFinishedJobs()
         } else if (result == -1) {
             // Error
         } else {
-            cout << "child ended";
+            if (WEXITSTATUS(status)){
+                cout << ("Exited Normally\n");
+            }
         }
 //        if (kill(job_entry.GetPid(), 0) == 0) // if returned 0 then pid exsists -> not killed
 //        {

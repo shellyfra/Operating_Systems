@@ -317,7 +317,8 @@ const unsigned int JobsList::removeFinishedJobs()
         {
             // Child still alive
             new_job_list.push_back(job_entry);
-            if (const unsigned int new_id = job_entry->job_id > max_job_id)
+            unsigned int new_id = job_entry->job_id;
+            if (new_id > max_job_id)
             {
                 max_job_id = new_id;
             }
@@ -326,11 +327,8 @@ const unsigned int JobsList::removeFinishedJobs()
         {
             // Error
         } else {
-            if (WEXITSTATUS(status)){
-                cout << ("Exited Normally\n");
-            }
+           // child finished
         }
-       
     }
     jobs_list = new_job_list;
     return max_job_id;
@@ -421,9 +419,10 @@ void JobsList::killAllJobs()
             continue;                                  // not sure what to do here
         }
         DO_SYS(wait(NULL));
-        jobs_list.erase(jobs_list.begin() + count);
+        //jobs_list.e   .erase(jobs_list.begin());
         count++;
     }
+    jobs_list.clear();
 }
 
 JobsList::JobEntry* JobsList::getJobById(const unsigned int &jobId) const
@@ -513,6 +512,9 @@ void QuitCommand::execute()
         jobs->killAllJobs();
     }
     should_run = false;
+    while (waitpid(-1, NULL, WNOHANG) != -1){ // check if there are still live childs
+        cout << "wait +1"<< endl;
+    }
 }
 
 void BackgroundCommand::execute()

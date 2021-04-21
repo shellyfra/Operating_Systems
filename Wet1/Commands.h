@@ -29,6 +29,7 @@ const char *const KILL_COMMAND_STR = "kill";
 const char *const QUIT_COMMAND_STR = "quit";
 const char *const BG_COMMAND_STR = "bg";
 const char *const ERROR_PREFIX = "smash error: ";
+enum Redirect_type {OVERRIDE = 1, APPEND} ;
 
 #define DO_SYS(syscall)                                                           \
     do                                                                            \
@@ -100,6 +101,7 @@ public:
 class RedirectionCommand : public Command
 {
     // TODO: Add your data members
+    Redirect_type redirect;
 public:
     explicit RedirectionCommand(const char *cmd_line);
     virtual ~RedirectionCommand() {}

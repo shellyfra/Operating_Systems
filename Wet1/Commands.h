@@ -38,17 +38,20 @@
 
 class Command
 {
+protected:
     // TODO: Add your data members
-    const char *cmd_line;
+    char *cmd_line;
 
 public:
-
-    Command(const char *cmd_line) : cmd_line(cmd_line){};
-    virtual ~Command() = default;
+    Command(const char *usr_cmd_line) : cmd_line(new char[80]){
+        strcpy(this->cmd_line, usr_cmd_line);
+    };
+    virtual ~Command(){ delete[] cmd_line;}
     virtual void execute() = 0;
     friend std::ostream &operator<<(std::ostream &, const Command &);
     //virtual void prepare();
     //virtual void cleanup();
+    const char * GetCmd() const {return this->cmd_line;}
     // TODO: Add your extra methods if needed
 
 };
@@ -63,21 +66,6 @@ protected:
 public:
     BuiltInCommand(const char *cmd_line);
     virtual ~BuiltInCommand();
-};
-
-class ExternalCommand : public Command
-{
-protected:
-    
-    //char args[EXTERNAL_CMD_ARGS_COUNT][COMMAND_ARGS_MAX_LENGTH];
-
-    char * args_w_quotes;
-    bool is_background;
-
-public:
-    ExternalCommand(const char *cmd_line);
-    virtual ~ExternalCommand() =default;
-    void execute() override;
 };
 
 class PipeCommand : public Command
@@ -136,7 +124,6 @@ class JobsList
 public:
     struct JobEntry
     {
-
         const Command *cmd;
         unsigned int job_id;
         pid_t pid;
@@ -188,6 +175,22 @@ public:
     JobEntry getLastStoppedJob() ; // For bg , Shai
     // TODO: Add extra methods or modify exisitng ones as needed
     // TODO add operators
+};
+
+class ExternalCommand : public Command
+{
+protected:
+
+    //char args[EXTERNAL_CMD_ARGS_COUNT][COMMAND_ARGS_MAX_LENGTH];
+    //const char *cmd_line;
+    char * args_w_quotes;
+    bool is_background;
+    JobsList *jobs;
+
+public:
+    ExternalCommand(const char *cmd_line, JobsList *jobs);
+    virtual ~ExternalCommand() =default;
+    void execute() override;
 };
 
 class QuitCommand : public BuiltInCommand

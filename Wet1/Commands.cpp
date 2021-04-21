@@ -192,7 +192,7 @@ Command *SmallShell::CreateCommand(const char *cmd_line)
     }
     else
     {
-        return new ExternalCommand(cmd_line);
+        return new ExternalCommand(cmd_line, jobs_list);
     }
 
     return nullptr;
@@ -222,7 +222,7 @@ BuiltInCommand::BuiltInCommand(const char *cmd_line) : Command(cmd_line)
     this->args = (char **)malloc(sizeof(char *) * COMMAND_MAX_ARGS);
     this->argc = _parseCommandLine(new_cmd, this->args);
 }
-ExternalCommand::ExternalCommand(const char *cmd_line) : Command(cmd_line)
+ExternalCommand::ExternalCommand(const char *cmd_line, JobsList *jobs) : Command(cmd_line) , jobs(jobs)
 {
     
    // argv = new char *[EXTERNAL_CMD_ARGS_COUNT];
@@ -335,6 +335,7 @@ void JobsList::printJobsList() const
 {
     for (auto job_entry = jobs_list.rbegin(); job_entry != jobs_list.rend(); ++job_entry)
     {
+        //cout << "jobid = " << job_entry->job_id << endl;
         cout << *job_entry << endl;
     }
 }
@@ -437,13 +438,16 @@ void JobsList::killAllJobs()
     cout << "smash: sending SIGKILL signal to " << jobs_list.size() << " jobs:" << endl;
     for (auto &job_entry : jobs_list)
     {
-        cout << job_entry.pid << ": " << job_entry.cmd;
+        cout << job_entry.pid << ": " << job_entry.cmd->GetCmd();
+        if (kill(job_entry.GetPid(), SIGKILL) != 0)
         if (kill(job_entry.GetPid(), SIGKILL) != 0)
         {
             log_error("killAllJobs: kill job failed"); // CHECK with staff!
             continue;                                  // not sure what to do here
+        } else {
+            cout << "sucess !" << endl;
         }
-        wait(NULL);
+        DO_SYS(wait(NULL));
         jobs_list.erase(jobs_list.begin() + count);
         count++;
     }
@@ -570,8 +574,8 @@ void ExternalCommand::execute()
     int stat;
     pid_t parent_pid = getpid();
 
-    char * arguments[] = { "/bin/bash","-c",args_w_quotes , NULL };
-    if (pid_t pid = fork() < 0)
+    char * arguments[] = { "/bin/bash","-c",args_w_quotes , nullptr };
+    if (fork() < 0)
     {
         perror("fork failed");
     }
@@ -584,11 +588,11 @@ void ExternalCommand::execute()
         else
         {
             //chkStatus(pid, stat);
+            this->jobs->addJob(this, false);
         } 
     }
     else
     { // child
-
         setpgrp();
         execve("/bin/bash", arguments, NULL);
         perror("execv failed");

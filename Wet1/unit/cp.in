@@ -6,21 +6,21 @@ cat temp_file
 cp random1.txt new_random1.txt
 # make sure copy finished and we got the expected print
 # If you have a failure here, it might be because you have slow cp (that's ok) try to increase the !time.sleep(5) to a higher number
-!time.sleep(5)
+!time.sleep(10)
 # If files are equal this command not printing
 cmp random1.txt new_random1.txt
 ls
 # Now check with a bigger file and &
 cp random2.txt new_random2.txt &
 # make sure copy finished and we got the expected print
-!time.sleep(5)
+!time.sleep(10)
 # If files are equal this command not printing
 cmp random2.txt new_random2.txt
 ls
 jobs
 # check full path and relative path
 cp temp_file /tmp/smash_test/new_temp_file
-!time.sleep(1)
+!time.sleep(10)
 ls
 cp /tmp/smash_test/temp_file new_temp_file2
 !time.sleep(1)

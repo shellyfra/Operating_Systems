@@ -3,5 +3,5 @@ project(smash)
 
 set(CMAKE_CXX_STANDARD 11)
 add_compile_options(-std=c++11 -Wall )
-add_executable(smash Commands.cpp Commands.h signals.h signals.cpp smash.cpp)
+add_executable(smash smash.cpp Commands.cpp signals.cpp)
 

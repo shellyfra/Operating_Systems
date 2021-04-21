@@ -89,6 +89,7 @@ bool _isBackgroundComamnd(const char *cmd_line)
 void _removeBackgroundSign(char *cmd_line)
 {
     const string str(cmd_line);
+    if(str.empty()) return;
     // find last character other than spaces
     unsigned int idx = str.find_last_not_of(WHITESPACE);
     // if all characters are spaces then return
@@ -232,7 +233,6 @@ ExternalCommand::ExternalCommand(const char *cmd_line, JobsList *jobs) : Command
     char *new_cmd = const_cast<char *>(cmd_line);
     
     this->is_background = (_isBackgroundComamnd(new_cmd));
-    _removeBackgroundSign(new_cmd);
 
    // args_w_quotes = const_cast<char *>(("\"" +string(new_cmd)+"\"").c_str());
    args_w_quotes = new_cmd;
@@ -347,13 +347,13 @@ const unsigned int JobsList::removeFinishedJobs()
     for (auto &job_entry : this->jobs_list)
     {
         // if(kill(job_entry.GetPid(), 0)) // process didn't finish
-        if (1)
+        if (kill(job_entry.GetPid(), 0) == 0) // if returned 0 then pid exsists -> not killed
         {
             new_job_list.push_back(job_entry);
-        }
-        else if (const unsigned int new_id = job_entry.job_id > max_job_id)
-        {
-            max_job_id = new_id;
+            if (const unsigned int new_id = job_entry.job_id > max_job_id)
+            {
+                max_job_id = new_id;
+            }
         }
     }
     jobs_list = new_job_list;
@@ -466,7 +466,14 @@ JobsList::JobEntry JobsList::getLastJob() const
 {
     if (!jobs_list.empty())
     {
-        return jobs_list.back();
+        unsigned int max_job_id = 0;
+        JobsList::JobEntry return_job;
+        for (auto &job_entry : jobs_list){
+            if (job_entry.job_id > max_job_id){
+                return_job = job_entry;
+            }
+        }
+        return return_job;
     }
     return JobEntry();
 }

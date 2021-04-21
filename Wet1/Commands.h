@@ -20,7 +20,7 @@
 #define KILL_COMMAND_STR "kill"
 #define QUIT_COMMAND_STR "quit"
 #define BG_COMMAND_STR "bg"
-#define JOB_ID_INITIAL_VALUE (1)
+#define JOB_ID_INITIAL_VALUE (0)
 #define EXTERNAL_CMD_ARGS_COUNT (3)
 
 
@@ -153,16 +153,16 @@ private:
 
     // TODO: Add your data members
 public:
-    //JobsList() = default;
-    JobsList()
-    {
-        Command* cmd1 = new GetCurrDirCommand("pwd 1");
-        Command* cmd2 = new GetCurrDirCommand("pwd 2");
-        Command* cmd3 = new GetCurrDirCommand("pwd 3");
-        jobs_list.push_back(JobEntry(cmd1, 2, 1000, true));
-        jobs_list.push_back(JobEntry(cmd2, 4, 2000, false));
-        jobs_list.push_back(JobEntry(cmd3, 6, 2000, false));
-    }
+    JobsList() = default;
+//    JobsList()
+//    {
+//        Command* cmd1 = new GetCurrDirCommand("pwd 1");
+//        Command* cmd2 = new GetCurrDirCommand("pwd 2");
+//        Command* cmd3 = new GetCurrDirCommand("pwd 3");
+//        jobs_list.push_back(JobEntry(cmd1, 2, 1000, true));
+//        jobs_list.push_back(JobEntry(cmd2, 4, 2000, false));
+//        jobs_list.push_back(JobEntry(cmd3, 6, 2000, false));
+//    }
     ~JobsList() = default;
     JobsList& operator=(const JobsList& other) = default; // for now
     void addJob(Command *cmd,const bool &isStopped = false); // Done

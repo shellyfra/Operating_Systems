@@ -165,7 +165,7 @@ public:
 //    }
     ~JobsList() = default;
     JobsList& operator=(const JobsList& other) = default; // for now
-    void addJob(Command *cmd,const bool &isStopped = false); // Done
+    void addJob(Command *cmd, pid_t child_pid, const bool &isStopped = false); // Done
     void printJobsList() const; // Done
     void killAllJobs();                            // Done
     const unsigned int removeFinishedJobs();                     // Done

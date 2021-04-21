@@ -347,14 +347,30 @@ const unsigned int JobsList::removeFinishedJobs()
     for (auto &job_entry : this->jobs_list)
     {
         // if(kill(job_entry.GetPid(), 0)) // process didn't finish
-        if (kill(job_entry.GetPid(), 0) == 0) // if returned 0 then pid exsists -> not killed
-        {
+        int status;
+        //cout << "job pid = " <<job_entry.GetPid() << endl;
+        int parent_pid = getpid();
+        pid_t result = waitpid(job_entry.GetPid(), &status, WNOHANG);
+        if (result == 0) {
+            // Child still alive
             new_job_list.push_back(job_entry);
             if (const unsigned int new_id = job_entry.job_id > max_job_id)
             {
                 max_job_id = new_id;
             }
+        } else if (result == -1) {
+            // Error
+        } else {
+            cout << "child ended";
         }
+//        if (kill(job_entry.GetPid(), 0) == 0) // if returned 0 then pid exsists -> not killed
+//        {
+//            new_job_list.push_back(job_entry);
+//            if (const unsigned int new_id = job_entry.job_id > max_job_id)
+//            {
+//                max_job_id = new_id;
+//            }
+//        }
     }
     jobs_list = new_job_list;
     return max_job_id;
@@ -425,10 +441,10 @@ void ForegroundCommand::execute()
     }
 }
 
-void JobsList::addJob(Command *cmd, const bool &isStopped)
+void JobsList::addJob(Command *cmd, pid_t child_pid, const bool &isStopped)
 {
     unsigned int new_job_id = removeFinishedJobs() + 1;
-    JobEntry new_job = JobEntry(cmd, new_job_id, getpid(), isStopped);
+    JobEntry new_job = JobEntry(cmd, new_job_id, child_pid, isStopped);
     this->jobs_list.push_back(new_job);
 }
 
@@ -579,7 +595,8 @@ void ExternalCommand::execute()
     pid_t parent_pid = getpid();
 
     char * arguments[] = { "/bin/bash","-c",args_w_quotes , nullptr };
-    if (fork() < 0)
+    pid_t pid = fork();
+    if (pid< 0)
     {
         perror("fork failed");
     }
@@ -592,7 +609,7 @@ void ExternalCommand::execute()
         else
         {
             //chkStatus(pid, stat);
-            this->jobs->addJob(this, false);
+            this->jobs->addJob(this, pid, false);
         } 
     }
     else
@@ -601,5 +618,4 @@ void ExternalCommand::execute()
         execve("/bin/bash", arguments, NULL);
         perror("execv failed");
     }
-    
 }

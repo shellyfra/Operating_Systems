@@ -440,13 +440,10 @@ void JobsList::killAllJobs()
     {
         cout << job_entry.pid << ": " << job_entry.cmd->GetCmd();
         if (kill(job_entry.GetPid(), SIGKILL) != 0)
-        if (kill(job_entry.GetPid(), SIGKILL) != 0)
         {
             log_error("killAllJobs: kill job failed"); // CHECK with staff!
             continue;                                  // not sure what to do here
-        } else {
-            cout << "sucess !" << endl;
-        }
+        } 
         DO_SYS(wait(NULL));
         jobs_list.erase(jobs_list.begin() + count);
         count++;

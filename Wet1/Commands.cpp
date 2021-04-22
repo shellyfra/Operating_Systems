@@ -624,6 +624,7 @@ void CatCommand::execute()
     
 }
 
+
 void RedirectionCommand::checkRedirectType() {
     string str(cmd_line);
     std::string delimiter_1 = ">";
@@ -641,7 +642,7 @@ void RedirectionCommand::checkRedirectType() {
         first_command = str.substr(0, pos);
         delimiter = delimiter_1;
     }
-    second_output_file = str.erase(0, pos + delimiter.length());
+    second_output_file = _trim(str.erase(0, pos + delimiter.length()));
 }
 
 RedirectionCommand::RedirectionCommand(const char *cmd_line) : Command(cmd_line), redirect(APPEND) {

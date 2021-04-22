@@ -8,6 +8,7 @@
 #include <climits>
 #include <ctype.h>
 #include <fcntl.h>
+#include<algorithm>
 #include "Commands.h"
 
 using namespace std;
@@ -154,7 +155,14 @@ Command *SmallShell::CreateCommand(const char *cmd_line)
     string cmd_s = _trim(string(cmd_line));
     string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
 
-    if (firstWord.compare(PRINT_WORKING_DIRECTORY_STR) == 0)
+    if (cmd_s.find('>') != std::string::npos){
+        return new RedirectionCommand(cmd_line, this);
+    }
+    else if (cmd_s.find('|') != std::string::npos) // Has pipe character
+    { // Includes also |&
+        return new PipeCommand(cmd_line);
+    }
+    else if (firstWord.compare(PRINT_WORKING_DIRECTORY_STR) == 0)
     {
         return new GetCurrDirCommand(cmd_line);
     }
@@ -193,9 +201,7 @@ Command *SmallShell::CreateCommand(const char *cmd_line)
     else if (firstWord.compare(CAT_COMMAND_STR) == 0) {
         return new CatCommand(cmd_line);
     }
-    else if (checkRedirection(cmd_line)){
-        return new RedirectionCommand(cmd_line);
-    }
+
     else
     {
         return new ExternalCommand(cmd_line, jobs_list);
@@ -212,7 +218,6 @@ void SmallShell::executeCommand(const char *cmd_line)
     Command *cmd = CreateCommand(cmd_line);
     if (cmd)
     {
-
         cmd->execute();
     }
 
@@ -626,31 +631,139 @@ void CatCommand::execute()
 
 
 void RedirectionCommand::checkRedirectType() {
+    std::string override_right = ">";
+    std::string append_right = ">>";
+
+    string cmd_str = string(cmd_line);
+    string output_file;
+    this->redirect = APPEND_RIGHT;
+    std::string command = cmd_str.substr(0, cmd_str.find(append_right)); // token is "scott"
+    if( command == cmd_str)
+    {// Try to findout if overwrite
+        this->redirect = OVERRIDE_RIGHT;
+        command = cmd_str.substr(0, cmd_str.find(override_right));
+        output_file =  cmd_str.substr(1, cmd_str.find(override_right));
+    }
+    else
+    {
+        return;
+    }
+    //std::string output_file = cmd_line.substr(, cmd_line.find(append_right)); // token is "scott"
+
+}
+/*
+void RedirectionCommand::checkRedirectType() {
     string str(cmd_line);
-    std::string delimiter_1 = ">";
-    std::string delimiter_2 = ">>";
+    std::string override_right = ">";
+    std::string append_right = ">>";
+    std::string override_left = "<";
+    std::string append_left = "<<";
     string delimiter;
     int pos = 0;
+    int temp_pos = 0;
 
-    if ((str.find(delimiter_2)) != std::string::npos){
-        this->redirect = APPEND;
-        first_command = str.substr(0, pos);
-        delimiter = delimiter_2;
+    if ((temp_pos = str.find(append_right, pos)) != std::string::npos){
+        pos = temp_pos;
+        this->redirect = APPEND_RIGHT;
+        first_command = str.substr(0);
+        delimiter = append_right;
     }
-    else if ((str.find(delimiter_1)) != std::string::npos){
-        this->redirect = OVERRIDE;
+    else if ((temp_pos = str.find(override_right)) != std::string::npos){
+        pos = temp_pos;
+        this->redirect = OVERRIDE_RIGHT;
         first_command = str.substr(0, pos);
-        delimiter = delimiter_1;
+        delimiter = override_right;
     }
-    second_output_file = _trim(str.erase(0, pos + delimiter.length()));
+    else if ((temp_pos = str.find(append_left)) != std::string::npos){
+        pos = temp_pos;
+        this->redirect = APPEND_LEFT;
+        first_command = str.substr(0, pos);
+        delimiter = append_left;
+    }
+    else if ((temp_pos = str.find(override_left)) != std::string::npos){
+        pos = temp_pos;
+        this->redirect = OVERRIDE_LEFT;
+        first_command = str.substr(0, pos);
+        delimiter = override_left;
+    }
+    else {
+        return;// CHECK!!!
+    }
+    second_output_file = str.erase(0, pos + delimiter.length()); //CHECK WHAT ABOUT & ?
+    second_output_file.erase(remove(second_output_file.begin(), second_output_file.end(), '&'), second_output_file.end());// to do or not to do ???????????
 }
-
-RedirectionCommand::RedirectionCommand(const char *cmd_line) : Command(cmd_line), redirect(APPEND) {
+*/
+RedirectionCommand::RedirectionCommand(const char *cmd_line, SmallShell* shell) : Command(cmd_line), redirect(APPEND_RIGHT), shell(shell){
     checkRedirectType();
 }
 
-bool checkRedirection(const char * cmd_line){
-    string str(cmd_line);
-    return (((str.find(">")) != std::string::npos) || ((str.find(">>")) != std::string::npos));
+void RedirectionCommand::execute() {
+    pid_t parent_pid = getpid();
+    pid_t pid;
+    const char * test = second_output_file.data();
+    const char * test2 = second_output_file.c_str();
+    DO_SYS_VAL(fork(),pid);
+    if (getpid() == parent_pid)
+    { // parent
+        waitpid(pid,NULL, -1);
+    }
+    else { // child
+        setpgrp();
+        int new_fd;
+        if (this->redirect == OVERRIDE_RIGHT || this->redirect == APPEND_RIGHT){
+            if (this->redirect == OVERRIDE_RIGHT){
+                DO_SYS_VAL_NO_RETURN(open("test.txt",O_WRONLY | O_CREAT | O_TRUNC, 0666),new_fd);
+            }
+            else { // APPEND_RIGHT
+                DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),O_WRONLY | O_CREAT | O_APPEND, 0666), new_fd);
+            }
+            close(1); // STDOUT
+            this->shell->executeCommand(first_command.c_str());
+            close(new_fd);
+        }
+        else if (this->redirect == OVERRIDE_LEFT || this->redirect == APPEND_LEFT){
+            if (this->redirect == OVERRIDE_RIGHT){
+                DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),O_WRONLY | O_CREAT | O_TRUNC, 0666),new_fd);
+            }
+            else { // APPEND_RIGHT
+                DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),O_WRONLY | O_CREAT | O_APPEND, 0666), new_fd);
+            }
+            close(0); // STDIN
+            this->shell->executeCommand(first_command.c_str());
+            close(new_fd); // close file
+        }
+        exit(0); // kill child ?
+    }
+}
+vector<string> _stringSplit(string str,const string delimiter)
+{
+    size_t pos = 0;
+   
+    vector<string> segments;
+    while ((pos = str.find(delimiter)) != std::string::npos)
+    {
+        segments.push_back(str.substr(0, pos));     
+        str.erase(0, pos + delimiter.length());
+    }
+     segments.push_back(str);  
+     return segments;   
+}
+PipeCommand::PipeCommand(const char *cmd_line) : Command(cmd_line), stderr_pipe(false)
+{
+    string command_str = string(cmd_line);
+    std::string pipe = "|";
+    std::string pipe_stderr = "|&";
 
+    vector<string> pipe_segments = _stringSplit(command_str,pipe);
+    vector<string> pipe_stderr_segments = _stringSplit(command_str,pipe_stderr);
+    vector<string> * pipe_segments_p;
+    this->stderr_pipe = (pipe_stderr_segments.size() == 2);
+    pipe_segments_p = stderr_pipe ? &pipe_stderr_segments : &pipe_segments;
+    
+    this->command_arguement = (*pipe_segments_p).at(0);
+    this->piped_arguement = (*pipe_segments_p).at(1);
+}
+void PipeCommand::execute()
+{
+    
 }

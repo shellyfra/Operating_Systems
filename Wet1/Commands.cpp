@@ -611,8 +611,10 @@ void CatCommand::execute()
     {
         int ch_buffer;
         const char* file_path = args[i];
+        string new_file_path = file_path;
+        _trim(new_file_path);
         int fd;
-        DO_SYS_VAL_NO_RETURN(open(file_path,O_RDONLY),fd);
+        DO_SYS_VAL_NO_RETURN(open(new_file_path.c_str(),O_RDONLY),fd);
         if(fd!=-1)
         {
             while(read(fd,&ch_buffer,1)) // Read bytes one by one
@@ -665,7 +667,8 @@ void RedirectionCommand::checkRedirectType() {
     if ((temp_pos = str.find(append_right, pos)) != std::string::npos){
         pos = temp_pos;
         this->redirect = APPEND_RIGHT;
-        first_command = str.substr(0);
+        first_command = str.substr(0, pos);
+        pos +=1;
         delimiter = append_right;
     }
     else if ((temp_pos = str.find(override_right)) != std::string::npos){
@@ -678,6 +681,7 @@ void RedirectionCommand::checkRedirectType() {
         pos = temp_pos;
         this->redirect = APPEND_LEFT;
         first_command = str.substr(0, pos);
+        pos +=1; // for second >
         delimiter = append_left;
     }
     else if ((temp_pos = str.find(override_left)) != std::string::npos){
@@ -698,41 +702,40 @@ RedirectionCommand::RedirectionCommand(const char *cmd_line, SmallShell* shell) 
 }
 
 void RedirectionCommand::execute() {
-    pid_t parent_pid = getpid();
-    pid_t pid;
-    const char * test = second_output_file.data();
-    const char * test2 = second_output_file.c_str();
-    DO_SYS_VAL(fork(),pid);
-    if (getpid() == parent_pid)
-    { // parent
-        waitpid(pid,NULL, -1);
+    int old_fd;
+    int new_fd;
+    second_output_file = _trim(second_output_file);
+
+    if (this->redirect == OVERRIDE_RIGHT || this->redirect == APPEND_RIGHT){
+        DO_SYS_VAL_NO_RETURN(dup(1), old_fd);
+        DO_SYS(close(1)); // STDOUT
+        if (this->redirect == OVERRIDE_RIGHT){
+            DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),O_WRONLY | O_CREAT | O_TRUNC, 0666),new_fd);
+        }
+        else { // APPEND_RIGHT
+            DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),O_WRONLY | O_CREAT | O_APPEND, 0666), new_fd);
+        }
+        this->shell->executeCommand(first_command.c_str());
+        DO_SYS(close(new_fd));
+        DO_SYS(dup2(old_fd, 1));
+        DO_SYS(close(old_fd));
     }
-    else { // child
-        setpgrp();
-        int new_fd;
-        if (this->redirect == OVERRIDE_RIGHT || this->redirect == APPEND_RIGHT){
-            if (this->redirect == OVERRIDE_RIGHT){
-                DO_SYS_VAL_NO_RETURN(open("test.txt",O_WRONLY | O_CREAT | O_TRUNC, 0666),new_fd);
-            }
-            else { // APPEND_RIGHT
-                DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),O_WRONLY | O_CREAT | O_APPEND, 0666), new_fd);
-            }
-            close(1); // STDOUT
-            this->shell->executeCommand(first_command.c_str());
-            close(new_fd);
+    else if (this->redirect == OVERRIDE_LEFT || this->redirect == APPEND_LEFT){
+        DO_SYS_VAL_NO_RETURN(dup(0), old_fd);
+        DO_SYS(close(0)); // STDIN
+        if (this->redirect == OVERRIDE_RIGHT){
+            DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),O_WRONLY | O_CREAT | O_TRUNC, 0666),new_fd);
         }
-        else if (this->redirect == OVERRIDE_LEFT || this->redirect == APPEND_LEFT){
-            if (this->redirect == OVERRIDE_RIGHT){
-                DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),O_WRONLY | O_CREAT | O_TRUNC, 0666),new_fd);
-            }
-            else { // APPEND_RIGHT
-                DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),O_WRONLY | O_CREAT | O_APPEND, 0666), new_fd);
-            }
-            close(0); // STDIN
-            this->shell->executeCommand(first_command.c_str());
-            close(new_fd); // close file
+        else { // APPEND_RIGHT
+            DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),O_WRONLY | O_CREAT | O_APPEND, 0666), new_fd);
         }
-        exit(0); // kill child ?
+        this->shell->executeCommand(first_command.c_str());
+        DO_SYS(close(new_fd));
+        DO_SYS(dup2(old_fd, 0));
+        DO_SYS(close(old_fd));
+    }
+    else {
+        return;
     }
 }
 vector<string> _stringSplit(string str,const string delimiter)

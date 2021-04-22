@@ -117,12 +117,15 @@ class RedirectionCommand : public Command
 {
     // TODO: Add your data members
     Redirect_type redirect;
+    std::string first_command;
+    std::string second_output_file;
 public:
     explicit RedirectionCommand(const char *cmd_line);
     virtual ~RedirectionCommand() {}
-    void execute() override;
+    void execute() override {}
     //void prepare() override;
     //void cleanup() override;
+    void checkRedirectType();
 };
 
 class ChangeDirCommand : public BuiltInCommand
@@ -309,5 +312,6 @@ public:
     std::string getPromptName();
     bool &ShouldRun() { return this->should_run; }
 };
+bool checkRedirection(const char * cmd_line);
 
 #endif //SMASH_COMMAND_H_

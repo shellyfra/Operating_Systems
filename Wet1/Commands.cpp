@@ -190,9 +190,11 @@ Command *SmallShell::CreateCommand(const char *cmd_line)
     {
         return new BackgroundCommand(cmd_line, jobs_list);
     }
-    else if (firstWord.compare(CAT_COMMAND_STR) == 0)
-    {
+    else if (firstWord.compare(CAT_COMMAND_STR) == 0) {
         return new CatCommand(cmd_line);
+    }
+    else if (checkRedirection(cmd_line)){
+        return new RedirectionCommand(cmd_line);
     }
     else
     {
@@ -592,6 +594,7 @@ void ExternalCommand::execute()
         DO_SYS(execve("/bin/bash", arguments, NULL));        
     }
 }
+
 void CatCommand::execute()
 {
     if(argc ==1)
@@ -619,4 +622,34 @@ void CatCommand::execute()
         
     }
     
+}
+
+void RedirectionCommand::checkRedirectType() {
+    string str(cmd_line);
+    std::string delimiter_1 = ">";
+    std::string delimiter_2 = ">>";
+    string delimiter;
+    int pos = 0;
+
+    if ((str.find(delimiter_2)) != std::string::npos){
+        this->redirect = APPEND;
+        first_command = str.substr(0, pos);
+        delimiter = delimiter_2;
+    }
+    else if ((str.find(delimiter_1)) != std::string::npos){
+        this->redirect = OVERRIDE;
+        first_command = str.substr(0, pos);
+        delimiter = delimiter_1;
+    }
+    second_output_file = str.erase(0, pos + delimiter.length());
+}
+
+RedirectionCommand::RedirectionCommand(const char *cmd_line) : Command(cmd_line), redirect(APPEND) {
+    checkRedirectType();
+}
+
+bool checkRedirection(const char * cmd_line){
+    string str(cmd_line);
+    return (((str.find(">")) != std::string::npos) || ((str.find(">>")) != std::string::npos));
+
 }

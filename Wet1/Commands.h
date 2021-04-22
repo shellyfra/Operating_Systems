@@ -31,7 +31,7 @@ const char *const BG_COMMAND_STR = "bg";
 const char *const CAT_COMMAND_STR = "cat";
 const char *const ERROR_PREFIX = "smash error: ";
 
-enum Redirect_type {OVERRIDE = 1, APPEND} ;
+enum Redirect_type {OVERRIDE_LEFT = 1, OVERRIDE_RIGHT, APPEND_LEFT, APPEND_RIGHT} ;
 
 #define DO_SYS(syscall)                                                           \
     do                                                                            \
@@ -112,17 +112,19 @@ public:
     virtual ~PipeCommand() {}
     void execute() override;
 };
-
+class SmallShell;
 class RedirectionCommand : public Command
 {
     // TODO: Add your data members
     Redirect_type redirect;
+    SmallShell* shell;
+
     std::string first_command;
     std::string second_output_file;
 public:
-    explicit RedirectionCommand(const char *cmd_line);
+    explicit RedirectionCommand(const char *cmd_line, SmallShell* shell);
     virtual ~RedirectionCommand() {}
-    void execute() override {}
+    void execute() override;
     //void prepare() override;
     //void cleanup() override;
     void checkRedirectType();

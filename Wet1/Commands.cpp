@@ -688,8 +688,8 @@ void RedirectionCommand::execute() {
     second_output_file = _trim(second_output_file);
 
     if (this->redirect == OVERRIDE_RIGHT || this->redirect == APPEND_RIGHT){
-        old_fd = dup(1);
-        close(1); // STDOUT
+        DO_SYS_VAL_NO_RETURN(dup(1), old_fd);
+        DO_SYS(close(1)); // STDOUT
         if (this->redirect == OVERRIDE_RIGHT){
             DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),O_WRONLY | O_CREAT | O_TRUNC, 0666),new_fd);
         }
@@ -697,13 +697,13 @@ void RedirectionCommand::execute() {
             DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),O_WRONLY | O_CREAT | O_APPEND, 0666), new_fd);
         }
         this->shell->executeCommand(first_command.c_str());
-        close(new_fd);
-        dup2(old_fd, 1);
-        close(old_fd);
+        DO_SYS(close(new_fd));
+        DO_SYS(dup2(old_fd, 1));
+        DO_SYS(close(old_fd));
     }
     else if (this->redirect == OVERRIDE_LEFT || this->redirect == APPEND_LEFT){
-        old_fd = dup(0);
-        close(0); // STDIN
+        DO_SYS_VAL_NO_RETURN(dup(0), old_fd);
+        DO_SYS(close(0)); // STDIN
         if (this->redirect == OVERRIDE_RIGHT){
             DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),O_WRONLY | O_CREAT | O_TRUNC, 0666),new_fd);
         }
@@ -711,9 +711,9 @@ void RedirectionCommand::execute() {
             DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),O_WRONLY | O_CREAT | O_APPEND, 0666), new_fd);
         }
         this->shell->executeCommand(first_command.c_str());
-        close(new_fd); // close file
-        dup2(old_fd, 0);
-        close(old_fd);
+        DO_SYS(close(new_fd));
+        DO_SYS(dup2(old_fd, 0));
+        DO_SYS(close(old_fd));
     }
     else {
         return;

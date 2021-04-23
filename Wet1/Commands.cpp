@@ -8,13 +8,12 @@
 #include <climits>
 #include <ctype.h>
 #include <fcntl.h>
-#include<algorithm>
+#include <algorithm>
 #include "Commands.h"
 
 using namespace std;
 using std::string;
 using std::vector;
-
 
 #if 0
 #define FUNC_ENTRY() \
@@ -27,8 +26,6 @@ using std::vector;
 #define FUNC_EXIT()
 #endif
 
-
-
 const string GetCurrentWorkingDirectory();
 string _ltrim(const string &s);
 string _rtrim(const string &s);
@@ -37,7 +34,7 @@ string _trim(const string &s);
 int _parseCommandLine(const char *cmd_line, char **args);
 bool _isBackgroundComamnd(const char *cmd_line);
 void _removeBackgroundSign(char *cmd_line);
-static bool _isNumber(const std::string &s);
+static bool _isNumber(char *str);
 static void _logError(std::string text);
 
 // String manipulation
@@ -62,7 +59,7 @@ static void _logError(std::string text)
 {
     string message = ERROR_PREFIX + text;
 
-        cerr << message << endl;
+    cerr << message << endl;
 }
 
 int _parseCommandLine(const char *cmd_line, char **args)
@@ -124,8 +121,7 @@ bool _isNumber(char *str)
     }
     return true;
 }
-Command::Command(const char *usr_cmd_line) : cmd_line(new char[COMMAND_MAX_LENGTH])
-                                                , cmd_line_wo_ampersand(new char[COMMAND_MAX_LENGTH])
+Command::Command(const char *usr_cmd_line) : cmd_line(new char[COMMAND_MAX_LENGTH]), cmd_line_wo_ampersand(new char[COMMAND_MAX_LENGTH])
 {
     strcpy(this->cmd_line, usr_cmd_line);
     strcpy(this->cmd_line_wo_ampersand, usr_cmd_line);
@@ -147,7 +143,6 @@ string SmallShell::getPromptName()
     return prompt_name;
 }
 
-
 Command *SmallShell::CreateCommand(const char *cmd_line)
 {
     // For example:
@@ -155,12 +150,13 @@ Command *SmallShell::CreateCommand(const char *cmd_line)
     string cmd_s = _trim(string(cmd_line));
     string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
 
-    if (cmd_s.find('>') != std::string::npos){
+    if (cmd_s.find('>') != std::string::npos)
+    {
         return new RedirectionCommand(cmd_line, this);
     }
     else if (cmd_s.find('|') != std::string::npos) // Has pipe character
-    { // Includes also |&
-        return new PipeCommand(cmd_line);
+    {                                              // Includes also |&
+        return new PipeCommand(cmd_line, this);
     }
     else if (firstWord.compare(PRINT_WORKING_DIRECTORY_STR) == 0)
     {
@@ -198,7 +194,8 @@ Command *SmallShell::CreateCommand(const char *cmd_line)
     {
         return new BackgroundCommand(cmd_line, jobs_list);
     }
-    else if (firstWord.compare(CAT_COMMAND_STR) == 0) {
+    else if (firstWord.compare(CAT_COMMAND_STR) == 0)
+    {
         return new CatCommand(cmd_line);
     }
 
@@ -272,14 +269,13 @@ void ChangeDirCommand::execute()
         _logError("cd: OLDPWD not set");
         return;
     }
-    DO_SYS(chdir(path));    
-     // cd successfull
-        if (!*plastPwd)
-        {
-            (*plastPwd) = (char *)malloc(COMMAND_ARGS_MAX_LENGTH + 1);
-        }
-        strcpy(*plastPwd, current_dir);
-    
+    DO_SYS(chdir(path));
+    // cd successfull
+    if (!*plastPwd)
+    {
+        (*plastPwd) = (char *)malloc(COMMAND_ARGS_MAX_LENGTH + 1);
+    }
+    strcpy(*plastPwd, current_dir);
 }
 
 void GetCurrDirCommand::execute()
@@ -314,7 +310,7 @@ std::ostream &operator<<(std::ostream &os, const JobsList::JobEntry &job_entry)
 void JobsList::printJobsList() const
 {
     for (auto job_entry = jobs_list.rbegin(); job_entry != jobs_list.rend(); ++job_entry)
-    {        
+    {
         cout << (**job_entry) << endl;
     }
 }
@@ -322,10 +318,10 @@ const unsigned int JobsList::removeFinishedJobs()
 {
     // Due to complexity concers, move all vector to new vector
     unsigned int max_job_id = JOB_ID_INITIAL_VALUE;
-    vector<JobEntry*> new_job_list;
+    vector<JobEntry *> new_job_list;
     for (auto &job_entry : this->jobs_list)
     {
-       
+
         int status;
         pid_t result = waitpid(job_entry->pid, &status, WNOHANG);
         if (result == 0)
@@ -341,8 +337,10 @@ const unsigned int JobsList::removeFinishedJobs()
         else if (result == -1)
         {
             // Error
-        } else {
-           // child finished
+        }
+        else
+        {
+            // child finished
         }
     }
     jobs_list = new_job_list;
@@ -362,7 +360,7 @@ void JobsList::removeJobById(const unsigned int &jobId)
         count++;
     }
 }
-JobsList::JobEntry* JobsList::getLastStoppedJob()
+JobsList::JobEntry *JobsList::getLastStoppedJob()
 {
     for (auto job_entry = jobs_list.rbegin(); job_entry != jobs_list.rend(); ++job_entry)
     { // Consider creating array for pointer in order to support complexity of O(1)...
@@ -382,7 +380,7 @@ std::ostream &operator<<(std::ostream &os, const Command &cmd)
 
 void ForegroundCommand::execute()
 {
-    if (! this->jobs->getLastJob()) // No jobs
+    if (!this->jobs->getLastJob()) // No jobs
     {
         _logError("fg: jobs list is empty");
     }
@@ -393,7 +391,7 @@ void ForegroundCommand::execute()
     else
     {
         const int job_id = std::stoi(args[1]);
-        JobsList::JobEntry* job_entry = this->jobs->getJobById(job_id);
+        JobsList::JobEntry *job_entry = this->jobs->getJobById(job_id);
         if (job_id < 0 || !job_entry)
         {
             string error_msg = "fg: job-id " + std::to_string(job_id) + " does not exist";
@@ -417,7 +415,7 @@ void ForegroundCommand::execute()
 void JobsList::addJob(Command *cmd, pid_t child_pid, const bool &isStopped)
 {
     unsigned int new_job_id = removeFinishedJobs() + 1;
-    JobEntry* new_job = new JobEntry(cmd, new_job_id, child_pid, isStopped);
+    JobEntry *new_job = new JobEntry(cmd, new_job_id, child_pid, isStopped);
     this->jobs_list.push_back(new_job);
 }
 
@@ -440,7 +438,7 @@ void JobsList::killAllJobs()
     jobs_list.clear();
 }
 
-JobsList::JobEntry* JobsList::getJobById(const unsigned int &jobId) const
+JobsList::JobEntry *JobsList::getJobById(const unsigned int &jobId) const
 {
     for (auto &job_entry : jobs_list)
     {
@@ -452,11 +450,11 @@ JobsList::JobEntry* JobsList::getJobById(const unsigned int &jobId) const
     return nullptr;
 }
 
-JobsList::JobEntry * JobsList::getLastJob() const
+JobsList::JobEntry *JobsList::getLastJob() const
 {
-   // if (!jobs_list.empty())
-  //  {
-        /*
+    // if (!jobs_list.empty())
+    //  {
+    /*
         unsigned int max_job_id = 0;
         JobsList::JobEntry* return_job;
         for (auto &job_entry : jobs_list)
@@ -468,51 +466,36 @@ JobsList::JobEntry * JobsList::getLastJob() const
         }
         return return_job;
         */
-   //    return jobs_list.back();
-   // }
+    //    return jobs_list.back();
+    // }
     return jobs_list.empty() ? nullptr : jobs_list.back();
-}
-static bool _isNumber(const std::string &s)
-{
-    std::string::const_iterator it = s.begin();
-    while (it != s.end() && std::isdigit(*it))
-        ++it;
-    return !s.empty() && it == s.end();
 }
 void ChangePromptCommand::execute()
 {
     // args[1] always exist
-        *prompt_name_p = argc == 1 ? DEFAULT_PROMPT :args[1];
-    
+    *prompt_name_p = argc == 1 ? DEFAULT_PROMPT : args[1];
 }
 void KillCommand::execute()
 {
-    if (this->argc != 3)
-    {
-        _logError("kill: invalid arguments");
-        return;
-    }
-    std::string first_arg = std::string(args[1]);
-    char first_char = first_arg.at(0);
-    first_arg.erase(first_arg.begin());
-    std::string req_job_id_str = std::string(args[2]);
-   // const unsigned int req_job_id = *args[2] - '0'; // won't work if ID is two digits..
-    const unsigned int req_job_id = stoi(args[2]);
     //parse args
-    if (first_char != '-' || !_isNumber(first_arg) || !_isNumber(req_job_id_str))
+    if (this->argc != 3 || !_isNumber(args[1]) || stoi(args[1])>=0 || !_isNumber(args[2]))
     {
         _logError("kill: invalid arguments");
         return;
     }
-    JobsList::JobEntry* entry = jobs->getJobById(req_job_id);
+    const int signal_num = stoi(args[1]) * -1;
+    const int req_job_id = stoi(args[2]);
+
+    JobsList::JobEntry *entry = jobs->getJobById(req_job_id);
     if (!entry)
     {
-        std::string message = "kill: job-id " + req_job_id_str + " does not exist";
+        std::string message = "kill: job-id " + to_string(req_job_id) + " does not exist";
         _logError(message);
         return;
     }
-    DO_SYS(kill(entry->pid, int(first_arg.at(0))));
-    cout << "signal number " << first_arg << " was sent to pid " << entry->pid <<endl;
+    //DO_SYS(kill(entry->pid, int(first_arg.at(0)))); // Won't work if signal is above 9..
+    DO_SYS(kill(entry->pid, signal_num));
+    cout << "signal number " << signal_num << " was sent to pid " << entry->pid << endl;
 }
 void QuitCommand::execute()
 {
@@ -521,8 +504,9 @@ void QuitCommand::execute()
         jobs->killAllJobs();
     }
     should_run = false;
-    while (waitpid(-1, NULL, WNOHANG) != -1){ // check if there are still live childs
-        cout << "wait +1"<< endl;
+    while (waitpid(-1, NULL, WNOHANG) != -1)
+    { // check if there are still live childs
+        cout << "wait +1" << endl;
     }
 }
 
@@ -534,7 +518,7 @@ void BackgroundCommand::execute()
         _logError("bg: invalid arguments");
         return;
     }
-    JobsList::JobEntry* move_bg_job;
+    JobsList::JobEntry *move_bg_job;
     if (this->argc == 1)
     { // resume last stopped
         move_bg_job = this->jobs->getLastStoppedJob();
@@ -546,18 +530,17 @@ void BackgroundCommand::execute()
     }
     else
     { // argc = 2
-       
-       
+
         const unsigned int req_job_id = stoi(args[1]);
         move_bg_job = this->jobs->getJobById(req_job_id);
         if (!move_bg_job)
-        {            
+        {
             _logError("bg: job-id " + to_string(req_job_id) + " does not exist");
             return;
         }
         else if (!move_bg_job->job_stopped)
         { // already running in the background
-            
+
             _logError("bg: job-id " + to_string(req_job_id) + " is already running in the background");
             return;
         }
@@ -577,32 +560,31 @@ void ExternalCommand::execute()
     int stat;
     pid_t parent_pid = getpid();
 
-    char * bash_args= "-c";
-    char * bash_bin = "/bin/bash";
+    char *bash_args = "-c";
+    char *bash_bin = "/bin/bash";
     char *arguments[] = {bash_bin, bash_args, this->cmd_line_wo_ampersand, nullptr};
-    pid_t pid; 
-    DO_SYS_VAL(fork(),pid);
+    pid_t pid;
+    DO_SYS_VAL(fork(), pid);
     if (getpid() == parent_pid)
     { // parent
-        if(is_background)
+
+        this->jobs->addJob(this, pid, false); // Needed for cntrol Z also
+        if (!is_background)
         {
-             this->jobs->addJob(this, pid, false);
+            
+            DO_SYS(waitpid(pid,&stat,WSTOPPED));            
         }
-        else
-        {
-            DO_SYS(wait(&stat));
-        }      
     }
     else
     { // child
         setpgrp();
-        DO_SYS(execve("/bin/bash", arguments, NULL));        
+        DO_SYS(execve("/bin/bash", arguments, NULL));
     }
 }
 
 void CatCommand::execute()
 {
-    if(argc ==1)
+    if (argc == 1)
     {
         _logError("cat: not enough arguements");
         return;
@@ -610,29 +592,27 @@ void CatCommand::execute()
     for (unsigned short i = 1; i < argc; i++)
     {
         int ch_buffer;
-        const char* file_path = args[i];
+        const char *file_path = args[i];
         string new_file_path = file_path;
         _trim(new_file_path);
         int fd;
-        DO_SYS_VAL_NO_RETURN(open(new_file_path.c_str(),O_RDONLY),fd);
-        if(fd!=-1)
+        DO_SYS_VAL_NO_RETURN(open(new_file_path.c_str(), O_RDONLY), fd);
+        if (fd != -1)
         {
-            while(read(fd,&ch_buffer,1)) // Read bytes one by one
+            while (read(fd, &ch_buffer, 1)) // Read bytes one by one
             {
                 int write_status;
-                DO_SYS_VAL_NO_RETURN(write(STDOUT_FILENO,&ch_buffer,1),write_status);
-                if(write_status<0) 
+                DO_SYS_VAL_NO_RETURN(write(STDOUT_FILENO, &ch_buffer, 1), write_status);
+                if (write_status < 0)
                     break; // Continue to next file
             }
-		    close(fd);                          
+            close(fd);
         }
-        
     }
-    
 }
 
-
-void RedirectionCommand::checkRedirectType() {
+void RedirectionCommand::checkRedirectType()
+{
     std::string override_right = ">";
     std::string append_right = ">>";
 
@@ -640,18 +620,17 @@ void RedirectionCommand::checkRedirectType() {
     string output_file;
     this->redirect = APPEND_RIGHT;
     std::string command = cmd_str.substr(0, cmd_str.find(append_right)); // token is "scott"
-    if( command == cmd_str)
-    {// Try to findout if overwrite
+    if (command == cmd_str)
+    { // Try to findout if overwrite
         this->redirect = OVERRIDE_RIGHT;
         command = cmd_str.substr(0, cmd_str.find(override_right));
-        output_file =  cmd_str.substr(1, cmd_str.find(override_right));
+        output_file = cmd_str.substr(1, cmd_str.find(override_right));
     }
     else
     {
         return;
     }
     //std::string output_file = cmd_line.substr(, cmd_line.find(append_right)); // token is "scott"
-
 }
 /*
 void RedirectionCommand::checkRedirectType() {
@@ -697,76 +676,88 @@ void RedirectionCommand::checkRedirectType() {
     second_output_file.erase(remove(second_output_file.begin(), second_output_file.end(), '&'), second_output_file.end());// to do or not to do ???????????
 }
 */
-RedirectionCommand::RedirectionCommand(const char *cmd_line, SmallShell* shell) : Command(cmd_line), redirect(APPEND_RIGHT), shell(shell){
+RedirectionCommand::RedirectionCommand(const char *cmd_line, SmallShell *shell) : Command(cmd_line), redirect(APPEND_RIGHT), shell(shell)
+{
     checkRedirectType();
 }
 
-void RedirectionCommand::execute() {
+void RedirectionCommand::execute()
+{
     int old_fd;
     int new_fd;
     second_output_file = _trim(second_output_file);
 
-    if (this->redirect == OVERRIDE_RIGHT || this->redirect == APPEND_RIGHT){
         DO_SYS_VAL_NO_RETURN(dup(1), old_fd);
         DO_SYS(close(1)); // STDOUT
-        if (this->redirect == OVERRIDE_RIGHT){
-            DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),O_WRONLY | O_CREAT | O_TRUNC, 0666),new_fd);
-        }
-        else { // APPEND_RIGHT
-            DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),O_WRONLY | O_CREAT | O_APPEND, 0666), new_fd);
-        }
+
+        int oflags =  (this->redirect == OVERRIDE_RIGHT) ? O_WRONLY | O_CREAT | O_TRUNC : O_WRONLY | O_CREAT | O_APPEND;
+        DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(), oflags, 0666), new_fd);    
         this->shell->executeCommand(first_command.c_str());
         DO_SYS(close(new_fd));
         DO_SYS(dup2(old_fd, 1));
         DO_SYS(close(old_fd));
-    }
-    else if (this->redirect == OVERRIDE_LEFT || this->redirect == APPEND_LEFT){
-        DO_SYS_VAL_NO_RETURN(dup(0), old_fd);
-        DO_SYS(close(0)); // STDIN
-        if (this->redirect == OVERRIDE_RIGHT){
-            DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),O_WRONLY | O_CREAT | O_TRUNC, 0666),new_fd);
-        }
-        else { // APPEND_RIGHT
-            DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),O_WRONLY | O_CREAT | O_APPEND, 0666), new_fd);
-        }
-        this->shell->executeCommand(first_command.c_str());
-        DO_SYS(close(new_fd));
-        DO_SYS(dup2(old_fd, 0));
-        DO_SYS(close(old_fd));
-    }
-    else {
-        return;
-    }
+
 }
-vector<string> _stringSplit(string str,const string delimiter)
+vector<string> _stringSplit(string str, const string delimiter)
 {
     size_t pos = 0;
-   
+
     vector<string> segments;
     while ((pos = str.find(delimiter)) != std::string::npos)
     {
-        segments.push_back(str.substr(0, pos));     
+        segments.push_back(str.substr(0, pos));
         str.erase(0, pos + delimiter.length());
     }
-     segments.push_back(str);  
-     return segments;   
+    segments.push_back(str);
+    return segments;
 }
-PipeCommand::PipeCommand(const char *cmd_line) : Command(cmd_line), stderr_pipe(false)
+PipeCommand::PipeCommand(const char *cmd_line, SmallShell *shell) : Command(cmd_line), shell(shell), stderr_pipe(false)
 {
     string command_str = string(cmd_line);
     std::string pipe = "|";
     std::string pipe_stderr = "|&";
 
-    vector<string> pipe_segments = _stringSplit(command_str,pipe);
-    vector<string> pipe_stderr_segments = _stringSplit(command_str,pipe_stderr);
-    vector<string> * pipe_segments_p;
+    vector<string> pipe_segments = _stringSplit(command_str, pipe);
+    vector<string> pipe_stderr_segments = _stringSplit(command_str, pipe_stderr);
+    vector<string> *pipe_segments_p;
     this->stderr_pipe = (pipe_stderr_segments.size() == 2);
     pipe_segments_p = stderr_pipe ? &pipe_stderr_segments : &pipe_segments;
-    
+
     this->command_arguement = (*pipe_segments_p).at(0);
     this->piped_arguement = (*pipe_segments_p).at(1);
 }
 void PipeCommand::execute()
 {
-    
+    Command *command1_p = shell->CreateCommand(command_arguement.c_str());
+    Command *command2_p = shell->CreateCommand(piped_arguement.c_str());
+
+    int saved_stdout = dup(STDOUT_FILENO);
+    int fd[2];
+    pipe(fd); // fd is now populated
+    pid_t parent_pid = getpid();
+    pid_t pid;
+    DO_SYS_VAL(fork(),pid);
+    if (parent_pid == getpid())
+    { // Parent
+        close(fd[0]);               //close read from pipe, in parent
+        dup2(fd[1], STDOUT_FILENO); // Replace stdout with the write end of the pipe
+        close(fd[1]);               // Don't need another copy of the pipe write end hanging about
+        command1_p->execute();
+        
+    }
+    else
+    { // Child
+     
+        close(fd[1]);              //close write to pipe, in child
+        dup2(fd[0], STDIN_FILENO); // Replace stdin with the read end of the pipe
+        close(fd[0]);              // Don't need another copy of the pipe read end hanging about
+        command2_p->execute();
+        exit(1);
+    }
+    // Parent will get here, restore channels
+    dup2(saved_stdout, STDOUT_FILENO);
+    close(saved_stdout);
+    int status;
+    DO_SYS(waitpid(pid,&status,0));
 }
+

@@ -7,8 +7,25 @@
 using namespace std;
 
 void ctrlZHandler(int sig_num) {
-	DO_SYS(kill(getpid(),SIGTSTP));
- // DO_SYS(signal(SIGTSTP, ctrlZHandler));
+  
+  
+  if(sig_num == SIGTSTP)
+  {
+    
+    SmallShell &smash = SmallShell::getInstance();
+    JobsList::JobEntry * entry = smash.jobs_list->getLastJob();
+    
+    if(entry)
+    {
+      
+    signal(SIGTSTP, SIG_DFL); 
+    entry->job_stopped=true;
+    kill(entry->pid, SIGTSTP);
+    
+    signal(SIGTSTP, ctrlZHandler); 
+    }
+  }
+  
 }
 
 void ctrlCHandler(int sig_num) {

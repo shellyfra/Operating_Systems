@@ -102,17 +102,21 @@ protected:
 public:
     BuiltInCommand(const char *cmd_line);
     virtual ~BuiltInCommand();
+    
 };
-
+class SmallShell;
 class PipeCommand : public Command
 {
-    // TODO: Add your data members
+    SmallShell* shell;
+    bool stderr_pipe;
+    std::string command_arguement;
+    std::string piped_arguement;
 public:
-    PipeCommand(const char *cmd_line);
+    PipeCommand(const char *cmd_line, SmallShell* shell);
     virtual ~PipeCommand() {}
     void execute() override;
 };
-class SmallShell;
+
 class RedirectionCommand : public Command
 {
     // TODO: Add your data members
@@ -293,11 +297,12 @@ private:
     bool should_run;
     char *last_wd;
     std::string prompt_name;
-    JobsList *jobs_list;
+    
 
     SmallShell() : should_run(true), last_wd(nullptr), prompt_name(DEFAULT_PROMPT), jobs_list(new JobsList()) {}
 
 public:
+    JobsList *jobs_list;
     Command *CreateCommand(const char *cmd_line);
     SmallShell(SmallShell const &) = delete;     // disable copy ctor
     void operator=(SmallShell const &) = delete; // disable = operator
@@ -314,6 +319,5 @@ public:
     std::string getPromptName();
     bool &ShouldRun() { return this->should_run; }
 };
-bool checkRedirection(const char * cmd_line);
 
 #endif //SMASH_COMMAND_H_

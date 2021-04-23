@@ -35,7 +35,7 @@ int _parseCommandLine(const char *cmd_line, char **args);
 bool _isBackgroundComamnd(const char *cmd_line);
 void _removeBackgroundSign(char *cmd_line);
 static bool _isNumber(char *str);
-static void _logError(std::string text);
+
 
 // String manipulation
 string _ltrim(const string &s)
@@ -53,13 +53,6 @@ string _rtrim(const string &s)
 string _trim(const string &s)
 {
     return _rtrim(_ltrim(s));
-}
-
-static void _logError(std::string text)
-{
-    string message = ERROR_PREFIX + text;
-
-    cerr << message << endl;
 }
 
 int _parseCommandLine(const char *cmd_line, char **args)
@@ -248,6 +241,12 @@ void JobsCommand::execute()
     //jobs->removeFinishedJobs();
     jobs->printJobsList();
 }
+void _logError(std::string text, const bool &to_stdout)
+{
+    std::ostream &output_stream = to_stdout ? std::cout : std::cerr;
+    string prefix = to_stdout ? STDOUT_PREFIX :ERROR_PREFIX;
+    output_stream << prefix << ' ' << text << std::endl;
+}
 void ChangeDirCommand::execute()
 {
     if (argc < 2)
@@ -390,7 +389,7 @@ void ForegroundCommand::execute()
     }
     else
     {
-        const int job_id = std::stoi(args[1]);
+        const unsigned int job_id = std::stoi(args[1]);
         JobsList::JobEntry *job_entry = this->jobs->getJobById(job_id);
         if (job_id < 0 || !job_entry)
         {
@@ -403,7 +402,8 @@ void ForegroundCommand::execute()
             DO_SYS(kill(job_pid, SIGCONT));
 
             // SIGCONT succeeded
-            cout << job_entry->cmd << " : " << (*job_entry);
+           
+            cout << (*job_entry->cmd) << " : " << (job_entry->pid) << endl;
             this->jobs->removeJobById(job_id);
             int *status = nullptr;
 
@@ -412,16 +412,18 @@ void ForegroundCommand::execute()
     }
 }
 
-JobsList::JobEntry * JobsList::addJob(Command *cmd, pid_t child_pid, const bool &isStopped,const bool &foreground)
+JobsList::JobEntry * JobsList::addJob(Command *cmd, pid_t child_pid, const bool is_stopped,const bool foreground)
 {
+    
     unsigned int new_job_id = removeFinishedJobs() + 1;
-    JobEntry *new_job = new JobEntry(cmd, new_job_id, child_pid, isStopped);
+    JobEntry *new_job = new JobEntry(cmd, new_job_id, child_pid, is_stopped);
     if(foreground)
     {
         this->foreground_job = new_job; // Won't be added to job_list
     }
     else    
     {
+        
         this->jobs_list.push_back(new_job);
     }    
     return new_job;
@@ -551,9 +553,15 @@ void ExternalCommand::execute()
     int stat;
     pid_t parent_pid = getpid();
 
-    char *bash_args = "-c";
-    char *bash_bin = "/bin/bash";
-    char *arguments[] = {bash_bin, bash_args, this->cmd_line_wo_ampersand, nullptr};
+    string s = string(bash_bin);
+
+    // Will need to delete these:
+    char * bash_bin_execv =new char[strlen(bash_bin)+1];
+    char * bash_args_execv =new char[strlen(bash_args)+1];
+    strcpy(bash_bin_execv,bash_bin);
+    strcpy(bash_args_execv,bash_args);
+
+    char *const  arguments[] = {bash_bin_execv, bash_args_execv, this->cmd_line_wo_ampersand, nullptr};
     pid_t pid;
     DO_SYS_VAL(fork(), pid);
     if (getpid() == parent_pid)
@@ -564,6 +572,10 @@ void ExternalCommand::execute()
         {
             
             DO_SYS(waitpid(pid,&stat,WSTOPPED));
+            // Parent handle will reach here after child has ended or stopped (due to control+Z),
+            // So anywho we remove the foreground job so cntl+Z won't catch the foreground job again
+            delete(this->jobs->foreground_job);            
+            this->jobs->foreground_job = nullptr;
             
         }
       
@@ -571,7 +583,10 @@ void ExternalCommand::execute()
     else
     { // child
         setpgrp();
-        DO_SYS(execve("/bin/bash", arguments, NULL));
+        DO_SYS(execve(bash_bin, arguments, NULL));
+        // Might need to delete these if handle is returned earlier in this function
+        delete bash_bin_execv;
+        delete bash_args_execv;
     }
 }
 

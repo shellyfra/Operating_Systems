@@ -8,20 +8,16 @@ using namespace std;
 
 void ctrlZHandler(int sig_num)
 {
-
+  _logError("got ctrl-Z",true);
   if (sig_num == SIGTSTP)
   {
     SmallShell &shell = SmallShell::getInstance();
     JobsList::JobEntry *entry = shell.jobs_list->foreground_job;
     if (entry)
     { // If there is a running child
-
-      signal(SIGTSTP, SIG_DFL);      
-      shell.jobs_list->addJob(entry->cmd,entry->pid,true);
-      delete(shell.jobs_list->foreground_job);            
-      shell.jobs_list->foreground_job = nullptr;
-      kill(entry->pid, SIGTSTP);
-      signal(SIGTSTP, ctrlZHandler);
+      DO_SYS(kill(entry->pid, SIGSTOP));                  // SIGSTOP cannot be overriden
+      shell.jobs_list->addJob(entry->cmd,entry->pid,true);// Add fg job to background
+     _logError("process "+to_string(entry->pid) +" was stopped",true);
     }
   }
 }

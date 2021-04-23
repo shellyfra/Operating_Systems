@@ -16,6 +16,9 @@ const char BACKGROUND_IDENTIFIER = '&';
 const char *const EMPTY_STRING = "";
 const char *const DEFAULT_PROMPT = "smash";
 
+const char *const bash_args = "-c";
+const char *const bash_bin = "/bin/bash";
+    
 const char *const SHOW_PID_COMMAND_STR = "showpid";
 const char *const PRINT_WORKING_DIRECTORY_STR = "pwd";
 
@@ -29,7 +32,9 @@ const char *const KILL_COMMAND_STR = "kill";
 const char *const QUIT_COMMAND_STR = "quit";
 const char *const BG_COMMAND_STR = "bg";
 const char *const CAT_COMMAND_STR = "cat";
-const char *const ERROR_PREFIX = "smash error: ";
+const char *const ERROR_PREFIX = "smash error:";
+const char *const STDOUT_PREFIX = "smash:";
+
 
 enum Redirect_type {OVERRIDE_LEFT = 1, OVERRIDE_RIGHT, APPEND_LEFT, APPEND_RIGHT} ;
 
@@ -75,6 +80,10 @@ enum Redirect_type {OVERRIDE_LEFT = 1, OVERRIDE_RIGHT, APPEND_LEFT, APPEND_RIGHT
             perror(error_msg.c_str());                                            \
         }                                                                         \
     } while (0)
+
+
+void _logError(std::string text , const bool &to_stdout=false);
+
 class Command
 {
 protected:
@@ -177,7 +186,7 @@ public:
 
     public:
         JobEntry(Command *cmd, const unsigned int job_id, const unsigned int pid, const bool is_stopped)
-            : cmd(cmd), job_id(job_id), pid(pid), start_time(time(NULL)), is_stopped(false) {}
+            : cmd(cmd), job_id(job_id), pid(pid), start_time(time(NULL)), is_stopped(is_stopped) {}
         //JobEntry() : cmd(nullptr), job_id(0), pid(0), start_time(time(NULL)), job_stopped(false) {} // cmd = null -> mask empty JobEntry
         ~JobEntry() = default;
         JobEntry(JobEntry const &) = delete;                 // Copy ctor
@@ -200,7 +209,7 @@ public:
     ~JobsList() = default;
     JobsList &operator=(const JobsList &other) = default;                      // for now
     JobEntry * addJob(Command *cmd, pid_t child_pid
-                , const bool &isStopped = false,const bool &foreground=false); // Done
+                , const bool is_stopped = false,const bool foreground=false); // Done
     void printJobsList() const;                                                // Done
     void killAllJobs();                                                        // Done
     const unsigned int removeFinishedJobs();                                   // Done

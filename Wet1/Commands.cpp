@@ -584,8 +584,8 @@ void ExternalCommand::execute()
         setpgrp();
         DO_SYS(execve(bash_bin, arguments, NULL));
         // Might need to delete these if handle is returned earlier in this function
-        delete bash_bin_execv;
-        delete bash_args_execv;
+        delete[] bash_bin_execv;
+        delete[] bash_args_execv;
     }
 }
 

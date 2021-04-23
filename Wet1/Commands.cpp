@@ -491,15 +491,14 @@ void KillCommand::execute()
 }
 void QuitCommand::execute()
 {
-    if (strcmp(args[1], "kill") == 0)
+
+    if (argc>=2 && strcmp(args[1], "kill") == 0)
     {
         jobs->killAllJobs();
+        while (waitpid(-1, NULL, WNOHANG) != -1);
     }
     should_run = false;
-    while (waitpid(-1, NULL, WNOHANG) != -1)
-    { // check if there are still live childs
-        cout << "wait +1" << endl;
-    }
+
 }
 
 void BackgroundCommand::execute()

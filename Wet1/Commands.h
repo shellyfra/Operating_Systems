@@ -297,7 +297,6 @@ private:
     bool should_run;
     char *last_wd;
     std::string prompt_name;
-    
 
     SmallShell() : should_run(true), last_wd(nullptr), prompt_name(DEFAULT_PROMPT), jobs_list(new JobsList()) {}
 

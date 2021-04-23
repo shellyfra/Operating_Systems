@@ -47,7 +47,7 @@ void ctrlCHandler(int sig_num) {
             signal(SIGKILL, ctrlCHandler); // I don't think we need this since SIGKILL is not overriden, see my fix in cntrol Z
         }
     }
-    //signal(SIGKILL, ctrlCHandler);
+    signal(SIGKILL, ctrlCHandler); // I don't think we need this since SIGKILL is not overriden, see my fix in cntrol Z
 }
 
 void alarmHandler(int sig_num) {

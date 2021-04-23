@@ -13,14 +13,42 @@ void ctrlZHandler(int sig_num)
   {
     SmallShell &shell = SmallShell::getInstance();
     JobsList::JobEntry *entry = shell.jobs_list->foreground_job;
-    pid_t pid = entry->pid;
+   
     if (entry)
     { // If there is a running child
+     pid_t pid = entry->pid;
       DO_SYS(kill(pid, SIGSTOP));                  // SIGSTOP cannot be overriden
       shell.jobs_list->addJob(entry->cmd,pid,true);// Add fg job to background
      _logError("process "+to_string(pid) +" was stopped",true);
     }
   }
+}
+void tempctrlCHandler(int sig_num) {
+   
+    if(sig_num == SIGINT)
+    {
+        _logError("got ctrl-C",true);
+     
+    
+          SmallShell &shell = SmallShell::getInstance();
+        JobsList::JobEntry *entry = shell.jobs_list->foreground_job;
+        
+
+        if(entry){
+            pid_t pid = entry->pid;
+             DO_SYS(kill(pid, SIGKILL));     
+            //smash.jobs_list->removeJobById(entry->job_id);
+             cout << "smash: process " << pid << " was killed" << endl;
+
+            // Should delete foreground job memeber as in void ExternalCommand::execute() :
+                delete(shell.jobs_list->foreground_job);            
+                shell.jobs_list->foreground_job = nullptr;
+           // signal(SIGKILL, ctrlCHandler); // I don't think we need this since SIGKILL is not overriden, see my fix in cntrol Z
+            // this ^ return error i think, you can't override sigkill handler
+        }
+    }
+   // signal(SIGKILL, ctrlCHandler); // I don't think we need this since SIGKILL is not overriden, see my fix in cntrol Z
+    // this ^ return error i think, you can't override sigkill handler
 }
 
 void ctrlCHandler(int sig_num) {

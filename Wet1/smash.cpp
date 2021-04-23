@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
     {
         perror("smash error: failed to set ctrl-Z handler");
     }
-    if (signal(SIGINT, ctrlCHandler) == SIG_ERR)
+    if (signal(SIGINT, tempctrlCHandler) == SIG_ERR)
     {
         perror("smash error: failed to set ctrl-C handler");
     }

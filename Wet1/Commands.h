@@ -18,7 +18,7 @@ const char *const DEFAULT_PROMPT = "smash";
 
 const char *const bash_args = "-c";
 const char *const bash_bin = "/bin/bash";
-    
+
 const char *const SHOW_PID_COMMAND_STR = "showpid";
 const char *const PRINT_WORKING_DIRECTORY_STR = "pwd";
 
@@ -35,54 +35,58 @@ const char *const CAT_COMMAND_STR = "cat";
 const char *const ERROR_PREFIX = "smash error:";
 const char *const STDOUT_PREFIX = "smash:";
 
+enum Redirect_type
+{
+    OVERRIDE_LEFT = 1,
+    OVERRIDE_RIGHT,
+    APPEND_LEFT,
+    APPEND_RIGHT
+};
 
-enum Redirect_type {OVERRIDE_LEFT = 1, OVERRIDE_RIGHT, APPEND_LEFT, APPEND_RIGHT} ;
-
-#define DO_SYS(syscall)                                                           \
-    do                                                                            \
-    {                                                                             \
-        /* safely invoke a system call */                                         \
-        if ((syscall) == -1)                                                      \
-        {                                                                         \
-            string syscall_call = string(#syscall);                               \
-            string syscall_name = syscall_call.substr(0, syscall_call.find('(')); \
-            string error_msg = string(ERROR_PREFIX) + syscall_name + " failed";   \
-            perror(error_msg.c_str());                                            \
-            return;                                                               \
-        }                                                                         \
+#define DO_SYS(syscall)                                                               \
+    do                                                                                \
+    {                                                                                 \
+        /* safely invoke a system call */                                             \
+        if ((syscall) == -1)                                                          \
+        {                                                                             \
+            string syscall_call = string(#syscall);                                   \
+            string syscall_name = syscall_call.substr(0, syscall_call.find('('));     \
+            string error_msg = string(ERROR_PREFIX) + ' ' + syscall_name + " failed"; \
+            perror(error_msg.c_str());                                                \
+            return;                                                                   \
+        }                                                                             \
     } while (0)
 
-#define DO_SYS_VAL(syscall, var)                                                  \
-    do                                                                            \
-    {                                                                             \
-        /* safely invoke a system call */                                         \
-        var = (syscall);                                                          \
-        if (var == -1)                                                            \
-        {                                                                         \
-            string syscall_call = string(#syscall);                               \
-            string syscall_name = syscall_call.substr(0, syscall_call.find('(')); \
-            string error_msg = string(ERROR_PREFIX) + syscall_name + " failed";   \
-            perror(error_msg.c_str());                                            \
-            return;                                                               \
-        }                                                                         \
+#define DO_SYS_VAL(syscall, var)                                                      \
+    do                                                                                \
+    {                                                                                 \
+        /* safely invoke a system call */                                             \
+        var = (syscall);                                                              \
+        if (var == -1)                                                                \
+        {                                                                             \
+            string syscall_call = string(#syscall);                                   \
+            string syscall_name = syscall_call.substr(0, syscall_call.find('('));     \
+            string error_msg = string(ERROR_PREFIX) + ' ' + syscall_name + " failed"; \
+            perror(error_msg.c_str());                                                \
+            return;                                                                   \
+        }                                                                             \
     } while (0)
 
-#define DO_SYS_VAL_NO_RETURN(syscall, var)                                                  \
-    do                                                                            \
-    {                                                                             \
-        /* safely invoke a system call */                                         \
-        var = (syscall);                                                          \
-        if (var == -1)                                                            \
-        {                                                                         \
-            string syscall_call = string(#syscall);                               \
-            string syscall_name = syscall_call.substr(0, syscall_call.find('(')); \
-            string error_msg = string(ERROR_PREFIX) + syscall_name + " failed";   \
-            perror(error_msg.c_str());                                            \
-        }                                                                         \
+#define DO_SYS_VAL_NO_RETURN(syscall, var)                                            \
+    do                                                                                \
+    {                                                                                 \
+        /* safely invoke a system call */                                             \
+        var = (syscall);                                                              \
+        if (var == -1)                                                                \
+        {                                                                             \
+            string syscall_call = string(#syscall);                                   \
+            string syscall_name = syscall_call.substr(0, syscall_call.find('('));     \
+            string error_msg = string(ERROR_PREFIX) + ' ' + syscall_name + " failed"; \
+            perror(error_msg.c_str());                                                \
+        }                                                                             \
     } while (0)
 
-
-void _logError(std::string text , const bool &to_stdout=false);
+void _logError(std::string text, const bool &to_stdout = false);
 
 class Command
 {
@@ -111,17 +115,17 @@ protected:
 public:
     BuiltInCommand(const char *cmd_line);
     virtual ~BuiltInCommand();
-    
 };
 class SmallShell;
 class PipeCommand : public Command
 {
-    SmallShell* shell;
+    SmallShell *shell;
     bool stderr_pipe;
     std::string command_arguement;
     std::string piped_arguement;
+
 public:
-    PipeCommand(const char *cmd_line, SmallShell* shell);
+    PipeCommand(const char *cmd_line, SmallShell *shell);
     virtual ~PipeCommand() {}
     void execute() override;
 };
@@ -130,12 +134,13 @@ class RedirectionCommand : public Command
 {
     // TODO: Add your data members
     Redirect_type redirect;
-    SmallShell* shell;
+    SmallShell *shell;
 
     std::string first_command;
     std::string second_output_file;
+
 public:
-    explicit RedirectionCommand(const char *cmd_line, SmallShell* shell);
+    explicit RedirectionCommand(const char *cmd_line, SmallShell *shell);
     virtual ~RedirectionCommand() {}
     void execute() override;
     //void prepare() override;
@@ -175,7 +180,6 @@ class JobsList
 {
 
 public:
-    
     struct JobEntry
     {
         Command *cmd;
@@ -203,20 +207,19 @@ private:
 
     // TODO: Add your data members
 public:
-    JobEntry* foreground_job;
+    JobEntry *foreground_job;
 
-    JobsList() = default;
+    JobsList() : foreground_job(nullptr) {};
     ~JobsList() = default;
-    JobsList &operator=(const JobsList &other) = default;                      // for now
-    JobEntry * addJob(Command *cmd, pid_t child_pid
-                , const bool is_stopped = false,const bool foreground=false); // Done
-    void printJobsList() const;                                                // Done
-    void killAllJobs();                                                        // Done
-    const unsigned int removeFinishedJobs();                                   // Done
-    JobEntry *getJobById(const unsigned int &jobId) const;                     //Done
-    void removeJobById(const unsigned int &jobId);                             // Done
-    JobEntry *getLastJob() const;                                              //Done, For fg or for figuring out what is the maximal ID
-    JobEntry *getLastStoppedJob();                                             // For bg , Shai
+    JobsList &operator=(const JobsList &other) = default;                                                          // for now
+    JobEntry *addJob(Command *cmd, pid_t child_pid, const bool is_stopped = false, const bool foreground = false); // Done
+    void printJobsList() const;                                                                                    // Done
+    void killAllJobs();                                                                                            // Done
+    const unsigned int removeFinishedJobs();                                                                       // Done
+    JobEntry *getJobById(const unsigned int &jobId) const;                                                         //Done
+    void removeJobById(const unsigned int &jobId);                                                                 // Done
+    JobEntry *getLastJob() const;                                                                                  //Done, For fg or for figuring out what is the maximal ID
+    JobEntry *getLastStoppedJob();                                                                                 // For bg , Shai
     // TODO: Add extra methods or modify exisitng ones as needed
     // TODO add operators
 };
@@ -253,7 +256,6 @@ public:
     void execute() override;
 };
 
-
 class ChangePromptCommand : public BuiltInCommand
 {
     std::string *prompt_name_p; // Not const since will remove jobs
@@ -262,7 +264,6 @@ public:
     virtual ~ChangePromptCommand() {}
     void execute() override;
 };
-
 
 class KillCommand : public BuiltInCommand
 {

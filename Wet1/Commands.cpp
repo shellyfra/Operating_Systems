@@ -404,10 +404,17 @@ void ForegroundCommand::execute()
             // SIGCONT succeeded
            
             cout << (*job_entry->cmd) << " : " << (job_entry->pid) << endl;
+            this->jobs->addJob(job_entry->cmd,job_entry->pid,false,true); // Adde job to foreground
             this->jobs->removeJobById(job_id);
-            int *status = nullptr;
+            int status;
 
-            DO_SYS(waitpid(job_pid, status, 0));
+            
+              
+            DO_SYS(waitpid(job_pid,&status,WSTOPPED));
+            // Parent handle will reach here after child has ended or stopped (due to control+Z),
+            // So anywho we remove the foreground job so cntl+Z won't catch the foreground job again
+            delete(this->jobs->foreground_job);            
+            this->jobs->foreground_job = nullptr;
         }
     }
 }
@@ -544,7 +551,7 @@ void BackgroundCommand::execute()
         _logError("bg: kill failed");
         return;
     }
-    cout << move_bg_job->cmd << " : " << job_pid;
+    cout << *(move_bg_job->cmd) << " : " << job_pid << endl;
     move_bg_job->is_stopped = false; // job was resumed
 }
 void ExternalCommand::execute()
@@ -584,8 +591,8 @@ void ExternalCommand::execute()
         setpgrp();
         DO_SYS(execve(bash_bin, arguments, NULL));
         // Might need to delete these if handle is returned earlier in this function
-        delete bash_bin_execv;
-        delete bash_args_execv;
+        delete[] bash_bin_execv;
+        delete[] bash_args_execv;
     }
 }
 

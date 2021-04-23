@@ -45,9 +45,11 @@ void ctrlCHandler(int sig_num) {
             //    delete(this->jobs->foreground_job);            
             //    this->jobs->foreground_job = nullptr;
             signal(SIGKILL, ctrlCHandler); // I don't think we need this since SIGKILL is not overriden, see my fix in cntrol Z
+            // this ^ return error i think, you can't override sigkill handler
         }
     }
     signal(SIGKILL, ctrlCHandler); // I don't think we need this since SIGKILL is not overriden, see my fix in cntrol Z
+    // this ^ return error i think, you can't override sigkill handler
 }
 
 void alarmHandler(int sig_num) {

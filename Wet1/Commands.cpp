@@ -307,11 +307,12 @@ std::ostream &operator<<(std::ostream &os, const JobsList::JobEntry &job_entry)
 }
 void JobsList::printJobsList() const
 {
-    for (auto job_entry = jobs_list.rbegin(); job_entry != jobs_list.rend(); ++job_entry)
+    for (auto &job_entry : jobs_list)
     {
-        cout << (**job_entry) << endl;
+        cout << (*job_entry) << endl;
     }
 }
+
 const unsigned int JobsList::removeFinishedJobs()
 {
     // Due to complexity concerns, move all vector to new vector
@@ -731,6 +732,7 @@ PipeCommand::PipeCommand(const char *cmd_line, SmallShell *shell) : Command(cmd_
 
     this->command_arguement = (*pipe_segments_p).at(0);
     this->piped_arguement = (*pipe_segments_p).at(1);
+    
 }
 void PipeCommand::execute()
 {
@@ -758,7 +760,7 @@ void PipeCommand::execute()
         else { // second child
             setpgrp();
             DO_SYS(close(fd[0]));               //close read from pipe, in parent
-            DO_SYS(dup2(fd[1], STDOUT_FILENO)); // Replace stdout with the write end of the pipe
+            DO_SYS(dup2(fd[1], stderr_pipe ? STDERR_FILENO : STDOUT_FILENO)); // Replace stdout with the write end of the pipe
             DO_SYS(close(fd[1]));               // Don't need another copy of the pipe write end hanging about
             command1_p->execute();
             exit(1);

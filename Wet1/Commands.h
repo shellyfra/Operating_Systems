@@ -162,22 +162,22 @@ public:
 };
 
 class JobsList;
-
 class JobsList
 {
 
 public:
+    
     struct JobEntry
     {
-        const Command *cmd;
+        Command *cmd;
         unsigned int job_id;
         pid_t pid;
         time_t start_time;
-        bool job_stopped;
+        bool is_stopped;
 
     public:
-        JobEntry(const Command *cmd, const unsigned int job_id, const unsigned int pid, const bool is_stopped)
-            : cmd(cmd), job_id(job_id), pid(pid), start_time(time(NULL)), job_stopped(is_stopped) {}
+        JobEntry(Command *cmd, const unsigned int job_id, const unsigned int pid, const bool is_stopped)
+            : cmd(cmd), job_id(job_id), pid(pid), start_time(time(NULL)), is_stopped(false) {}
         //JobEntry() : cmd(nullptr), job_id(0), pid(0), start_time(time(NULL)), job_stopped(false) {} // cmd = null -> mask empty JobEntry
         ~JobEntry() = default;
         JobEntry(JobEntry const &) = delete;                 // Copy ctor
@@ -194,10 +194,13 @@ private:
 
     // TODO: Add your data members
 public:
+    JobEntry* foreground_job;
+
     JobsList() = default;
     ~JobsList() = default;
     JobsList &operator=(const JobsList &other) = default;                      // for now
-    void addJob(Command *cmd, pid_t child_pid, const bool &isStopped = false); // Done
+    JobEntry * addJob(Command *cmd, pid_t child_pid
+                , const bool &isStopped = false,const bool &foreground=false); // Done
     void printJobsList() const;                                                // Done
     void killAllJobs();                                                        // Done
     const unsigned int removeFinishedJobs();                                   // Done

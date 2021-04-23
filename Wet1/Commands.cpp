@@ -302,7 +302,7 @@ const string GetCurrentWorkingDirectory()
 }
 std::ostream &operator<<(std::ostream &os, const JobsList::JobEntry &job_entry)
 {
-    string suffix = job_entry.job_stopped ? " (stopped)" : EMPTY_STRING;
+    string suffix = job_entry.is_stopped ? " (stopped)" : EMPTY_STRING;
     os << '[' << job_entry.job_id << "] " << *(job_entry.cmd) << " : " << job_entry.pid << ' '
        << difftime(time(NULL), job_entry.start_time) << " secs" << suffix;
     return os;
@@ -364,7 +364,7 @@ JobsList::JobEntry *JobsList::getLastStoppedJob()
 {
     for (auto job_entry = jobs_list.rbegin(); job_entry != jobs_list.rend(); ++job_entry)
     { // Consider creating array for pointer in order to support complexity of O(1)...
-        if ((*job_entry)->job_stopped)
+        if ((*job_entry)->is_stopped)
         {
             return *job_entry; // dereference iterator and pass as pointer
         }
@@ -412,11 +412,19 @@ void ForegroundCommand::execute()
     }
 }
 
-void JobsList::addJob(Command *cmd, pid_t child_pid, const bool &isStopped)
+JobsList::JobEntry * JobsList::addJob(Command *cmd, pid_t child_pid, const bool &isStopped,const bool &foreground)
 {
     unsigned int new_job_id = removeFinishedJobs() + 1;
     JobEntry *new_job = new JobEntry(cmd, new_job_id, child_pid, isStopped);
-    this->jobs_list.push_back(new_job);
+    if(foreground)
+    {
+        this->foreground_job = new_job; // Won't be added to job_list
+    }
+    else    
+    {
+        this->jobs_list.push_back(new_job);
+    }    
+    return new_job;
 }
 
 void JobsList::killAllJobs()
@@ -452,27 +460,10 @@ JobsList::JobEntry *JobsList::getJobById(const unsigned int &jobId) const
 
 JobsList::JobEntry *JobsList::getLastJob() const
 {
-    // if (!jobs_list.empty())
-    //  {
-    /*
-        unsigned int max_job_id = 0;
-        JobsList::JobEntry* return_job;
-        for (auto &job_entry : jobs_list)
-        {
-            if (job_entry->job_id > max_job_id)
-            {
-                return_job = job_entry;
-            }
-        }
-        return return_job;
-        */
-    //    return jobs_list.back();
-    // }
     return jobs_list.empty() ? nullptr : jobs_list.back();
 }
 void ChangePromptCommand::execute()
 {
-    // args[1] always exist
     *prompt_name_p = argc == 1 ? DEFAULT_PROMPT : args[1];
 }
 void KillCommand::execute()
@@ -538,7 +529,7 @@ void BackgroundCommand::execute()
             _logError("bg: job-id " + to_string(req_job_id) + " does not exist");
             return;
         }
-        else if (!move_bg_job->job_stopped)
+        else if (!move_bg_job->is_stopped)
         { // already running in the background
 
             _logError("bg: job-id " + to_string(req_job_id) + " is already running in the background");
@@ -553,7 +544,7 @@ void BackgroundCommand::execute()
         return;
     }
     cout << move_bg_job->cmd << " : " << job_pid;
-    move_bg_job->job_stopped = false; // job was resumed
+    move_bg_job->is_stopped = false; // job was resumed
 }
 void ExternalCommand::execute()
 {
@@ -567,13 +558,15 @@ void ExternalCommand::execute()
     DO_SYS_VAL(fork(), pid);
     if (getpid() == parent_pid)
     { // parent
-
-        this->jobs->addJob(this, pid, false); // Needed for cntrol Z also
+        
+        this->jobs->addJob(this, pid, false,!is_background);
         if (!is_background)
         {
             
-            DO_SYS(waitpid(pid,&stat,WSTOPPED));            
+            DO_SYS(waitpid(pid,&stat,WSTOPPED));
+            
         }
+      
     }
     else
     { // child

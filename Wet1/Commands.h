@@ -4,6 +4,7 @@
 #include <vector>
 #include <time.h>
 #include <string.h>
+#include <memory>
 
 const unsigned short COMMAND_ARGS_MAX_LENGTH = 200;
 const unsigned short COMMAND_MAX_ARGS = 20;
@@ -90,16 +91,19 @@ void _logError(std::string text, const bool &to_stdout = false);
 
 class Command
 {
+
 protected:
+
     // TODO: Add your data members
     char *cmd_line;
     char *cmd_line_wo_ampersand;
 
 public:
-    Command(const char *usr_cmd_line);
+    Command(const char *usr_cmd_line);    
     virtual ~Command();
     virtual void execute() = 0;
     friend std::ostream &operator<<(std::ostream &, const Command &);
+    const char * const getCmd() const {return cmd_line;} ;
     //virtual void prepare();
     //virtual void cleanup();
 
@@ -182,14 +186,14 @@ class JobsList
 public:
     struct JobEntry
     {
-        Command *cmd;
+        Command* cmd;
         unsigned int job_id;
         pid_t pid;
         time_t start_time;
         bool is_stopped;
 
     public:
-        JobEntry(Command *cmd, const unsigned int job_id, const unsigned int pid, const bool is_stopped)
+        JobEntry(Command* cmd, const unsigned int job_id, const unsigned int pid, const bool is_stopped)
             : cmd(cmd), job_id(job_id), pid(pid), start_time(time(NULL)), is_stopped(is_stopped) {}
         //JobEntry() : cmd(nullptr), job_id(0), pid(0), start_time(time(NULL)), job_stopped(false) {} // cmd = null -> mask empty JobEntry
         ~JobEntry() = default;
@@ -212,7 +216,7 @@ public:
     JobsList() : foreground_job(nullptr) {};
     ~JobsList() = default;
     JobsList &operator=(const JobsList &other) = default;                                                          // for now
-    JobEntry *addJob(Command *cmd, pid_t child_pid, const bool is_stopped = false, const bool foreground = false); // Done
+    JobEntry *addJob(Command* cmd, pid_t child_pid, const bool is_stopped = false, const bool foreground = false); // Done
     void printJobsList() const;                                                                                    // Done
     void killAllJobs();                                                                                            // Done
     const unsigned int removeFinishedJobs();                                                                       // Done
@@ -232,7 +236,7 @@ protected:
 
 public:
     ExternalCommand(const char *cmd_line, JobsList *jobs);
-    virtual ~ExternalCommand() = default;
+    virtual ~ExternalCommand() {};
     void execute() override;
 };
 

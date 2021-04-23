@@ -31,19 +31,15 @@ void ctrlCHandler(int sig_num) {
         _logError("got ctrl-C",true);
         SmallShell &smash = SmallShell::getInstance();
 
-        //  See the fix i did for cntrlZ with the foreground job member
+        //  See the fix i did for cntrlZ with the foreground job member - you da best
         JobsList::JobEntry * entry = smash.jobs_list->foreground_job;
 
         if(entry){
             pid_t pid = entry->pid;
-            kill(pid, SIGKILL);
-            cout << "smash: process " << pid << " was killed" << endl;
-
-           // signal(SIGINT, ctrlCHandler); // I don't think we need this since SIGKILL is not overriden, see my fix in cntrol
+            kill(pid, SIGKILL);                       // SIGSTOP cannot be overriden
+            _logError("process "+to_string(pid) +" was killed",true);
         }
     }
-    //signal(SIGKILL, ctrlCHandler); // I don't think we need this since SIGKILL is not overriden, see my fix in cntrol Z
-    // this ^ return error i think, you can't override sigkill handler
 }
 
 void alarmHandler(int sig_num) {

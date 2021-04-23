@@ -8,6 +8,7 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <algorithm>
+
 #include "Commands.h"
 
 using namespace std;
@@ -34,7 +35,7 @@ int _parseCommandLine(const char *cmd_line, char **args);
 bool _isBackgroundCommand(const char *cmd_line);
 void _removeBackgroundSign(char *cmd_line);
 static bool _isNumber(char *str);
-
+vector<string> _stringSplit(string str, const string delimiter);
 
 // String manipulation
 string _ltrim(const string &s)
@@ -121,8 +122,8 @@ Command::Command(const char *usr_cmd_line) : cmd_line(new char[COMMAND_MAX_LENGT
 };
 Command::~Command()
 {
-    free(cmd_line);
-    free(cmd_line_wo_ampersand);
+    delete[] cmd_line;
+    delete[] cmd_line_wo_ampersand;
 }
 SmallShell::~SmallShell()
 {
@@ -138,8 +139,11 @@ string SmallShell::getPromptName()
 Command *SmallShell::CreateCommand(const char *cmd_line)
 {
     // For example:
-
-    string cmd_s = _trim(string(cmd_line));
+    char *temp_cmd = new char[COMMAND_MAX_LENGTH + 1];
+    strcpy(temp_cmd, cmd_line);
+    _removeBackgroundSign(temp_cmd);
+    string cmd_s = _trim(string(temp_cmd));
+    delete[] temp_cmd;
     string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
 
     if (cmd_s.find('>') != std::string::npos)
@@ -190,7 +194,6 @@ Command *SmallShell::CreateCommand(const char *cmd_line)
     {
         return new CatCommand(cmd_line);
     }
-
     else
     {
         return new ExternalCommand(cmd_line, jobs_list);
@@ -204,12 +207,12 @@ void SmallShell::executeCommand(const char *cmd_line)
     // TODO: Add your implementation here
     // for example:
     jobs_list->removeFinishedJobs();
-    Command *cmd = CreateCommand(cmd_line);
+    Command* cmd = (CreateCommand(cmd_line));
     if (cmd)
     {
         cmd->execute();
     }
-
+    // delete cmd; -> Memory leak here! not being deleted, but also this deletes info for jobs
     // Please note that you must fork smash process for some commands (e.g., external commands....)
 }
 
@@ -243,7 +246,7 @@ void JobsCommand::execute()
 void _logError(std::string text, const bool &to_stdout)
 {
     std::ostream &output_stream = to_stdout ? std::cout : std::cerr;
-    string prefix = to_stdout ? STDOUT_PREFIX :ERROR_PREFIX;
+    string prefix = to_stdout ? STDOUT_PREFIX : ERROR_PREFIX;
     output_stream << prefix << ' ' << text << std::endl;
 }
 void ChangeDirCommand::execute()
@@ -383,13 +386,13 @@ void ForegroundCommand::execute()
     {
         _logError("fg: jobs list is empty");
     }
-    else if (argc > 2 || !_isNumber(args[1]))
+    else if (argc > 2 || (argc == 2 && !_isNumber(args[1])))
     {
         _logError("fg: invalid arguments");
     }
     else
     {
-        const unsigned int job_id = std::stoi(args[1]);
+        const unsigned int job_id = argc == 2 ? std::stoi(args[1]) : jobs->getLastJob()->job_id;
         JobsList::JobEntry *job_entry = this->jobs->getJobById(job_id);
         if (job_id < 0 || !job_entry)
         {
@@ -402,37 +405,37 @@ void ForegroundCommand::execute()
             DO_SYS(kill(job_pid, SIGCONT));
 
             // SIGCONT succeeded
-           
+
             cout << (*job_entry->cmd) << " : " << (job_entry->pid) << endl;
-            this->jobs->addJob(job_entry->cmd,job_entry->pid,false,true); // Adde job to foreground
+            this->jobs->addJob(job_entry->cmd, job_entry->pid, false, true); // Adde job to foreground
             this->jobs->removeJobById(job_id);
             int status;
 
-            
-              
-            DO_SYS(waitpid(job_pid,&status,WSTOPPED));
+            DO_SYS(waitpid(job_pid, &status, WSTOPPED));
             // Parent handle will reach here after child has ended or stopped (due to control+Z),
             // So anywho we remove the foreground job so cntl+Z won't catch the foreground job again
-            delete(this->jobs->foreground_job);            
+            delete (this->jobs->foreground_job);
             this->jobs->foreground_job = nullptr;
         }
     }
 }
 
-JobsList::JobEntry * JobsList::addJob(Command *cmd, pid_t child_pid, const bool is_stopped,const bool foreground)
+JobsList::JobEntry *JobsList::addJob(Command* cmd, pid_t child_pid, const bool is_stopped, const bool foreground)
 {
+
     
     unsigned int new_job_id = removeFinishedJobs() + 1;
+    //Command *temp =new Command(cmd->getCmd());
     JobEntry *new_job = new JobEntry(cmd, new_job_id, child_pid, is_stopped);
-    if(foreground)
+    if (foreground)
     {
         this->foreground_job = new_job; // Won't be added to job_list
     }
-    else    
+    else
     {
-        
+
         this->jobs_list.push_back(new_job);
-    }    
+    }
     return new_job;
 }
 
@@ -478,7 +481,7 @@ void ChangePromptCommand::execute()
 void KillCommand::execute()
 {
     //parse args
-    if (this->argc != 3 || !_isNumber(args[1]) || stoi(args[1])>=0 || !_isNumber(args[2]))
+    if (this->argc != 3 || !_isNumber(args[1]) || stoi(args[1]) >= 0 || !_isNumber(args[2]))
     {
         _logError("kill: invalid arguments");
         return;
@@ -500,19 +503,19 @@ void KillCommand::execute()
 void QuitCommand::execute()
 {
 
-    if (argc>=2 && strcmp(args[1], "kill") == 0)
+    if (argc >= 2 && strcmp(args[1], "kill") == 0)
     {
         jobs->killAllJobs();
-        while (waitpid(-1, NULL, WNOHANG) != -1);
+        while (waitpid(-1, NULL, WNOHANG) != -1)
+            ;
     }
     should_run = false;
-
 }
 
 void BackgroundCommand::execute()
 {
 
-    if (this->argc > 2 || !_isNumber(args[1]))
+    if (this->argc > 2 || (this->argc == 2 && !_isNumber(args[1])))
     {
         _logError("bg: invalid arguments");
         return;
@@ -562,29 +565,27 @@ void ExternalCommand::execute()
     string s = string(bash_bin);
 
     // Allocating these for the execv. Will need to delete these:
-    char * bash_bin_execv =new char[strlen(bash_bin)+1];
-    char * bash_args_execv =new char[strlen(bash_args)+1];
-    strcpy(bash_bin_execv,bash_bin);
-    strcpy(bash_args_execv,bash_args);
+    char *bash_bin_execv = new char[strlen(bash_bin) + 1];
+    char *bash_args_execv = new char[strlen(bash_args) + 1];
+    strcpy(bash_bin_execv, bash_bin);
+    strcpy(bash_args_execv, bash_args);
 
-    char *const  arguments[] = {bash_bin_execv, bash_args_execv, this->cmd_line_wo_ampersand, nullptr};
+    char *const arguments[] = {bash_bin_execv, bash_args_execv, this->cmd_line_wo_ampersand, nullptr};
     pid_t pid;
     DO_SYS_VAL(fork(), pid);
     if (getpid() == parent_pid)
     { // parent
-        
-        this->jobs->addJob(this, pid, false,!is_background);
+
+        this->jobs->addJob(this, pid, false, !is_background);
         if (!is_background)
         {
-            
-            DO_SYS(waitpid(pid,&stat,WSTOPPED));
+
+            DO_SYS(waitpid(pid, &stat, WSTOPPED));
             // Parent handle will reach here after child has ended or stopped (due to control+Z),
             // So anywho we remove the foreground job so cntl+Z won't catch the foreground job again
-            delete(this->jobs->foreground_job);            
+            delete (this->jobs->foreground_job);
             this->jobs->foreground_job = nullptr;
-            
         }
-      
     }
     else
     { // child
@@ -625,7 +626,9 @@ void CatCommand::execute()
     }
 }
 
-void RedirectionCommand::checkRedirectType() {
+// This is called only once, shouldn't we just put this in the redirection constructor?
+void RedirectionCommand::checkRedirectType()
+{
     string str(cmd_line);
     std::string override_right = ">";
     std::string append_right = ">>";
@@ -635,44 +638,79 @@ void RedirectionCommand::checkRedirectType() {
     int pos = 0;
     unsigned int temp_pos = 0;
 
-    if ((temp_pos = str.find(append_right, pos)) != std::string::npos){
+    if ((temp_pos = str.find(append_right, pos)) != std::string::npos)
+    {
         pos = temp_pos;
         this->redirect = APPEND_RIGHT;
         first_command = str.substr(0, pos);
         //pos +=1;
         delimiter = append_right;
     }
-    else if ((temp_pos = str.find(override_right)) != std::string::npos){
+    else if ((temp_pos = str.find(override_right)) != std::string::npos)
+    {
         pos = temp_pos;
         this->redirect = OVERRIDE_RIGHT;
         first_command = str.substr(0, pos);
         delimiter = override_right;
     }
-    else if ((temp_pos = str.find(append_left)) != std::string::npos){
+    else if ((temp_pos = str.find(append_left)) != std::string::npos)
+    {
         pos = temp_pos;
         this->redirect = APPEND_LEFT;
         first_command = str.substr(0, pos);
         //pos +=1; // for second >
         delimiter = append_left;
     }
-    else if ((temp_pos = str.find(override_left)) != std::string::npos){
+    else if ((temp_pos = str.find(override_left)) != std::string::npos)
+    {
         pos = temp_pos;
         this->redirect = OVERRIDE_LEFT;
         first_command = str.substr(0, pos);
         delimiter = override_left;
     }
-    else {
-        return;// CHECK!!!
+    else
+    {
+        return; // CHECK!!!
     }
+
     second_output_file = str.erase(0, pos + delimiter.length()); //CHECK WHAT ABOUT & ?
     second_output_file.erase(remove(second_output_file.begin(), second_output_file.end(), '&'), second_output_file.end());
 }
 
 RedirectionCommand::RedirectionCommand(const char *cmd_line, SmallShell *shell) : Command(cmd_line), redirect(APPEND_RIGHT), shell(shell)
 {
-    checkRedirectType();
-}
+    //checkRedirectType();
+    // ^ Doesn't seem to split files accordingly, currently using the logic from pipes:
 
+    string command_str = string(cmd_line);
+    std::string pipe = ">";
+    std::string pipe_stderr = ">>";
+
+    vector<string> pipe_segments = _stringSplit(command_str, pipe);
+    vector<string> pipe_stderr_segments = _stringSplit(command_str, pipe_stderr);
+    vector<string> *pipe_segments_p;
+    this->redirect = (pipe_stderr_segments.size() == 2) ? Redirect_type::APPEND_RIGHT : Redirect_type::OVERRIDE_RIGHT;
+    pipe_segments_p = redirect == APPEND_RIGHT ? &pipe_stderr_segments : &pipe_segments;
+
+    this->first_command = (*pipe_segments_p).at(0);
+    this->second_output_file = (*pipe_segments_p).at(1);
+}
+void RedirectionCommand::execute()
+{
+    int old_fd;
+    int new_fd;
+    second_output_file = _trim(second_output_file);
+    int oflags = (redirect == OVERRIDE_RIGHT) ? O_WRONLY | O_CREAT | O_TRUNC : O_WRONLY | O_CREAT | O_APPEND;
+
+    DO_SYS_VAL_NO_RETURN(dup(STDOUT_FILENO), old_fd);
+    DO_SYS(close(STDOUT_FILENO)); // STDOUT
+    DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(), oflags, 0666), new_fd);
+    this->shell->executeCommand(first_command.c_str());
+    DO_SYS(close(new_fd));
+    DO_SYS(dup2(old_fd, STDOUT_FILENO));
+    DO_SYS(close(old_fd));
+}
+/*
 void RedirectionCommand::execute()
 {
     int old_fd;
@@ -687,6 +725,7 @@ void RedirectionCommand::execute()
             DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),oflags, 0666),new_fd);
         }
         else { // APPEND_RIGHT
+            // What's difference? its the same
             DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),oflags, 0666), new_fd);
         }
         this->shell->executeCommand(first_command.c_str());
@@ -701,6 +740,7 @@ void RedirectionCommand::execute()
             DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),oflags, 0666),new_fd);
         }
         else { // APPEND_RIGHT
+            // What's difference? its the same
             DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),oflags, 0666), new_fd);
         }
         this->shell->executeCommand(first_command.c_str());
@@ -712,6 +752,7 @@ void RedirectionCommand::execute()
         return;
     }
 }
+*/
 vector<string> _stringSplit(string str, const string delimiter)
 {
     size_t pos = 0;
@@ -739,12 +780,11 @@ PipeCommand::PipeCommand(const char *cmd_line, SmallShell *shell) : Command(cmd_
 
     this->command_arguement = (*pipe_segments_p).at(0);
     this->piped_arguement = (*pipe_segments_p).at(1);
-    
 }
 void PipeCommand::execute()
 {
-    Command *command1_p = shell->CreateCommand(command_arguement.c_str());
-    Command *command2_p = shell->CreateCommand(piped_arguement.c_str());
+    std::shared_ptr<Command> command1_p(shell->CreateCommand(command_arguement.c_str()));
+    std::shared_ptr<Command> command2_p(shell->CreateCommand(piped_arguement.c_str()));
 
     //int saved_stdout = dup(STDOUT_FILENO);
     int fd[2];
@@ -752,23 +792,25 @@ void PipeCommand::execute()
     pid_t parent_pid = getpid();
     pid_t pid1;
     pid_t pid2;
-    DO_SYS_VAL(fork(),pid1);
+    DO_SYS_VAL(fork(), pid1);
     if (parent_pid == getpid())
     { // Parent
-        DO_SYS_VAL(fork(),pid2);
-        if (parent_pid == getpid()) {
+        DO_SYS_VAL(fork(), pid2);
+        if (parent_pid == getpid())
+        {
             // Parent will get here, restore channels
             DO_SYS(close(fd[STDOUT_FILENO]));
             DO_SYS(close(fd[STDIN_FILENO]));
             int status;
-            DO_SYS(waitpid(pid1,&status,0));
-            DO_SYS(waitpid(pid2,&status,0));
+            DO_SYS(waitpid(pid1, &status, 0));
+            DO_SYS(waitpid(pid2, &status, 0));
         }
-        else { // second child
+        else
+        { // second child
             setpgrp();
-            DO_SYS(close(fd[0]));               //close read from pipe, in parent
+            DO_SYS(close(fd[0]));                                             //close read from pipe, in parent
             DO_SYS(dup2(fd[1], stderr_pipe ? STDERR_FILENO : STDOUT_FILENO)); // Replace stdout with the write end of the pipe
-            DO_SYS(close(fd[1]));               // Don't need another copy of the pipe write end hanging about
+            DO_SYS(close(fd[1]));                                             // Don't need another copy of the pipe write end hanging about
             command1_p->execute();
             exit(1);
         }
@@ -782,6 +824,4 @@ void PipeCommand::execute()
         command2_p->execute();
         exit(1);
     }
-
 }
-

@@ -636,33 +636,30 @@ void RedirectionCommand::checkRedirectType()
     std::string append_left = "<<";
     string delimiter;
     int pos = 0;
-    unsigned int temp_pos = 0;
+    int temp_pos = 0;
+    const int npos = -1;
 
-    if ((temp_pos = str.find(append_right, pos)) != std::string::npos)
-    {
+    if ((temp_pos = str.find(append_right, pos)) != npos){
         pos = temp_pos;
         this->redirect = APPEND_RIGHT;
         first_command = str.substr(0, pos);
         //pos +=1;
         delimiter = append_right;
     }
-    else if ((temp_pos = str.find(override_right)) != std::string::npos)
-    {
+    else if ((temp_pos = str.find(override_right)) != npos){
         pos = temp_pos;
         this->redirect = OVERRIDE_RIGHT;
         first_command = str.substr(0, pos);
         delimiter = override_right;
     }
-    else if ((temp_pos = str.find(append_left)) != std::string::npos)
-    {
+    else if ((temp_pos = str.find(append_left)) != npos){
         pos = temp_pos;
         this->redirect = APPEND_LEFT;
         first_command = str.substr(0, pos);
         //pos +=1; // for second >
         delimiter = append_left;
     }
-    else if ((temp_pos = str.find(override_left)) != std::string::npos)
-    {
+    else if ((temp_pos = str.find(override_left)) != npos){
         pos = temp_pos;
         this->redirect = OVERRIDE_LEFT;
         first_command = str.substr(0, pos);

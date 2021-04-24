@@ -708,39 +708,17 @@ void RedirectionCommand::execute()
     int new_fd;
     second_output_file = _trim(second_output_file);
     int oflags =  ((this->redirect == OVERRIDE_RIGHT) || (this->redirect == OVERRIDE_LEFT)) ? O_WRONLY | O_CREAT | O_TRUNC : O_WRONLY | O_CREAT | O_APPEND;
+    int std_channel = ((this->redirect == OVERRIDE_RIGHT) || (this->redirect == APPEND_RIGHT)) ? STDOUT_FILENO : STDIN_FILENO;
 
-    if (this->redirect == OVERRIDE_RIGHT || this->redirect == APPEND_RIGHT){
-        DO_SYS_VAL_NO_RETURN(dup(STDOUT_FILENO), old_fd);
-        DO_SYS(close(STDOUT_FILENO)); // STDOUT
-        if (this->redirect == OVERRIDE_RIGHT){
-            DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),oflags, 0666),new_fd);
-        }
-        else { // APPEND_RIGHT
-            DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),oflags, 0666), new_fd);
-        }
-        this->shell->executeCommand(first_command.c_str());
-        DO_SYS(close(new_fd));
-        DO_SYS(dup2(old_fd, STDOUT_FILENO));
-        DO_SYS(close(old_fd));
-    }
-    else if (this->redirect == OVERRIDE_LEFT || this->redirect == APPEND_LEFT){
-        DO_SYS_VAL_NO_RETURN(dup(STDIN_FILENO), old_fd);
-        DO_SYS(close(STDIN_FILENO)); // STDIN
-        if (this->redirect == OVERRIDE_RIGHT){
-            DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),oflags, 0666),new_fd);
-        }
-        else { // APPEND_RIGHT
-            DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),oflags, 0666), new_fd);
-        }
-        this->shell->executeCommand(first_command.c_str());
-        DO_SYS(close(new_fd));
-        DO_SYS(dup2(old_fd, STDIN_FILENO));
-        DO_SYS(close(old_fd));
-    }
-    else {
-        return;
-    }
+    DO_SYS_VAL_NO_RETURN(dup(std_channel), old_fd);
+    DO_SYS(close(std_channel)); // STDOUT
+    DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),oflags, 0666),new_fd);
+    this->shell->executeCommand(first_command.c_str());
+    DO_SYS(close(new_fd));
+    DO_SYS(dup2(old_fd, std_channel));
+    DO_SYS(close(old_fd));
 }
+
 vector<string> _stringSplit(string str, const string delimiter)
 {
     size_t pos = 0;

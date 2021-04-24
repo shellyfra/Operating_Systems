@@ -379,43 +379,51 @@ std::ostream &operator<<(std::ostream &os, const Command &cmd)
 
 void ForegroundCommand::execute()
 {
-    if (!this->jobs->getLastJob()) // No jobs
+    if ( (argc == 1) && !this->jobs->getLastJob()) // No jobs
     {
         _logError("fg: jobs list is empty");
     }
-    else if (argc > 2 || !_isNumber(args[1]))
+    else if (argc > 2 || ((argc > 2) && !_isNumber(args[1])))
     {
         _logError("fg: invalid arguments");
     }
     else
     {
-        const unsigned int job_id = std::stoi(args[1]);
-        JobsList::JobEntry *job_entry = this->jobs->getJobById(job_id);
-        if (job_id < 0 || !job_entry)
-        {
-            string error_msg = "fg: job-id " + std::to_string(job_id) + " does not exist";
-            _logError(error_msg);
+        JobsList::JobEntry *job_entry;
+        unsigned int job_id;
+        if (argc == 1){
+            job_entry = this->jobs->getLastJob();
+            job_id = job_entry->job_id;
         }
-        else
-        {
-            pid_t job_pid = job_entry->pid;
-            DO_SYS(kill(job_pid, SIGCONT));
-
-            // SIGCONT succeeded
-           
-            cout << (*job_entry->cmd) << " : " << (job_entry->pid) << endl;
-            this->jobs->addJob(job_entry->cmd,job_entry->pid,false,true); // Adde job to foreground
-            this->jobs->removeJobById(job_id);
-            int status;
-
-            
-              
-            DO_SYS(waitpid(job_pid,&status,WSTOPPED));
-            // Parent handle will reach here after child has ended or stopped (due to control+Z),
-            // So anywho we remove the foreground job so cntl+Z won't catch the foreground job again
-            delete(this->jobs->foreground_job);            
-            this->jobs->foreground_job = nullptr;
+        else {
+            job_id = std::stoi(args[1]);
+            job_entry = this->jobs->getJobById(job_id);
+            if (job_id < 0 || !job_entry)
+            {
+                string error_msg = "fg: job-id " + std::to_string(job_id) + " does not exist";
+                _logError(error_msg);
+                return;
+            }
         }
+        
+        pid_t job_pid = job_entry->pid;
+        DO_SYS(kill(job_pid, SIGCONT));
+
+        // SIGCONT succeeded
+
+        cout << (*job_entry->cmd) << " : " << (job_entry->pid) << endl;
+        this->jobs->addJob(job_entry->cmd,job_entry->pid,false,true); // Adde job to foreground
+        this->jobs->removeJobById(job_id);
+        int status;
+
+
+
+        DO_SYS(waitpid(job_pid,&status,WSTOPPED));
+        // Parent handle will reach here after child has ended or stopped (due to control+Z),
+        // So anywho we remove the foreground job so cntl+Z won't catch the foreground job again
+        delete(this->jobs->foreground_job);
+        this->jobs->foreground_job = nullptr;
+
     }
 }
 

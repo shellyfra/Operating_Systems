@@ -677,7 +677,7 @@ void RedirectionCommand::checkRedirectType()
 RedirectionCommand::RedirectionCommand(const char *cmd_line, SmallShell *shell) : Command(cmd_line), redirect(APPEND_RIGHT), shell(shell)
 {
     //checkRedirectType();
-    // ^ Doesn't seem to split files accordingly, currently using the logic from pipes:
+   
 
     string command_str = string(cmd_line);
     std::string pipe = ">";

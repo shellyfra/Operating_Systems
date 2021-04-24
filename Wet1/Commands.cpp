@@ -496,7 +496,27 @@ void KillCommand::execute()
     //DO_SYS(kill(entry->pid, int(first_arg.at(0)))); // Won't work if signal is above 9..
     DO_SYS(kill(entry->pid, signal_num));
     cout << "signal number " << signal_num << " was sent to pid " << entry->pid << endl;
+    switch (signal_num) {
+        case SIGCONT: this->ToForeground(entry); break;
+        case SIGSTOP : entry->is_stopped = true; break;
+    }
+
 }
+void KillCommand::ToForeground(JobsList::JobEntry* entry){
+    pid_t job_pid = entry->pid;
+    //DO_SYS(kill(job_pid, SIGCONT)); - already DONE!!
+// SIGCONT succeeded
+    if (!entry->is_stopped) return; // if running in foreground - do nothing
+    this->jobs->addJob(entry->cmd,entry->pid,false,true); // Add job to foreground
+    this->jobs->removeJobById(job_pid);
+
+    DO_SYS(waitpid(job_pid,NULL,WSTOPPED));
+    // Parent handle will reach here after child has ended or stopped (due to control+Z),
+    // So anywho we remove the foreground job so cntl+Z won't catch the foreground job again
+    delete(this->jobs->foreground_job);
+    this->jobs->foreground_job = nullptr;
+}
+
 void QuitCommand::execute()
 {
 

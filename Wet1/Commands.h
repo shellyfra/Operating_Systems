@@ -277,6 +277,7 @@ public:
     KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line), jobs(jobs) {}
     virtual ~KillCommand() {}
     void execute() override;
+    void ToForeground(JobsList::JobEntry* entry);
 };
 
 class ForegroundCommand : public BuiltInCommand

@@ -382,7 +382,7 @@ std::ostream &operator<<(std::ostream &os, const Command &cmd)
 
 void ForegroundCommand::execute()
 {
-    if (!this->jobs->getLastJob()) // No jobs
+    if ( (argc == 1) && !this->jobs->getLastJob()) // No jobs
     {
         _logError("fg: jobs list is empty");
     }
@@ -417,6 +417,25 @@ void ForegroundCommand::execute()
             delete (this->jobs->foreground_job);
             this->jobs->foreground_job = nullptr;
         }
+        
+        pid_t job_pid = job_entry->pid;
+        DO_SYS(kill(job_pid, SIGCONT));
+
+        // SIGCONT succeeded
+
+        cout << (*job_entry->cmd) << " : " << (job_entry->pid) << endl;
+        this->jobs->addJob(job_entry->cmd,job_entry->pid,false,true); // Adde job to foreground
+        this->jobs->removeJobById(job_id);
+        int status;
+
+
+
+        DO_SYS(waitpid(job_pid,&status,WSTOPPED));
+        // Parent handle will reach here after child has ended or stopped (due to control+Z),
+        // So anywho we remove the foreground job so cntl+Z won't catch the foreground job again
+        delete(this->jobs->foreground_job);
+        this->jobs->foreground_job = nullptr;
+
     }
 }
 
@@ -499,7 +518,27 @@ void KillCommand::execute()
     //DO_SYS(kill(entry->pid, int(first_arg.at(0)))); // Won't work if signal is above 9..
     DO_SYS(kill(entry->pid, signal_num));
     cout << "signal number " << signal_num << " was sent to pid " << entry->pid << endl;
+    switch (signal_num) {
+        case SIGCONT: this->ToForeground(entry); break;
+        case SIGSTOP : entry->is_stopped = true; break;
+    }
+
 }
+void KillCommand::ToForeground(JobsList::JobEntry* entry){
+    pid_t job_pid = entry->pid;
+    //DO_SYS(kill(job_pid, SIGCONT)); - already DONE!!
+// SIGCONT succeeded
+    if (!entry->is_stopped) return; // if running in foreground - do nothing
+    this->jobs->addJob(entry->cmd,entry->pid,false,true); // Add job to foreground
+    this->jobs->removeJobById(job_pid);
+
+    DO_SYS(waitpid(job_pid,NULL,WSTOPPED));
+    // Parent handle will reach here after child has ended or stopped (due to control+Z),
+    // So anywho we remove the foreground job so cntl+Z won't catch the foreground job again
+    delete(this->jobs->foreground_job);
+    this->jobs->foreground_job = nullptr;
+}
+
 void QuitCommand::execute()
 {
 
@@ -676,9 +715,9 @@ void RedirectionCommand::checkRedirectType()
 
 RedirectionCommand::RedirectionCommand(const char *cmd_line, SmallShell *shell) : Command(cmd_line), redirect(APPEND_RIGHT), shell(shell)
 {
-    //checkRedirectType();
+    checkRedirectType();
    
-
+/*
     string command_str = string(cmd_line);
     std::string pipe = ">";
     std::string pipe_stderr = ">>";
@@ -691,23 +730,28 @@ RedirectionCommand::RedirectionCommand(const char *cmd_line, SmallShell *shell) 
 
     this->first_command = (*pipe_segments_p).at(0);
     this->second_output_file = (*pipe_segments_p).at(1);
+    */
 }
+/*
 void RedirectionCommand::execute()
 {
     int old_fd;
     int new_fd;
     second_output_file = _trim(second_output_file);
-    int oflags = (redirect == OVERRIDE_RIGHT) ? O_WRONLY | O_CREAT | O_TRUNC : O_WRONLY | O_CREAT | O_APPEND;
+    int oflags = ((redirect == OVERRIDE_RIGHT) || (redirect == OVERRIDE_LEFT)) ? O_WRONLY | O_CREAT | O_TRUNC : O_WRONLY | O_CREAT | O_APPEND;
+    int standard_channel = ((redirect == OVERRIDE_RIGHT) || (redirect == APPEND_RIGHT)) ? STDOUT_FILENO : STDIN_FILENO;
 
-    DO_SYS_VAL_NO_RETURN(dup(STDOUT_FILENO), old_fd);
-    DO_SYS(close(STDOUT_FILENO)); // STDOUT
+    DO_SYS_VAL_NO_RETURN(dup(standard_channel), old_fd);
+    DO_SYS(close(standard_channel));
     DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(), oflags, 0666), new_fd);
     this->shell->executeCommand(first_command.c_str());
     DO_SYS(close(new_fd));
-    DO_SYS(dup2(old_fd, STDOUT_FILENO));
+    DO_SYS(dup2(old_fd, standard_channel));
     DO_SYS(close(old_fd));
 }
-/*
+*/
+// ^ This is as exactly as yours witout if/else ifs
+
 void RedirectionCommand::execute()
 {
     int old_fd;
@@ -722,7 +766,7 @@ void RedirectionCommand::execute()
             DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),oflags, 0666),new_fd);
         }
         else { // APPEND_RIGHT
-            // What's difference? its the same
+            // What's difference? its the same as in the if ^
             DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),oflags, 0666), new_fd);
         }
         this->shell->executeCommand(first_command.c_str());
@@ -737,7 +781,7 @@ void RedirectionCommand::execute()
             DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),oflags, 0666),new_fd);
         }
         else { // APPEND_RIGHT
-            // What's difference? its the same
+            // What's difference? its the same as in the if ^
             DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(),oflags, 0666), new_fd);
         }
         this->shell->executeCommand(first_command.c_str());
@@ -745,11 +789,12 @@ void RedirectionCommand::execute()
         DO_SYS(dup2(old_fd, STDIN_FILENO));
         DO_SYS(close(old_fd));
     }
-    else {
+    else { 
+        // Will never reach here since you checked this is a redirect command
         return;
     }
 }
-*/
+
 vector<string> _stringSplit(string str, const string delimiter)
 {
     size_t pos = 0;

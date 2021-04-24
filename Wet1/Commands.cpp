@@ -519,7 +519,7 @@ void KillCommand::execute()
     DO_SYS(kill(entry->pid, signal_num));
     cout << "signal number " << signal_num << " was sent to pid " << entry->pid << endl;
     switch (signal_num) {
-        case SIGCONT: this->ToForeground(entry); break;
+        case SIGCONT: entry->is_stopped = false; break;
         case SIGSTOP : entry->is_stopped = true; break;
     }
 

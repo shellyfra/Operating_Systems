@@ -51,59 +51,57 @@ enum Redirect_type
     APPEND_RIGHT
 };
 
-#define DO_SYS(syscall)                                                               \
-    do                                                                                \
-    {                                                                                 \
-        /* safely invoke a system call */                                             \
-        if ((syscall) == -1)                                                          \
-        {                                                                             \
-            string syscall_call = string(#syscall);                                   \
-            string syscall_name = syscall_call.substr(0, syscall_call.find('('));     \
-            string error_msg = string(ERROR_PREFIX) + ' ' + syscall_name + " failed"; \
-            perror(error_msg.c_str());                                                \
-            return;                                                                   \
-        }                                                                             \
+#define DO_SYS(syscall)                                                                         \
+    do                                                                                          \
+    {                                                                                           \
+        /* safely invoke a system call */                                                       \
+        if ((syscall) == -1)                                                                    \
+        {                                                                                       \
+            std::string syscall_call = std::string(#syscall);                                   \
+            std::string syscall_name = syscall_call.substr(0, syscall_call.find('('));          \
+            std::string error_msg = std::string(ERROR_PREFIX) + ' ' + syscall_name + " failed"; \
+            perror(error_msg.c_str());                                                          \
+            return;                                                                             \
+        }                                                                                       \
     } while (0)
 
-#define DO_SYS_VAL(syscall, var)                                                      \
-    do                                                                                \
-    {                                                                                 \
-        /* safely invoke a system call */                                             \
-        var = (syscall);                                                              \
-        if (var == -1)                                                                \
-        {                                                                             \
-            string syscall_call = string(#syscall);                                   \
-            string syscall_name = syscall_call.substr(0, syscall_call.find('('));     \
-            string error_msg = string(ERROR_PREFIX) + ' ' + syscall_name + " failed"; \
-            perror(error_msg.c_str());                                                \
-            return;                                                                   \
-        }                                                                             \
+#define DO_SYS_VAL(syscall, var)                                                                \
+    do                                                                                          \
+    {                                                                                           \
+        /* safely invoke a system call */                                                       \
+        var = (syscall);                                                                        \
+        if (var == -1)                                                                          \
+        {                                                                                       \
+            std::string syscall_call = string(#syscall);                                        \
+            std::string syscall_name = syscall_call.substr(0, syscall_call.find('('));          \
+            std::string error_msg = std::string(ERROR_PREFIX) + ' ' + syscall_name + " failed"; \
+            perror(error_msg.c_str());                                                          \
+            return;                                                                             \
+        }                                                                                       \
     } while (0)
 
-#define DO_SYS_VAL_NO_RETURN(syscall, var)                                            \
-    do                                                                                \
-    {                                                                                 \
-        /* safely invoke a system call */                                             \
-        var = (syscall);                                                              \
-        if (var == -1)                                                                \
-        {                                                                             \
-            string syscall_call = string(#syscall);                                   \
-            string syscall_name = syscall_call.substr(0, syscall_call.find('('));     \
-            string error_msg = string(ERROR_PREFIX) + ' ' + syscall_name + " failed"; \
-            perror(error_msg.c_str());                                                \
-        }                                                                             \
+#define DO_SYS_VAL_NO_RETURN(syscall, var)                                                      \
+    do                                                                                          \
+    {                                                                                           \
+        /* safely invoke a system call */                                                       \
+        var = (syscall);                                                                        \
+        if (var == -1)                                                                          \
+        {                                                                                       \
+            std::string syscall_call = std::string(#syscall);                                   \
+            std::string syscall_name = syscall_call.substr(0, syscall_call.find('('));          \
+            std::string error_msg = std::string(ERROR_PREFIX) + ' ' + syscall_name + " failed"; \
+            perror(error_msg.c_str());                                                          \
+        }                                                                                       \
     } while (0)
 
 void print_time(const time_t new_alarm);
 void _logError(std::string text, const bool &to_stdout = false);
 class JobsList;
 
-
 class Command
 {
 
 protected:
-
     // TODO: Add your data members
     char **args;
     int argc;
@@ -111,11 +109,11 @@ protected:
     char *cmd_line_wo_ampersand;
 
 public:
-    Command(const char *usr_cmd_line);    
+    Command(const char *usr_cmd_line);
     virtual ~Command();
     virtual void execute() = 0;
     friend std::ostream &operator<<(std::ostream &, const Command &);
-    const char * const getCmd() const {return cmd_line;} ;
+    const char *const getCmd() const { return cmd_line; };
     //virtual void prepare();
     //virtual void cleanup();
 
@@ -142,7 +140,6 @@ public:
     virtual ~PipeCommand() {}
     void execute() override;
 };
-
 
 class TimeoutCommand : public Command
 {
@@ -200,14 +197,13 @@ public:
     void execute() override;
 };
 
-
 class JobsList
 {
 
 public:
     struct JobEntry
     {
-        Command* cmd;
+        Command *cmd;
         unsigned int job_id;
         pid_t pid;
         time_t start_time;
@@ -216,9 +212,8 @@ public:
         bool is_stopped;
 
     public:
-        JobEntry(Command* cmd, const unsigned int job_id, const unsigned int pid
-            , const bool is_stopped , const time_t expiry_time)
-            : cmd(cmd), job_id(job_id), pid(pid), start_time(time(NULL)),  expiry_time(expiry_time) ,is_stopped(is_stopped)  {}
+        JobEntry(Command *cmd, const unsigned int job_id, const unsigned int pid, const bool is_stopped, const time_t expiry_time)
+            : cmd(cmd), job_id(job_id), pid(pid), start_time(time(NULL)), expiry_time(expiry_time), is_stopped(is_stopped) {}
         //JobEntry() : cmd(nullptr), job_id(0), pid(0), start_time(time(NULL)), job_stopped(false) {} // cmd = null -> mask empty JobEntry
         ~JobEntry() = default;
         JobEntry(JobEntry const &) = delete;                 // Copy ctor
@@ -238,21 +233,20 @@ private:
 public:
     JobEntry *foreground_job;
 
-    JobsList() : foreground_job(nullptr) {};
+    JobsList() : foreground_job(nullptr){};
     ~JobsList() = default;
-    JobsList &operator=(const JobsList &other) = default;                                                          // for now
-    JobEntry *addJob(Command* cmd, pid_t child_pid, const bool is_stopped = false, const bool foreground = false
-                                                    , const time_t expiry_time = MAX_TIME);
-    void printJobsList() const;  
+    JobsList &operator=(const JobsList &other) = default; // for now
+    JobEntry *addJob(Command *cmd, pid_t child_pid, const bool is_stopped = false, const bool foreground = false, const time_t expiry_time = MAX_TIME);
+    void printJobsList() const;
     //void printSchedJobsList() const  ;                                                                                // Done
-    void killAllJobs();                                                                                            // Done
-    const unsigned int removeFinishedJobs(const bool &remove_scheduled=false);
+    void killAllJobs(); // Done
+    const unsigned int removeFinishedJobs(const bool &remove_scheduled = false);
     void evaluateAlarm() const;
-   //void removeScheduledJobs();       
-    JobEntry *getJobById(const unsigned int &jobId) const;                                                         //Done
-    void removeJobById(const unsigned int &jobId);                                                                 // Done
-    JobEntry *getLastJob() const;                                                                                  //Done, For fg or for figuring out what is the maximal ID
-    JobEntry *getLastStoppedJob();                                                                                 // For bg , Shai
+    //void removeScheduledJobs();
+    JobEntry *getJobById(const unsigned int &jobId) const; //Done
+    void removeJobById(const unsigned int &jobId);         // Done
+    JobEntry *getLastJob() const;                          //Done, For fg or for figuring out what is the maximal ID
+    JobEntry *getLastStoppedJob();                         // For bg , Shai
     // TODO: Add extra methods or modify exisitng ones as needed
     // TODO add operators
 };
@@ -265,7 +259,7 @@ protected:
 
 public:
     ExternalCommand(const char *cmd_line, JobsList *jobs);
-    virtual ~ExternalCommand() {};
+    virtual ~ExternalCommand(){};
     void execute() override;
 };
 
@@ -349,18 +343,18 @@ private:
 
 public:
     JobsList *jobs_list;
-   // std::list<JobsList> timed_jobs_list;
+    // std::list<JobsList> timed_jobs_list;
     //time_t scheduled_alarm;
     pid_t shell_pid;
     Command *CreateCommand(const char *cmd_line);
     SmallShell(SmallShell const &) = delete;     // disable copy ctor
     void operator=(SmallShell const &) = delete; // disable = operator
     void evaluateAlarm();
-    static SmallShell &getInstance()             // make SmallShell singleton
+    static SmallShell &getInstance() // make SmallShell singleton
     {
         static SmallShell instance; // Guaranteed to be destroyed.
         // Instantiated on first use.
-      
+
         return instance;
     }
     ~SmallShell();

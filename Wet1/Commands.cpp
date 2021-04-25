@@ -246,7 +246,7 @@ BuiltInCommand::~BuiltInCommand()
 
 void ShowPidCommand::execute()
 {
-    cout << "smash pid is " << getpid() << endl;
+    cout << "smash pid is " << SmallShell::getInstance().shell_pid << endl;
 }
 void JobsCommand::execute()
 {
@@ -396,7 +396,7 @@ void JobsList::evaluateAlarm() const
         pid_t result = waitpid(job_entry->pid, &status, WNOHANG);
         if (result == 0)
         { // Child still alive, check if expired
-            cout << "Comparing current time to job: ";
+           // cout << "Comparing current time to job: ";
             //print_time(time(NULL));
             //print_time(job_sched_time);
             earliest = earliest > job_sched_time ? job_sched_time : earliest;
@@ -416,7 +416,7 @@ void JobsList::evaluateAlarm() const
         }
         else
         { // CHild is dead, will be cleared when removeFInished jobs is called
-            cout << "oops! there's a dead child here: " << job_entry << endl;
+          //  cout << "oops! there's a dead child here: " << job_entry << endl;
         }
 
     }
@@ -428,17 +428,17 @@ void JobsList::evaluateAlarm() const
         
         if (earliest == MAX_TIME)
         {
-            cout << "No alarm scheduled!" << endl;
+         //   cout << "No alarm scheduled!" << endl;
              alarm(0);
         }
         else if (duration <= 0)
         {
-            cout << "Earliest has passed... error" << endl;
+         //   cout << "Earliest has passed... error" << endl;
         }
         else
         {
             
-            cout << "New alarm : ";
+          //  cout << "New alarm : ";
             print_time(earliest);
              alarm(duration);
         }
@@ -656,7 +656,7 @@ void ForegroundCommand::execute()
             if(job_entry->expiry_time != MAX_TIME && job_entry->is_stopped)
             {
                new_expiry=time(NULL)+ (job_entry->expiry_time-job_entry->stopped_time);
-               cout << "New time for job: ";
+           //    cout << "New time for job: ";
                print_time(new_expiry);
             }
             this->jobs->addJob(job_entry->cmd, job_entry->pid, false, true,new_expiry); // Adde job to foreground

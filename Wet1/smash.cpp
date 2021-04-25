@@ -30,7 +30,8 @@ if ( sigaction( SIGALRM, &sig_alarm, NULL ) != 0)
 
     SmallShell &smash = SmallShell::getInstance();
     //smash.scheduled_alarm = std::numeric_limits<time_t>::max();
-    smash.shell_pid = getpid();
+
+    DO_SYS_VAL_NO_RETURN(getpid(), smash.shell_pid);
     while (smash.ShouldRun())
     {
         std::cout << smash.getPromptName() << "> ";

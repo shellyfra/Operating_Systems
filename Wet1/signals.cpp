@@ -56,14 +56,10 @@ void alarmHandler(int sig_num)
     SmallShell & shell = SmallShell::getInstance();
     if(getpid() == shell.shell_pid)
     {
-      _logError("smash got an alarm", true);
-     // time_t new_alarm = SmallShell::getInstance().jobs_list->removeScheduledJobs();
-
-   
-
+      _logError("smash got an alarm", true); 
       SmallShell::getInstance().jobs_list->removeFinishedJobs(true);
       SmallShell::getInstance().evaluateAlarm();
-    //alarm(difftime(new_alarm, time(NULL)));
+    
     }
     else
     {

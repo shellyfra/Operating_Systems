@@ -384,7 +384,8 @@ const unsigned int JobsList::removeFinishedJobs(const bool &remove_scheduled)
                 delete foreground_job->cmd;
                 delete foreground_job;
             }
-    return max_job_id;
+    return  max_job_id;
+     
 }
 void JobsList::evaluateAlarm() const
 {
@@ -444,7 +445,7 @@ void JobsList::evaluateAlarm() const
         {
             
           //  cout << "New alarm : ";
-            print_time(earliest);
+           // print_time(earliest);
              alarm(duration);
         }
 
@@ -604,7 +605,7 @@ void JobsList::removeJobById(const unsigned int &jobId, bool to_delete)
     {
         if (job_entry->job_id == jobId)
         {
-
+            delete job_entry;
             jobs_list.erase(jobs_list.begin() + count);
             if (to_delete){
                 delete job_entry->cmd;
@@ -645,7 +646,7 @@ void ForegroundCommand::execute()
     }
     else
     {
-        const unsigned int job_id = argc == 2 ? std::stoi(args[1]) : jobs->getLastJob()->job_id;
+        const int job_id = argc == 2 ? std::stoi(args[1]) : jobs->getLastJob()->job_id;
         JobsList::JobEntry *job_entry = this->jobs->getJobById(job_id);
         if (job_id < 0 || !job_entry)
         {
@@ -660,23 +661,40 @@ void ForegroundCommand::execute()
             // SIGCONT succeeded
 
             cout << (*job_entry->cmd) << " : " << (job_entry->pid) << endl;
-            cout << job_entry->is_stopped<< endl;
+         
             time_t new_expiry = job_entry->expiry_time;
             if(job_entry->expiry_time != MAX_TIME && job_entry->is_stopped)
             {
                new_expiry=time(NULL)+ (job_entry->expiry_time-job_entry->stopped_time);
            //    cout << "New time for job: ";
-               print_time(new_expiry);
+               //print_time(new_expiry);
             }
-            this->jobs->addJob(job_entry->cmd, job_entry->pid, false, true,new_expiry); // Adde job to foreground
+            //this->jobs->addJob(job_entry->cmd, job_entry->pid, false, true,new_expiry); // Adde job to foreground
             // This ^ will do an alarm evaluation again
-            this->jobs->removeJobById(job_id, false);
+            //this->jobs->removeJobById(job_id);
+            job_entry->expiry_time = new_expiry;
+            jobs->foreground_job = job_entry;
+            jobs->evaluateAlarm();
             int status;
 
             DO_SYS(waitpid(job_pid, &status, WSTOPPED));
+            if (WIFSTOPPED(status))
+            {
+                // It stopped again
+                time_t current_time = time(NULL);
+                job_entry->is_stopped = true;
+                job_entry->stopped_time = current_time;
+                job_entry->start_time= current_time;
+            }
+            else
+            {
+                // Job is finished and was in job list before, therefor remove it
+                jobs->removeJobById(job_entry->job_id, true);
+                
+            }
             // Parent handle will reach here after child has ended or stopped (due to control+Z),
             // So anywho we remove the foreground job so cntl+Z won't catch the foreground job again
-            delete (this->jobs->foreground_job);
+           
             this->jobs->foreground_job = nullptr;
             
             jobs->evaluateAlarm();
@@ -851,7 +869,7 @@ void BackgroundCommand::execute()
     else
     { // argc = 2
 
-        const unsigned int req_job_id = stoi(args[1]);
+        const int req_job_id = stoi(args[1]);
         move_bg_job = this->jobs->getJobById(req_job_id);
         if (!move_bg_job)
         {
@@ -882,6 +900,7 @@ void BackgroundCommand::execute()
     }
     
 }
+/*
 void print_time(const time_t new_alarm)
 {
 
@@ -891,16 +910,14 @@ void print_time(const time_t new_alarm)
     std::strftime(buffer, 32, "%a, %d.%m.%Y %H:%M:%S", ptm);
     puts(buffer);
 }
+*/
 void ExternalCommand::execute()
 {
     int stat;
     pid_t parent_pid = getpid();
-
-    string s = string(bash_bin);
-
-    // Allocating these for the execv. Will need to delete these:
-
     pid_t pid;
+    string s = string(bash_bin);
+    
 
     char *cmd_to_bash = this->cmd_line_wo_ampersand;
     time_t new_alarm_t = MAX_TIME;
@@ -912,78 +929,43 @@ void ExternalCommand::execute()
 
         cmd_to_bash += string(cmd_to_bash).find_first_of(duration_str, 0) + strlen(duration_str.c_str());
         new_alarm_t = time(NULL) + duration;
-        /*
-        cout << "Time now is : ";
-        print_time(time(NULL));
-        cout << "Tentative alarm to : ";
-        print_time(new_alarm_t);
-        if (SmallShell::getInstance().scheduled_alarm > new_alarm_t)
-        {
-            SmallShell::getInstance().scheduled_alarm = new_alarm_t;
-        }
-        else
-        {
-            cout << "Earlier alarm set to : ";
-            print_time(SmallShell::getInstance().scheduled_alarm);
-        }
-        */
+      
     }
 
     DO_SYS_VAL(fork(), pid);
     if (getpid() == parent_pid)
     { // parent
 
-        this->jobs->addJob(this, pid, false, !is_background, new_alarm_t);
+        this->jobs->addJob(this, pid, false, !is_background, new_alarm_t); // This is temp for cntrol+Z
         if (!is_background)
         {
-            /*
-            if (duration != 0)
-            {
-                alarm(duration);
-            }
-            */
+
             DO_SYS(waitpid(pid, &stat, WSTOPPED));
             // Parent handle will reach here after child has ended or stopped (due to control+Z),
             // So anywho we remove the foreground job so cntl+Z won't catch the foreground job again
+            if (WIFSTOPPED(stat))
+            { // Properly add it to jobs list to allocate job id and time
+            
+                JobsList::JobEntry* job = this->jobs->addJob(this, pid, true,false, new_alarm_t);   
+                job->stopped_time = time(NULL);             
+            }
+            // Remove temp foreground job
             delete (this->jobs->foreground_job);
             this->jobs->foreground_job = nullptr;
 
-    /*
-            if (WIFSTOPPED(stat))
-            { // Should pause the alarm...
-                cout << "CHild has stopped, revaluating the alarm..." << endl;
-            }
-            else if (WIFCONTINUED(stat))
-            {
-                cout << "CHild has continued, rearming alarm to ";
-
-                //alarm();
-            }
-            else
-            {
-                cout << "CHild has exited, revaluating the alarm..." << endl;
-                //Child has exited
-                //alarm(0);
-            }
-            */
            if(duration!= 0)
-            jobs->evaluateAlarm();
+           {
+                jobs->evaluateAlarm();
+           }
+            
         }
     }
     else
     { // child
         setpgrp();
-        //  pid = getpid();
-        //  pid_t grandchild_pid;
-        //   DO_SYS_VAL(fork(), grandchild_pid);
-        //  if(getpid() == pid)
-        //   { // Still child
+
         char *const arguments[] = {(char *)bash_bin, (char *)bash_args, cmd_to_bash, nullptr};
         DO_SYS(execve(bash_bin, arguments, NULL));
-        //   }
-        //    else
-        //    { // Grandchild will listen for child ^
-        //       setpgrp();
     }
 }
 

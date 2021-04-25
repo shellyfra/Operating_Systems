@@ -14,11 +14,23 @@ int main(int argc, char *argv[])
     {
         perror("smash error: failed to set ctrl-C handler");
     }
+      struct sigaction sig_alarm;
 
-    //TODO: setup sig alarm handler
+
+    sigemptyset( &sig_alarm.sa_mask );
+    sig_alarm.sa_flags = SA_RESTART;
+    sig_alarm.sa_handler = alarmHandler;
+   
+
+if ( sigaction( SIGALRM, &sig_alarm, NULL ) != 0)
+  {
+      perror("smash error: failed to set alarm handler");
+  } 
+
 
     SmallShell &smash = SmallShell::getInstance();
-    
+    //smash.scheduled_alarm = std::numeric_limits<time_t>::max();
+    smash.shell_pid = getpid();
     while (smash.ShouldRun())
     {
         std::cout << smash.getPromptName() << "> ";

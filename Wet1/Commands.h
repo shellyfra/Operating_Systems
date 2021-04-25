@@ -5,6 +5,11 @@
 #include <time.h>
 #include <string.h>
 #include <memory>
+#include <climits>
+#include <list>
+#include "signals.h"
+#include <limits>
+#include <ctime>
 
 const unsigned short COMMAND_ARGS_MAX_LENGTH = 200;
 const unsigned short COMMAND_MAX_ARGS = 20;
@@ -29,6 +34,7 @@ const char CHANGE_DIRECTORY_LAST_ARG = '-';
 const char *const CHANGE_PROMPT_COMMAND_STR = "chprompt";
 const char *const JOBS_COMMAND_STR = "jobs";
 const char *const FOREGROUND_COMMAND_STR = "fg";
+const char *const TIMEOUT_COMMAND_STR = "timeout";
 const char *const KILL_COMMAND_STR = "kill";
 const char *const QUIT_COMMAND_STR = "quit";
 const char *const BG_COMMAND_STR = "bg";
@@ -36,6 +42,7 @@ const char *const CAT_COMMAND_STR = "cat";
 const char *const ERROR_PREFIX = "smash error:";
 const char *const STDOUT_PREFIX = "smash:";
 
+const time_t MAX_TIME = std::numeric_limits<time_t>::max();
 enum Redirect_type
 {
     OVERRIDE_LEFT = 1,
@@ -87,7 +94,10 @@ enum Redirect_type
         }                                                                             \
     } while (0)
 
+void print_time(const time_t new_alarm);
 void _logError(std::string text, const bool &to_stdout = false);
+class JobsList;
+
 
 class Command
 {
@@ -95,6 +105,8 @@ class Command
 protected:
 
     // TODO: Add your data members
+    char **args;
+    int argc;
     char *cmd_line;
     char *cmd_line_wo_ampersand;
 
@@ -112,9 +124,6 @@ public:
 
 class BuiltInCommand : public Command
 {
-protected:
-    char **args;
-    int argc;
 
 public:
     BuiltInCommand(const char *cmd_line);
@@ -131,6 +140,18 @@ class PipeCommand : public Command
 public:
     PipeCommand(const char *cmd_line, SmallShell *shell);
     virtual ~PipeCommand() {}
+    void execute() override;
+};
+
+
+class TimeoutCommand : public Command
+{
+    bool is_background;
+    JobsList *jobs;
+
+public:
+    TimeoutCommand(const char *cmd_line, JobsList *jobs);
+    virtual ~TimeoutCommand() {}
     void execute() override;
 };
 
@@ -179,7 +200,7 @@ public:
     void execute() override;
 };
 
-class JobsList;
+
 class JobsList
 {
 
@@ -190,11 +211,14 @@ public:
         unsigned int job_id;
         pid_t pid;
         time_t start_time;
+        time_t expiry_time;
+        time_t stopped_time;
         bool is_stopped;
 
     public:
-        JobEntry(Command* cmd, const unsigned int job_id, const unsigned int pid, const bool is_stopped)
-            : cmd(cmd), job_id(job_id), pid(pid), start_time(time(NULL)), is_stopped(is_stopped) {}
+        JobEntry(Command* cmd, const unsigned int job_id, const unsigned int pid
+            , const bool is_stopped , const time_t expiry_time)
+            : cmd(cmd), job_id(job_id), pid(pid), start_time(time(NULL)),  expiry_time(expiry_time) ,is_stopped(is_stopped)  {}
         //JobEntry() : cmd(nullptr), job_id(0), pid(0), start_time(time(NULL)), job_stopped(false) {} // cmd = null -> mask empty JobEntry
         ~JobEntry() = default;
         JobEntry(JobEntry const &) = delete;                 // Copy ctor
@@ -208,6 +232,7 @@ public:
 
 private:
     std::vector<JobEntry *> jobs_list;
+    //std::vector<JobEntry *> sched_jobs_list;
 
     // TODO: Add your data members
 public:
@@ -216,10 +241,14 @@ public:
     JobsList() : foreground_job(nullptr) {};
     ~JobsList() = default;
     JobsList &operator=(const JobsList &other) = default;                                                          // for now
-    JobEntry *addJob(Command* cmd, pid_t child_pid, const bool is_stopped = false, const bool foreground = false); // Done
-    void printJobsList() const;                                                                                    // Done
+    JobEntry *addJob(Command* cmd, pid_t child_pid, const bool is_stopped = false, const bool foreground = false
+                                                    , const time_t expiry_time = MAX_TIME);
+    void printJobsList() const;  
+    //void printSchedJobsList() const  ;                                                                                // Done
     void killAllJobs();                                                                                            // Done
-    const unsigned int removeFinishedJobs();                                                                       // Done
+    const unsigned int removeFinishedJobs(const bool &remove_scheduled=false);
+    void evaluateAlarm() const;
+   //void removeScheduledJobs();       
     JobEntry *getJobById(const unsigned int &jobId) const;                                                         //Done
     void removeJobById(const unsigned int &jobId);                                                                 // Done
     JobEntry *getLastJob() const;                                                                                  //Done, For fg or for figuring out what is the maximal ID
@@ -277,7 +306,7 @@ public:
     KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line), jobs(jobs) {}
     virtual ~KillCommand() {}
     void execute() override;
-    void ToForeground(JobsList::JobEntry* entry);
+    //void ToForeground(JobsList::JobEntry* entry);
 };
 
 class ForegroundCommand : public BuiltInCommand
@@ -320,13 +349,18 @@ private:
 
 public:
     JobsList *jobs_list;
+   // std::list<JobsList> timed_jobs_list;
+    //time_t scheduled_alarm;
+    pid_t shell_pid;
     Command *CreateCommand(const char *cmd_line);
     SmallShell(SmallShell const &) = delete;     // disable copy ctor
     void operator=(SmallShell const &) = delete; // disable = operator
+    void evaluateAlarm();
     static SmallShell &getInstance()             // make SmallShell singleton
     {
         static SmallShell instance; // Guaranteed to be destroyed.
         // Instantiated on first use.
+      
         return instance;
     }
     ~SmallShell();

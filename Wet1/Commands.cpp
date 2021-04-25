@@ -440,7 +440,7 @@ void JobsList::evaluateAlarm() const
         {
             
           //  cout << "New alarm : ";
-            print_time(earliest);
+           // print_time(earliest);
              alarm(duration);
         }
 
@@ -872,6 +872,7 @@ void BackgroundCommand::execute()
     }
     
 }
+/*
 void print_time(const time_t new_alarm)
 {
 
@@ -881,6 +882,7 @@ void print_time(const time_t new_alarm)
     std::strftime(buffer, 32, "%a, %d.%m.%Y %H:%M:%S", ptm);
     puts(buffer);
 }
+*/
 void ExternalCommand::execute()
 {
     int stat;

@@ -220,6 +220,9 @@ void SmallShell::executeCommand(const char *cmd_line)
         cmd->execute();
     }
     // delete cmd; -> Memory leak here! not being deleted, but also this deletes info for jobs
+    if (!dynamic_cast<ExternalCommand*>(cmd)){
+        delete cmd;
+    }
     // Please note that you must fork smash process for some commands (e.g., external commands....)
 }
 
@@ -352,6 +355,8 @@ const unsigned int JobsList::removeFinishedJobs(const bool &remove_scheduled)
                 _logError(string(job_entry->cmd->getCmd()) + " timed out!", true);
                 int dummy;
                 DO_SYS_VAL_NO_RETURN(kill(job_entry->pid, SIGKILL), dummy);
+                delete job_entry->cmd;
+                delete job_entry;
                 continue;
             }
             // Keep job
@@ -362,13 +367,11 @@ const unsigned int JobsList::removeFinishedJobs(const bool &remove_scheduled)
                 max_job_id = new_id;
             }
         }
-        else if (result == -1)
-        {
-            // Error
-        }
         else
         {
             // child finished
+            delete job_entry->cmd;
+            delete job_entry;
         }
     }
     jobs_list = new_job_list;
@@ -378,6 +381,8 @@ const unsigned int JobsList::removeFinishedJobs(const bool &remove_scheduled)
                 int dummy;
                 DO_SYS_VAL_NO_RETURN(kill(foreground_job->pid, SIGKILL), dummy);
                 // fg / execute will deallocate the foreground command
+                delete foreground_job->cmd;
+                delete foreground_job;
             }
     return max_job_id;
 }
@@ -592,7 +597,7 @@ void JobsList::removeScheduledJobs()
     return MAX_TIME;
 }
 */
-void JobsList::removeJobById(const unsigned int &jobId)
+void JobsList::removeJobById(const unsigned int &jobId, bool to_delete)
 {
     unsigned int count = 0;
     for (auto &job_entry : jobs_list)
@@ -601,6 +606,10 @@ void JobsList::removeJobById(const unsigned int &jobId)
         {
 
             jobs_list.erase(jobs_list.begin() + count);
+            if (to_delete){
+                delete job_entry->cmd;
+                delete job_entry;
+            }
             return;
         }
         count++;
@@ -661,7 +670,7 @@ void ForegroundCommand::execute()
             }
             this->jobs->addJob(job_entry->cmd, job_entry->pid, false, true,new_expiry); // Adde job to foreground
             // This ^ will do an alarm evaluation again
-            this->jobs->removeJobById(job_id);
+            this->jobs->removeJobById(job_id, false);
             int status;
 
             DO_SYS(waitpid(job_pid, &status, WSTOPPED));
@@ -711,7 +720,8 @@ void JobsList::killAllJobs()
             continue;                                  // not sure what to do here
         }
         DO_SYS(wait(NULL));
-        //jobs_list.e   .erase(jobs_list.begin());
+        delete job_entry->cmd;
+        delete job_entry;
         count++;
     }
     jobs_list.clear();
@@ -733,6 +743,21 @@ JobsList::JobEntry *JobsList::getLastJob() const
 {
     return jobs_list.empty() ? nullptr : jobs_list.back();
 }
+
+void JobsList::quitAllJobs() {
+    for (auto &job_entry : this->jobs_list)
+    {
+//            if (kill(job_entry->pid, SIGKILL) != 0)
+//            {
+//                _logError("killAllJobs: kill job failed"); // CHECK with staff!
+//                continue;                                  // not sure what to do here
+//            }
+//            DO_SYS(wait(NULL));
+        delete job_entry->cmd;
+        delete job_entry;
+    }
+}
+
 void ChangePromptCommand::execute()
 {
     *prompt_name_p = argc == 1 ? DEFAULT_PROMPT : args[1];
@@ -798,6 +823,9 @@ void QuitCommand::execute()
         jobs->killAllJobs();
         while (waitpid(-1, NULL, WNOHANG) != -1)
             ;
+    }
+    else {
+        jobs->quitAllJobs();
     }
     should_run = false;
 }

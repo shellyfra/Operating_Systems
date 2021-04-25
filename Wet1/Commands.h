@@ -240,11 +240,12 @@ public:
     void printJobsList() const;
     //void printSchedJobsList() const  ;                                                                                // Done
     void killAllJobs(); // Done
+    void quitAllJobs();
     const unsigned int removeFinishedJobs(const bool &remove_scheduled = false);
     void evaluateAlarm() const;
     //void removeScheduledJobs();
     JobEntry *getJobById(const unsigned int &jobId) const; //Done
-    void removeJobById(const unsigned int &jobId);         // Done
+    void removeJobById(const unsigned int &jobId, bool to_delete);         // Done
     JobEntry *getLastJob() const;                          //Done, For fg or for figuring out what is the maximal ID
     JobEntry *getLastStoppedJob();                         // For bg , Shai
     // TODO: Add extra methods or modify exisitng ones as needed

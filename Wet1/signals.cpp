@@ -18,10 +18,9 @@ void ctrlZHandler(int sig_num)
 
     if (entry)
     { // If there is a running child
-      pid_t pid = entry->pid;
+      pid_t pid = entry->pid;      
       DO_SYS(kill(pid, SIGSTOP));                     // SIGSTOP cannot be overriden
-      JobsList::JobEntry * job = shell.jobs_list->addJob(entry->cmd, pid, true,false,entry->expiry_time); // Add fg job to background
-    job->stopped_time = time(NULL);
+      //JobsList::JobEntry * job = shell.jobs_list->addJob(entry->cmd, pid, true,false,entry->expiry_time); // Add fg job to background
       _logError("process " + to_string(pid) + " was stopped", true);
     }
   }

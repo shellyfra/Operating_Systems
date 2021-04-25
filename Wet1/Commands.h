@@ -12,6 +12,7 @@
 #include <ctime>
 
 const unsigned short COMMAND_ARGS_MAX_LENGTH = 200;
+const unsigned short MAX_PROCESSES = 100;
 const unsigned short COMMAND_MAX_ARGS = 20;
 const unsigned short COMMAND_MAX_LENGTH = 80;
 const unsigned short JOB_ID_INITIAL_VALUE = 0;

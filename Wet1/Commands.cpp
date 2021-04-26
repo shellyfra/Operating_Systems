@@ -25,6 +25,7 @@ using std::vector;
 #define FUNC_EXIT()
 #endif
 
+enum CHECK_TYPE{CHECK_POSITIVE, CHECK_NEGATIVE, NONE};
 const string GetCurrentWorkingDirectory();
 string _ltrim(const string &s);
 string _rtrim(const string &s);
@@ -33,7 +34,7 @@ string _trim(const string &s);
 int _parseCommandLine(const char *cmd_line, char **args);
 bool _isBackgroundCommand(const char *cmd_line);
 void _removeBackgroundSign(char *cmd_line);
-static bool _isNumber(char *str);
+static bool _isNumber(char *str, CHECK_TYPE check);
 vector<string> _stringSplit(string str, const string delimiter);
 
 // String manipulation
@@ -100,16 +101,22 @@ void _removeBackgroundSign(char *cmd_line)
     // truncate the command line string up to the last non-space character
     cmd_line[str.find_last_not_of(WHITESPACE, idx) + 1] = 0;
 }
-
-bool _isNumber(char *str)
+static bool _isNumber(char *str, CHECK_TYPE check = NONE)
 {
     char *it = str;
+    bool has_minus = false;
     while (char current = (*it++))
     {
-        if (!std::isdigit(current) && current != MINUS_SIGN)
+        if (!std::isdigit(current))
         {
-            return false;
+            if ((check == CHECK_POSITIVE) || ((check == CHECK_NEGATIVE) && (current != MINUS_SIGN))){
+                return false;
+            }
+            has_minus = (current == MINUS_SIGN);
         }
+    }
+    if (check == CHECK_NEGATIVE){
+        return has_minus;
     }
     return true;
 }
@@ -220,7 +227,7 @@ void SmallShell::executeCommand(const char *cmd_line)
         cmd->execute();
     }
     // delete cmd; -> Memory leak here! not being deleted, but also this deletes info for jobs
-    if (!dynamic_cast<ExternalCommand*>(cmd)){
+    if (!dynamic_cast<ExternalCommand*>(cmd) || (dynamic_cast<ExternalCommand*>(cmd) && !_isBackgroundCommand(cmd_line))){
         delete cmd;
     }
     // Please note that you must fork smash process for some commands (e.g., external commands....)
@@ -238,7 +245,7 @@ TimeoutCommand::TimeoutCommand(const char *cmd_line, JobsList *jobs) : Command(c
 }
 void TimeoutCommand::execute()
 {
-    if (argc < 3 || !_isNumber(args[1]))
+    if (argc < 3 || !_isNumber(args[1], CHECK_POSITIVE))
     {
         _logError("fg: invalid arguments");
     }
@@ -783,7 +790,7 @@ void ChangePromptCommand::execute()
 void KillCommand::execute()
 {
     //parse args
-    if (this->argc != 3 || !_isNumber(args[1]) || stoi(args[1]) >= 0 || !_isNumber(args[2]))
+    if (this->argc != 3 || !_isNumber(args[1], CHECK_NEGATIVE) || stoi(args[1]) >= 0 || !_isNumber(args[2]))
     {
         _logError("kill: invalid arguments");
         return;
@@ -922,7 +929,7 @@ void ExternalCommand::execute()
     char *cmd_to_bash = this->cmd_line_wo_ampersand;
     time_t new_alarm_t = MAX_TIME;
     unsigned int duration = 0;
-    if (argc >= 2 && strcmp(args[0], TIMEOUT_COMMAND_STR) == 0 && _isNumber(args[1]))
+    if (argc >= 2 && strcmp(args[0], TIMEOUT_COMMAND_STR) == 0 && _isNumber(args[1])) // CHECK IF ADD TO IS_NUMBER = CHECK_POSITIVE
     {
         duration = stoi(string(args[1]));
         const string duration_str = to_string(duration);
@@ -931,11 +938,10 @@ void ExternalCommand::execute()
         new_alarm_t = time(NULL) + duration;
       
     }
-
     DO_SYS_VAL(fork(), pid);
     if (getpid() == parent_pid)
     { // parent
-
+        JobsList::JobEntry* job;
         this->jobs->addJob(this, pid, false, !is_background, new_alarm_t); // This is temp for cntrol+Z
         if (!is_background)
         {
@@ -946,12 +952,13 @@ void ExternalCommand::execute()
             if (WIFSTOPPED(stat))
             { // Properly add it to jobs list to allocate job id and time
             
-                JobsList::JobEntry* job = this->jobs->addJob(this, pid, true,false, new_alarm_t);   
+                job = this->jobs->addJob(this, pid, true,false, new_alarm_t);
                 job->stopped_time = time(NULL);             
             }
             // Remove temp foreground job
             delete (this->jobs->foreground_job);
             this->jobs->foreground_job = nullptr;
+            this->jobs->removeJobById(job->job_id, true);
 
            if(duration!= 0)
            {

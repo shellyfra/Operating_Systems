@@ -209,12 +209,12 @@ public:
         pid_t pid;
         time_t start_time;
         time_t expiry_time;
-        time_t stopped_time;
+        bool timed_out;
         bool is_stopped;
 
     public:
         JobEntry(Command *cmd, const unsigned int job_id, const unsigned int pid, const bool is_stopped, const time_t expiry_time)
-            : cmd(cmd), job_id(job_id), pid(pid), start_time(time(NULL)), expiry_time(expiry_time), is_stopped(is_stopped) {}
+            : cmd(cmd), job_id(job_id), pid(pid), start_time(time(NULL)), expiry_time(expiry_time),timed_out(false) ,is_stopped(is_stopped) {}
         //JobEntry() : cmd(nullptr), job_id(0), pid(0), start_time(time(NULL)), job_stopped(false) {} // cmd = null -> mask empty JobEntry
         ~JobEntry() = default;
         JobEntry(JobEntry const &) = delete;                 // Copy ctor

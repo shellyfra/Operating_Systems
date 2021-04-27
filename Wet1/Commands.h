@@ -110,6 +110,7 @@ protected:
     char *cmd_line_wo_ampersand;
 
 public:
+    bool should_delete;
     Command(const char *usr_cmd_line);
     virtual ~Command();
     virtual void execute() = 0;

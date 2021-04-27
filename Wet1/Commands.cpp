@@ -150,7 +150,8 @@ static bool _isNumber(char *str, CHECK_TYPE check = NONE)
     return true;
 }
 
-Command::Command(const char *usr_cmd_line) : cmd_line(new char[COMMAND_MAX_LENGTH]), cmd_line_wo_ampersand(new char[COMMAND_MAX_LENGTH])
+Command::Command(const char *usr_cmd_line) : cmd_line(new char[COMMAND_MAX_LENGTH])
+    , cmd_line_wo_ampersand(new char[COMMAND_MAX_LENGTH]) , should_delete(true)
 {
 
     strcpy(this->cmd_line, usr_cmd_line);
@@ -255,6 +256,10 @@ void SmallShell::executeCommand(const char *cmd_line)
     if (cmd)
     {
         cmd->execute();
+        if(cmd->should_delete)
+        {
+            delete cmd;
+        }
     }
    // if (!dynamic_cast<ExternalCommand*>(cmd) || (dynamic_cast<ExternalCommand*>(cmd) && !_isBackgroundCommand(cmd_line))){
    //     delete cmd;
@@ -375,25 +380,32 @@ const unsigned int JobsList::removeFinishedJobs(const bool &remove_scheduled)
     }
     for (auto &job_entry : this->jobs_list)
     {
-        if(job_entry->timed_out)
+        if (job_entry->timed_out)
         {
             continue;
         }
         int status;
         pid_t result;
+        result = waitpid(job_entry->pid, &status, WNOHANG);
+
+        if (result == 0 && remove_scheduled && time(NULL) >= job_entry->expiry_time)
+        {
+            // Child still alive and expired - send kill
+              job_entry->timed_out=true;
+            _logError(string(job_entry->cmd->getCmd()) + " timed out!", true);
+            int dummy;
+            DO_SYS_VAL_NO_RETURN(kill(job_entry->pid, SIGKILL), dummy);
+        }
+    }
+    for (auto &job_entry : this->jobs_list)
+    {
+        int status;
+        pid_t result;
         result =waitpid(job_entry->pid, &status, WNOHANG);
         
-        if (result == 0)
+        if (result == 0 && !job_entry->timed_out)
         {
-            // Child still alive
-            if (remove_scheduled && time(NULL) >= job_entry->expiry_time)
-            {
-
-                _logError(string(job_entry->cmd->getCmd()) + " timed out!", true);
-                int dummy;
-                DO_SYS_VAL_NO_RETURN(kill(job_entry->pid, SIGKILL), dummy);
-                continue;
-            }
+            // Child still alive           
             // Keep job
             new_job_list.push_back(job_entry);
             unsigned int new_id = job_entry->job_id;
@@ -401,6 +413,12 @@ const unsigned int JobsList::removeFinishedJobs(const bool &remove_scheduled)
             {
                 max_job_id = new_id;
             }
+        }
+        else
+        {
+            // Child finished
+            delete job_entry->cmd;
+            delete job_entry;
         }     
     }
     jobs_list = new_job_list;
@@ -410,9 +428,10 @@ const unsigned int JobsList::removeFinishedJobs(const bool &remove_scheduled)
 void JobsList::evaluateAlarm() const
 {
     time_t earliest = MAX_TIME;
-
+    
     for (auto &job_entry : this->jobs_list)
     {
+       
         int status;
         time_t job_sched_time = job_entry->expiry_time;
         pid_t result = waitpid(job_entry->pid, &status, WNOHANG);
@@ -430,25 +449,20 @@ void JobsList::evaluateAlarm() const
 
     if (earliest == MAX_TIME)
     {
-        //   cout << "No alarm scheduled!" << endl;
+        //    "No alarm scheduled!" 
         alarm(0);
     }
-    else if (duration <= 0)
-    {
-        //   cout << "Earliest has passed... error" << endl;
-    }
-    else
+    else if (duration>0)
     {
 
-        //  cout << "New alarm : ";
-         //print_time(earliest);
+        // New alarm set
         alarm(duration);
     }
 }
 void SmallShell::evaluateAlarm()
 {
     this->jobs_list->evaluateAlarm();
-    //  vector<JobEntry *> new_job_list;
+    
 }
 
 void JobsList::removeJobById(const unsigned int &jobId)
@@ -521,7 +535,7 @@ void ForegroundCommand::execute()
             DO_SYS(waitpid(job_pid, &status, WSTOPPED));
             if (WIFSTOPPED(status))
             {
-                // It stopped again
+                // It stopped again, but it is STILL present in job list where it will be deallocated
                 
                 job_entry->is_stopped = true;
                 //job_entry->stopped_time = current_time;
@@ -565,18 +579,27 @@ void JobsList::killAllJobs()
     for (auto &job_entry : jobs_list)
     {
         cout << job_entry->pid << ": " << (*job_entry->cmd) << endl;
-        if (kill(job_entry->pid, SIGKILL) != 0)
-        {
-            _logError("killAllJobs: kill job failed"); // CHECK with staff!
-            continue;                                  // not sure what to do here
-        }
+        int dummy;
+        DO_SYS_VAL_NO_RETURN(kill(job_entry->pid, SIGKILL),dummy);        
         DO_SYS(wait(NULL));
         //jobs_list.e   .erase(jobs_list.begin());
         count++;
     }
-    jobs_list.clear();
+
+    //jobs_list.clear(); -> do not clear so we can still de allocate!
 }
 
+void JobsList::quitAllJobs()
+{
+   
+    for (auto &job_entry : jobs_list)
+    {
+        delete job_entry->cmd;
+        delete job_entry;
+    }
+
+    //jobs_list.clear(); -> do not clear so we can still de allocate!
+}
 JobsList::JobEntry *JobsList::getJobById(const unsigned int &jobId) const
 {
     for (auto &job_entry : jobs_list)
@@ -639,6 +662,7 @@ void QuitCommand::execute()
         while (waitpid(-1, NULL, WNOHANG) != -1)
             ;
     }
+    jobs->quitAllJobs();
     should_run = false;
 }
 
@@ -737,24 +761,29 @@ void ExternalCommand::execute()
             }
         if (!is_background)
         {
+            // Current job was added to foreground
 
             DO_SYS(waitpid(pid, &stat, WSTOPPED));
             // Parent handle will reach here after child has ended or stopped (due to control+Z),
             // So anywho we remove the foreground job so cntl+Z won't catch the foreground job again
             if (WIFSTOPPED(stat))
             { // Properly add it to jobs list to allocate job id and time
-
+                should_delete = false; // This will be in bg, do not delete command
                 this->jobs->addJob(this, pid, true,false, new_alarm_t);              
             }
+
             
             // Remove temp foreground job
-
             delete (this->jobs->foreground_job);
             
             this->jobs->foreground_job = nullptr;
             
             
             
+        }
+        else
+        {
+            should_delete = false;
         }
     }
     else
@@ -783,13 +812,17 @@ void CatCommand::execute()
         DO_SYS_VAL_NO_RETURN(open(new_file_path.c_str(), O_RDONLY), fd);
         if (fd != -1)
         {
-            while (read(fd, &ch_buffer, 1)) // Read bytes one by one
+                int read_status;
+                DO_SYS_VAL_NO_RETURN(read(fd, &ch_buffer, 1), read_status);
+            while (read_status>0)
             {
                 int write_status;
                 DO_SYS_VAL_NO_RETURN(write(STDOUT_FILENO, &ch_buffer, 1), write_status);
                 if (write_status < 0)
                     break; // Continue to next file
-            }
+                  DO_SYS_VAL_NO_RETURN(read(fd, &ch_buffer, 1), read_status);
+            } 
+
             close(fd);
         }
     }

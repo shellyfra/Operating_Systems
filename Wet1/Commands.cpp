@@ -489,7 +489,7 @@ void ForegroundCommand::execute()
     {
         _logError("fg: jobs list is empty");
     }
-    else if (argc > 2 || (argc == 2 && !_isNumber(args[1])))
+    else if (argc > 2 || (argc == 2 && !_isNumberOld(args[1])))
     {
         _logError("fg: invalid arguments");
     }
@@ -645,7 +645,7 @@ void QuitCommand::execute()
 void BackgroundCommand::execute()
 {
 
-    if (this->argc > 2 || (this->argc == 2 && !_isNumber(args[1])))
+    if (this->argc > 2 || (this->argc == 2 && !_isNumberOld(args[1])))
     {
         _logError("bg: invalid arguments");
         return;

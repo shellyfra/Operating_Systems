@@ -25,6 +25,7 @@ using std::vector;
 #define FUNC_EXIT()
 #endif
 
+enum CHECK_TYPE{CHECK_POSITIVE, CHECK_NEGATIVE, NONE};
 const string GetCurrentWorkingDirectory();
 string _ltrim(const string &s);
 string _rtrim(const string &s);
@@ -33,7 +34,9 @@ string _trim(const string &s);
 int _parseCommandLine(const char *cmd_line, char **args);
 bool _isBackgroundCommand(const char *cmd_line);
 void _removeBackgroundSign(char *cmd_line);
-static bool _isNumber(char *str);
+
+static bool _isNumberOld(char *str);
+static bool _isNumber(char *str, CHECK_TYPE check);
 vector<string> _stringSplit(string str, const string delimiter);
 
 // String manipulation
@@ -48,7 +51,18 @@ string _rtrim(const string &s)
     size_t end = s.find_last_not_of(WHITESPACE);
     return (end == string::npos) ? EMPTY_STRING : s.substr(0, end + 1);
 }
-
+bool _isNumberOld(char *str)
+{
+    char *it = str;
+    while (char current = (*it++))
+    {
+        if (!std::isdigit(current) && current != MINUS_SIGN)
+        {
+            return false;
+        }
+    }
+    return true;
+}
 string _trim(const string &s)
 {
     return _rtrim(_ltrim(s));
@@ -100,7 +114,7 @@ void _removeBackgroundSign(char *cmd_line)
     // truncate the command line string up to the last non-space character
     cmd_line[str.find_last_not_of(WHITESPACE, idx) + 1] = 0;
 }
-
+/*
 bool _isNumber(char *str)
 {
     char *it = str;
@@ -113,6 +127,29 @@ bool _isNumber(char *str)
     }
     return true;
 }
+*/
+static bool _isNumber(char *str, CHECK_TYPE check = NONE)
+{
+    char *it = str;
+    bool has_minus = false;
+    while (char current = (*it++))
+    {
+        
+        if (!std::isdigit(current))
+        {
+            
+            if ((check == CHECK_POSITIVE) || ((check == CHECK_NEGATIVE) && (current != MINUS_SIGN))){
+                return false;
+            }
+            has_minus = (current == MINUS_SIGN);
+        }
+    }
+    if (check == CHECK_NEGATIVE){
+        return has_minus;
+    }
+    return true;
+}
+
 Command::Command(const char *usr_cmd_line) : cmd_line(new char[COMMAND_MAX_LENGTH]), cmd_line_wo_ampersand(new char[COMMAND_MAX_LENGTH])
 {
 
@@ -219,7 +256,15 @@ void SmallShell::executeCommand(const char *cmd_line)
     {
         cmd->execute();
     }
-    // delete cmd; -> Memory leak here! not being deleted, but also this deletes info for jobs
+   // if (!dynamic_cast<ExternalCommand*>(cmd) || (dynamic_cast<ExternalCommand*>(cmd) && !_isBackgroundCommand(cmd_line))){
+   //     delete cmd;
+   // }
+   // This created a very weird behaviour...
+    //
+    //  try sleep 100
+   //   control+z
+   //   jobs
+   // it print "jobs" on the job list
     // Please note that you must fork smash process for some commands (e.g., external commands....)
 }
 
@@ -230,16 +275,7 @@ ExternalCommand::ExternalCommand(const char *cmd_line, JobsList *jobs) : Command
 {
     this->is_background = (_isBackgroundCommand(cmd_line));
 }
-TimeoutCommand::TimeoutCommand(const char *cmd_line, JobsList *jobs) : Command(cmd_line), jobs(jobs)
-{
-}
-void TimeoutCommand::execute()
-{
-    if (argc < 3 || !_isNumber(args[1]))
-    {
-        _logError("fg: invalid arguments");
-    }
-}
+
 BuiltInCommand::~BuiltInCommand()
 {
 }
@@ -345,7 +381,7 @@ const unsigned int JobsList::removeFinishedJobs(const bool &remove_scheduled)
         }
         int status;
         pid_t result;
-        DO_SYS_VAL_NO_RETURN(waitpid(job_entry->pid, &status, WNOHANG),result);
+        result =waitpid(job_entry->pid, &status, WNOHANG);
         
         if (result == 0)
         {
@@ -514,7 +550,7 @@ JobsList::JobEntry *JobsList::addJob(Command *cmd, pid_t child_pid, const bool i
     }
     else
     {
-
+        
         this->jobs_list.push_back(new_job);
     }
     
@@ -564,7 +600,7 @@ void ChangePromptCommand::execute()
 void KillCommand::execute()
 {
     //parse args
-    if (this->argc != 3 || !_isNumber(args[1]) || stoi(args[1]) >= 0 || !_isNumber(args[2]))
+    if (this->argc != 3 || !_isNumber(args[1], CHECK_NEGATIVE) || stoi(args[1]) >= 0 || !_isNumberOld(args[2]))
     {
         _logError("kill: invalid arguments");
         return;
@@ -581,6 +617,7 @@ void KillCommand::execute()
     }
     //DO_SYS(kill(entry->pid, int(first_arg.at(0)))); // Won't work if signal is above 9..
     DO_SYS(kill(entry->pid, signal_num));
+    
     cout << "signal number " << signal_num << " was sent to pid " << entry->pid << endl;
     switch (signal_num)
     {
@@ -673,20 +710,26 @@ void ExternalCommand::execute()
     char *cmd_to_bash = this->cmd_line_wo_ampersand;
     time_t new_alarm_t = MAX_TIME;
     unsigned int duration = 0;
-    if (argc >= 2 && strcmp(args[0], TIMEOUT_COMMAND_STR) == 0 && _isNumber(args[1]))
+    if(strcmp(args[0], TIMEOUT_COMMAND_STR) == 0)
     {
+        if( argc <3  || !_isNumberOld(args[1]) || stoi(args[1])<0)
+        {
+            _logError("timeout: invalid arguments");
+            return;
+        }
         duration = stoi(string(args[1]));
         const string duration_str = to_string(duration);
 
         cmd_to_bash += string(cmd_to_bash).find_first_of(duration_str, 0) + strlen(duration_str.c_str());
         new_alarm_t = time(NULL) + duration;
     }
+    
 
     DO_SYS_VAL(fork(), pid);
     if (getpid() == parent_pid)
     { // parent
 
-        
+     //   JobsList::JobEntry* job;
         this->jobs->addJob(this, pid, false, !is_background, new_alarm_t); // This is temp for cntrol+Z
         if (duration != 0)
             { // Reload alarm
@@ -701,12 +744,15 @@ void ExternalCommand::execute()
             if (WIFSTOPPED(stat))
             { // Properly add it to jobs list to allocate job id and time
 
-                this->jobs->addJob(this, pid, true, false, new_alarm_t);                
+                this->jobs->addJob(this, pid, true,false, new_alarm_t);              
             }
+            
             // Remove temp foreground job
-            delete (this->jobs->foreground_job);
-            this->jobs->foreground_job = nullptr;
 
+            delete (this->jobs->foreground_job);
+            
+            this->jobs->foreground_job = nullptr;
+            
             
             
         }
@@ -836,8 +882,12 @@ void RedirectionCommand::execute()
     DO_SYS_VAL_NO_RETURN(dup(std_channel), old_fd);
     DO_SYS(close(std_channel)); // STDOUT
     DO_SYS_VAL_NO_RETURN(open(second_output_file.c_str(), oflags, 0666), new_fd);
-    this->shell->executeCommand(first_command.c_str());
-    DO_SYS(close(new_fd));
+    if(new_fd!=-1)
+    {
+        this->shell->executeCommand(first_command.c_str());
+        DO_SYS(close(new_fd));
+    }
+    
     DO_SYS(dup2(old_fd, std_channel));
     DO_SYS(close(old_fd));
 }
@@ -876,6 +926,10 @@ void PipeCommand::execute()
     std::shared_ptr<Command> command1_p(shell->CreateCommand(command_arguement.c_str()));
     std::shared_ptr<Command> command2_p(shell->CreateCommand(piped_arguement.c_str()));
 
+    
+        
+       
+            
     //int saved_stdout = dup(STDOUT_FILENO);
     int fd[2];
     DO_SYS(pipe(fd)); // fd is now populated
@@ -888,6 +942,7 @@ void PipeCommand::execute()
         DO_SYS_VAL(fork(), pid2);
         if (parent_pid == getpid())
         {
+
             // Parent will get here, restore channels
             DO_SYS(close(fd[STDOUT_FILENO]));
             DO_SYS(close(fd[STDIN_FILENO]));
@@ -904,6 +959,7 @@ void PipeCommand::execute()
             command1_p->execute();
             exit(1);
         }
+        
     }
     else
     { // Child

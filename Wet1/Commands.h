@@ -110,6 +110,7 @@ protected:
     char *cmd_line_wo_ampersand;
 
 public:
+    bool should_delete;
     Command(const char *usr_cmd_line);
     virtual ~Command();
     virtual void execute() = 0;
@@ -209,12 +210,12 @@ public:
         pid_t pid;
         time_t start_time;
         time_t expiry_time;
-        time_t stopped_time;
+        bool timed_out;
         bool is_stopped;
 
     public:
         JobEntry(Command *cmd, const unsigned int job_id, const unsigned int pid, const bool is_stopped, const time_t expiry_time)
-            : cmd(cmd), job_id(job_id), pid(pid), start_time(time(NULL)), expiry_time(expiry_time), is_stopped(is_stopped) {}
+            : cmd(cmd), job_id(job_id), pid(pid), start_time(time(NULL)), expiry_time(expiry_time),timed_out(false) ,is_stopped(is_stopped) {}
         //JobEntry() : cmd(nullptr), job_id(0), pid(0), start_time(time(NULL)), job_stopped(false) {} // cmd = null -> mask empty JobEntry
         ~JobEntry() = default;
         JobEntry(JobEntry const &) = delete;                 // Copy ctor
@@ -246,7 +247,7 @@ public:
     void evaluateAlarm() const;
     //void removeScheduledJobs();
     JobEntry *getJobById(const unsigned int &jobId) const; //Done
-    void removeJobById(const unsigned int &jobId, bool to_delete);         // Done
+    void removeJobById(const unsigned int &jobId);         // Done
     JobEntry *getLastJob() const;                          //Done, For fg or for figuring out what is the maximal ID
     JobEntry *getLastStoppedJob();                         // For bg , Shai
     // TODO: Add extra methods or modify exisitng ones as needed

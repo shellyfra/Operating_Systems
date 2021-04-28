@@ -163,13 +163,13 @@ string SmallShell::getPromptName()
 
 Command *SmallShell::CreateCommand(const char *cmd_line)
 {
-    if(strlen(cmd_line)>COMMAND_MAX_LENGTH)
+    if (strlen(cmd_line) > COMMAND_MAX_LENGTH)
     {
         _logError("given command was more than max allowed charactes");
         return nullptr;
     }
     // For example:
-    char *temp_cmd = new char[COMMAND_MAX_LENGTH+1];
+    char *temp_cmd = new char[COMMAND_MAX_LENGTH + 1];
     strcpy(temp_cmd, cmd_line);
     _removeBackgroundSign(temp_cmd);
     string cmd_s = _trim(string(temp_cmd));
@@ -244,7 +244,7 @@ void SmallShell::executeCommand(const char *cmd_line)
         if (cmd->should_delete)
         {
             delete cmd;
-            cmd=nullptr;
+            cmd = nullptr;
         }
     }
     // if (!dynamic_cast<ExternalCommand*>(cmd) || (dynamic_cast<ExternalCommand*>(cmd) && !_isBackgroundCommand(cmd_line))){
@@ -355,7 +355,7 @@ const unsigned int JobsList::removeFinishedJobs(const bool &remove_scheduled)
 {
     // Due to complexity concerns, move all vector to new vector
     unsigned int max_job_id = JOB_ID_INITIAL_VALUE;
-    
+
     vector<JobEntry *> new_job_list;
     if (remove_scheduled && foreground_job && time(NULL) >= foreground_job->expiry_time)
     {
@@ -383,7 +383,6 @@ const unsigned int JobsList::removeFinishedJobs(const bool &remove_scheduled)
             int dummy;
             DO_SYS_VAL_NO_RETURN(kill(job_entry->pid, SIGKILL), dummy);
             break; // Do not timeout more than once
-
         }
     }
     for (auto &job_entry : this->jobs_list)
@@ -407,81 +406,41 @@ const unsigned int JobsList::removeFinishedJobs(const bool &remove_scheduled)
         {
             // Child finished
             delete job_entry->cmd;
-            job_entry->cmd=nullptr;
-            delete job_entry;            
-            job_entry=nullptr;
+            job_entry->cmd = nullptr;
+            delete job_entry;
+            job_entry = nullptr;
         }
     }
     jobs_list = new_job_list;
 
     return max_job_id;
-}/*
-void JobsList::evaluateAlarm() const
-{
-    time_t earliest = MAX_TIME;
-
-    for (auto &job_entry : this->jobs_list)
-    {
-
-        int status;
-        time_t job_sched_time = job_entry->expiry_time;
-        pid_t result = waitpid(job_entry->pid, &status, WNOHANG);
-        if (result == 0)
-        { // Child still alive, check if expired
-
-            earliest = earliest > job_sched_time ? job_sched_time : earliest;
-        }
-    }
-    if (foreground_job)
-    {
-        earliest = earliest > foreground_job->expiry_time ? foreground_job->expiry_time : earliest;
-    }
-    const int duration = difftime(earliest, time(NULL));
-
-    if (earliest == MAX_TIME)
-    {
-        //    "No alarm scheduled!"
-        alarm(0);
-    }
-    else if (duration > 0)
-    {
-
-        // New alarm set
-        alarm(duration);
-    }
 }
-*/
 void SmallShell::addAlarm(time_t new_alarm_t)
 {
     auto alarm_t_p = alarm_schedule.begin();
-    while(alarm_t_p != alarm_schedule.end() &&*alarm_t_p > new_alarm_t )
+    while (alarm_t_p != alarm_schedule.end() && *alarm_t_p > new_alarm_t)
     {
         ++alarm_t_p;
     }
-   
-    alarm_schedule.insert(alarm_t_p,new_alarm_t);
+
+    alarm_schedule.insert(alarm_t_p, new_alarm_t);
     // Guranteed not to be empty
     const int duration = difftime(alarm_schedule.back(), time(NULL));
     alarm(duration); // Signal the upcoming alarm
-    
- 
 }
 const bool SmallShell::removeAlarm()
 {
     alarm_schedule.pop_back();
-    if(!alarm_schedule.empty())
+    if (!alarm_schedule.empty())
     {
         const int duration = difftime(alarm_schedule.back(), time(NULL));
-        if(duration<=0)
+        if (duration <= 0)
         {
             return true;
         }
         alarm(duration);
     }
     return false;
-    
-    //   this->jobs_list->evaluateAlarm();
- 
 }
 void JobsList::removeJobById(const unsigned int &jobId)
 {
@@ -500,7 +459,7 @@ void JobsList::removeJobById(const unsigned int &jobId)
 JobsList::JobEntry *JobsList::getLastStoppedJob()
 {
     for (auto job_entry = jobs_list.rbegin(); job_entry != jobs_list.rend(); ++job_entry)
-    { // Consider creating array for pointer in order to support complexity of O(1)...
+    {
         if ((*job_entry)->is_stopped)
         {
             return *job_entry; // dereference iterator and pass as pointer
@@ -544,7 +503,6 @@ void ForegroundCommand::execute()
             cout << (*job_entry->cmd) << " : " << (job_entry->pid) << endl;
 
             jobs->foreground_job = job_entry;
-            //jobs->evaluateAlarm();
 
             int status;
             DO_SYS(waitpid(job_pid, &status, WSTOPPED));
@@ -569,7 +527,6 @@ JobsList::JobEntry *JobsList::addJob(Command *cmd, pid_t child_pid, const bool i
 {
 
     unsigned int new_job_id = removeFinishedJobs() + 1;
-    //Command *temp =new Command(cmd->getCmd());
     JobEntry *new_job = new JobEntry(cmd, new_job_id, child_pid, is_stopped, expiry_time);
     if (foreground)
     {
@@ -594,23 +551,18 @@ void JobsList::killAllJobs()
         int dummy;
         DO_SYS_VAL_NO_RETURN(kill(job_entry->pid, SIGKILL), dummy);
         DO_SYS(wait(NULL));
-        //jobs_list.e   .erase(jobs_list.begin());
+
         count++;
     }
-
-    //jobs_list.clear(); -> do not clear so we can still de allocate!
 }
 
 void JobsList::quitAllJobs()
 {
-
     for (auto &job_entry : jobs_list)
     {
         delete job_entry->cmd;
         delete job_entry;
     }
-
-    //jobs_list.clear(); -> do not clear so we can still de allocate!
 }
 JobsList::JobEntry *JobsList::getJobById(const unsigned int &jobId) const
 {
@@ -650,7 +602,6 @@ void KillCommand::execute()
         _logError(message);
         return;
     }
-    //DO_SYS(kill(entry->pid, int(first_arg.at(0)))); // Won't work if signal is above 9..
     DO_SYS(kill(entry->pid, signal_num));
 
     cout << "signal number " << signal_num << " was sent to pid " << entry->pid << endl;
@@ -724,16 +675,6 @@ void BackgroundCommand::execute()
     move_bg_job->is_stopped = false; // job was resumed
 }
 
-void print_time(const time_t new_alarm)
-{
-
-    std::tm *ptm = std::localtime(&new_alarm);
-    char buffer[32];
-    // Format: Mo, 15.06.2009 20:20:00
-    std::strftime(buffer, 32, "%a, %d.%m.%Y %H:%M:%S", ptm);
-    puts(buffer);
-}
-
 void ExternalCommand::execute()
 {
     int stat;
@@ -753,12 +694,9 @@ void ExternalCommand::execute()
         }
         duration = stoi(string(args[1]));
         const string duration_str = to_string(duration);
- 
 
         cmd_to_bash += string(cmd_to_bash).find_first_of(duration_str, 0) + strlen(duration_str.c_str());
 
-        
-       
         new_alarm_t = time(NULL) + duration;
     }
 
@@ -881,31 +819,16 @@ void RedirectionCommand::checkRedirectType()
     }
     else
     {
-        return; // CHECK!!!
+        return;
     }
 
-    second_output_file = str.erase(0, pos + delimiter.length()); //CHECK WHAT ABOUT & ?
+    second_output_file = str.erase(0, pos + delimiter.length());
     second_output_file.erase(remove(second_output_file.begin(), second_output_file.end(), '&'), second_output_file.end());
 }
 
 RedirectionCommand::RedirectionCommand(const char *cmd_line, SmallShell *shell) : Command(cmd_line), redirect(APPEND_RIGHT), shell(shell)
 {
     checkRedirectType();
-
-    /*
-    string command_str = string(cmd_line);
-    std::string pipe = ">";
-    std::string pipe_stderr = ">>";
-
-    vector<string> pipe_segments = _stringSplit(command_str, pipe);
-    vector<string> pipe_stderr_segments = _stringSplit(command_str, pipe_stderr);
-    vector<string> *pipe_segments_p;
-    this->redirect = (pipe_stderr_segments.size() == 2) ? Redirect_type::APPEND_RIGHT : Redirect_type::OVERRIDE_RIGHT;
-    pipe_segments_p = redirect == APPEND_RIGHT ? &pipe_stderr_segments : &pipe_segments;
-
-    this->first_command = (*pipe_segments_p).at(0);
-    this->second_output_file = (*pipe_segments_p).at(1);
-    */
 }
 
 void RedirectionCommand::execute()
@@ -967,7 +890,6 @@ void PipeCommand::execute()
     std::shared_ptr<Command> command1_p(shell->CreateCommand(command_arguement.c_str()));
     std::shared_ptr<Command> command2_p(shell->CreateCommand(piped_arguement.c_str()));
 
-    //int saved_stdout = dup(STDOUT_FILENO);
     int fd[2];
     DO_SYS(pipe(fd)); // fd is now populated
     pid_t parent_pid = getpid();

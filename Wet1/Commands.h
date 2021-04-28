@@ -103,7 +103,7 @@ class Command
 {
 
 protected:
-    // TODO: Add your data members
+    
     char **args;
     int argc;
     char *cmd_line;
@@ -116,10 +116,7 @@ public:
     virtual void execute() = 0;
     friend std::ostream &operator<<(std::ostream &, const Command &);
     const char *const getCmd() const { return cmd_line; };
-    //virtual void prepare();
-    //virtual void cleanup();
 
-    // TODO: Add your extra methods if needed
 };
 
 class BuiltInCommand : public Command
@@ -156,7 +153,6 @@ public:
 
 class RedirectionCommand : public Command
 {
-    // TODO: Add your data members
     Redirect_type redirect;
     SmallShell *shell;
 
@@ -167,8 +163,6 @@ public:
     explicit RedirectionCommand(const char *cmd_line, SmallShell *shell);
     virtual ~RedirectionCommand() {}
     void execute() override;
-    //void prepare() override;
-    //void cleanup() override;
     void checkRedirectType();
 };
 
@@ -176,7 +170,7 @@ class ChangeDirCommand : public BuiltInCommand
 {
 private:
     char **plastPwd; // Won't change pointer, but will change string
-    // TODO: Add your data members public:
+    
 public:
     ChangeDirCommand(const char *cmd_line, char **plastPwd) : BuiltInCommand(cmd_line), plastPwd(plastPwd) {}
     virtual ~ChangeDirCommand() {}
@@ -215,8 +209,9 @@ public:
 
     public:
         JobEntry(Command *cmd, const unsigned int job_id, const unsigned int pid, const bool is_stopped, const time_t expiry_time)
-            : cmd(cmd), job_id(job_id), pid(pid), start_time(time(NULL)), expiry_time(expiry_time),timed_out(false) ,is_stopped(is_stopped) {}
-        //JobEntry() : cmd(nullptr), job_id(0), pid(0), start_time(time(NULL)), job_stopped(false) {} // cmd = null -> mask empty JobEntry
+            : cmd(cmd), job_id(job_id), pid(pid), start_time(time(NULL)), expiry_time(expiry_time)
+                                                            ,timed_out(false) ,is_stopped(is_stopped) {}
+       
         ~JobEntry() = default;
         JobEntry(JobEntry const &) = delete;                 // Copy ctor
         JobEntry &operator=(const JobEntry &other) = delete; //Assignment operator!
@@ -224,34 +219,32 @@ public:
         const bool IsEmpty() const { return (cmd == nullptr); }
         friend std::ostream &operator<<(std::ostream &, const JobEntry &);
 
-        // TODO: Add your data members
+       
     };
 
 private:
     std::vector<JobEntry *> jobs_list;
-    //std::vector<JobEntry *> sched_jobs_list;
+   
 
-    // TODO: Add your data members
+  
 public:
     JobEntry *foreground_job;
 
     JobsList() : foreground_job(nullptr){};
     ~JobsList() = default;
-    JobsList &operator=(const JobsList &other) = default; // for now
-    JobEntry *addJob(Command *cmd, pid_t child_pid, const bool is_stopped = false, const bool foreground = false, const time_t expiry_time = MAX_TIME);
-    void printJobsList() const;
-    //void printSchedJobsList() const  ;                                                                                // Done
-    void killAllJobs(); // Done
+    JobsList &operator=(const JobsList &other) = default; 
+    JobEntry *addJob(Command *cmd, pid_t child_pid, const bool is_stopped = false
+                            , const bool foreground = false, const time_t expiry_time = MAX_TIME);
+    void printJobsList() const;                                                                            
+    void killAllJobs();
     void quitAllJobs();
     const unsigned int removeFinishedJobs(const bool &remove_scheduled = false);
     void evaluateAlarm() const;
-    //void removeScheduledJobs();
-    JobEntry *getJobById(const unsigned int &jobId) const; //Done
-    void removeJobById(const unsigned int &jobId);         // Done
-    JobEntry *getLastJob() const;                          //Done, For fg or for figuring out what is the maximal ID
-    JobEntry *getLastStoppedJob();                         // For bg , Shai
-    // TODO: Add extra methods or modify exisitng ones as needed
-    // TODO add operators
+    JobEntry *getJobById(const unsigned int &jobId) const; 
+    void removeJobById(const unsigned int &jobId);        
+    JobEntry *getLastJob() const;                        
+    JobEntry *getLastStoppedJob();                        
+
 };
 
 class ExternalCommand : public Command
@@ -303,7 +296,7 @@ public:
     KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line), jobs(jobs) {}
     virtual ~KillCommand() {}
     void execute() override;
-    //void ToForeground(JobsList::JobEntry* entry);
+  
 };
 
 class ForegroundCommand : public BuiltInCommand
@@ -345,10 +338,7 @@ private:
     SmallShell() : should_run(true), last_wd(nullptr), prompt_name(DEFAULT_PROMPT), jobs_list(new JobsList()) {}
 
 public:
-    JobsList *jobs_list;
-    // std::list<JobsList> timed_jobs_list;
-    //time_t scheduled_alarm;
-    
+    JobsList *jobs_list;    
     pid_t shell_pid;
     Command *CreateCommand(const char *cmd_line);
     SmallShell(SmallShell const &) = delete;     // disable copy ctor
@@ -363,9 +353,7 @@ public:
         return instance;
     }
     ~SmallShell();
-    void executeCommand(const char *cmd_line);
-    // TODO: add extra methods as needed
-    //void changePrompt(const char *cmd_line);
+    void executeCommand(const char *cmd_line);  
     std::string getPromptName();
     bool &ShouldRun() { return this->should_run; }
 };

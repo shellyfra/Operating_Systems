@@ -341,18 +341,20 @@ private:
     bool should_run;
     char *last_wd;
     std::string prompt_name;
-
+    std::vector<time_t> alarm_schedule;
     SmallShell() : should_run(true), last_wd(nullptr), prompt_name(DEFAULT_PROMPT), jobs_list(new JobsList()) {}
 
 public:
     JobsList *jobs_list;
     // std::list<JobsList> timed_jobs_list;
     //time_t scheduled_alarm;
+    
     pid_t shell_pid;
     Command *CreateCommand(const char *cmd_line);
     SmallShell(SmallShell const &) = delete;     // disable copy ctor
     void operator=(SmallShell const &) = delete; // disable = operator
-    void evaluateAlarm();
+    void addAlarm(time_t new_alarm_t);
+    const bool removeAlarm();
     static SmallShell &getInstance() // make SmallShell singleton
     {
         static SmallShell instance; // Guaranteed to be destroyed.

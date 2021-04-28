@@ -56,8 +56,13 @@ void alarmHandler(int sig_num)
     if(getpid() == shell.shell_pid)
     {
       _logError("smash got an alarm", true); 
-      SmallShell::getInstance().jobs_list->removeFinishedJobs(true);
-      SmallShell::getInstance().evaluateAlarm();
+      shell.jobs_list->removeFinishedJobs(true);
+      
+      if(shell.removeAlarm())
+      {
+        // There was a signal who finisihed
+        DO_SYS(kill(shell.shell_pid,SIGALRM));
+      }
     
     }
     else

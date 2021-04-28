@@ -109,7 +109,7 @@ static bool _isNumber(char *str, CHECK_TYPE check = NONE)
     {
         if (!std::isdigit(current))
         {
-            if ((check == CHECK_POSITIVE) || ((check == CHECK_NEGATIVE) && (current != MINUS_SIGN))){
+            if ((check == CHECK_POSITIVE) || (check == NONE) || (check == CHECK_NEGATIVE && (current != MINUS_SIGN))){
                 return false;
             }
             has_minus = (current == MINUS_SIGN);

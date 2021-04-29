@@ -889,7 +889,7 @@ void PipeCommand::execute()
     // These will delete themselves
     std::shared_ptr<Command> command1_p(shell->CreateCommand(command_arguement.c_str()));
     std::shared_ptr<Command> command2_p(shell->CreateCommand(piped_arguement.c_str()));
-
+    
     int fd[2];
     DO_SYS(pipe(fd)); // fd is now populated
     pid_t parent_pid = getpid();

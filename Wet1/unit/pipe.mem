@@ -1,1861 +1,1335 @@
-==11762== Memcheck, a memory error detector
-==11762== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
-==11762== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
-==11762== Command: /home/student/Desktop/OSshelly/Wet1/build/smash
-==11762== Parent PID: 11752
-==11762== 
---11762-- 
---11762-- Valgrind options:
---11762--    -v
---11762--    --leak-check=full
---11762--    --log-file=/home/student/Desktop/OSshelly/Wet1/unit/pipe.mem
---11762-- Contents of /proc/version:
---11762--   Linux version 4.15.0-142-generic (buildd@lgw01-amd64-036) (gcc version 7.5.0 (Ubuntu 7.5.0-3ubuntu1~18.04)) #146-Ubuntu SMP Tue Apr 13 01:11:19 UTC 2021
---11762-- 
---11762-- Arch and hwcaps: AMD64, LittleEndian, amd64-cx16-lzcnt-rdtscp-sse3-avx-avx2-bmi
---11762-- Page sizes: currently 4096, max supported 4096
---11762-- Valgrind library directory: /usr/lib/valgrind
---11762-- Reading syms from /home/student/Desktop/OSshelly/Wet1/build/smash
---11762-- Reading syms from /lib/x86_64-linux-gnu/ld-2.27.so
---11762--   Considering /lib/x86_64-linux-gnu/ld-2.27.so ..
---11762--   .. CRC mismatch (computed 6c71a321 wanted b59d24a6)
---11762--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/ld-2.27.so ..
---11762--   .. CRC is valid
---11762-- Reading syms from /usr/lib/valgrind/memcheck-amd64-linux
---11762--   Considering /usr/lib/valgrind/memcheck-amd64-linux ..
---11762--   .. CRC mismatch (computed 41ddb025 wanted 9972f546)
---11762--    object doesn't have a symbol table
---11762--    object doesn't have a dynamic symbol table
---11762-- Scheduler: using generic scheduler lock implementation.
---11762-- Reading suppressions file: /usr/lib/valgrind/default.supp
-==11762== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11762-by-student-on-???
-==11762== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11762-by-student-on-???
-==11762== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11762-by-student-on-???
-==11762== 
-==11762== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11762== don't want to do, unless you know exactly what you're doing,
-==11762== or are doing some strange experiment):
-==11762==   /usr/lib/valgrind/../../bin/vgdb --pid=11762 ...command...
-==11762== 
-==11762== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11762==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11762== and then give GDB the following command
-==11762==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11762
-==11762== --pid is optional if only one valgrind process is running
-==11762== 
---11762-- REDIR: 0x4020d40 (ld-linux-x86-64.so.2:strlen) redirected to 0x580608c1 (???)
---11762-- REDIR: 0x4020b20 (ld-linux-x86-64.so.2:index) redirected to 0x580608db (???)
---11762-- Reading syms from /usr/lib/valgrind/vgpreload_core-amd64-linux.so
---11762--   Considering /usr/lib/valgrind/vgpreload_core-amd64-linux.so ..
---11762--   .. CRC mismatch (computed 50df1b30 wanted 4800a4cf)
---11762--    object doesn't have a symbol table
---11762-- Reading syms from /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so
---11762--   Considering /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so ..
---11762--   .. CRC mismatch (computed f893b962 wanted 95ee359e)
---11762--    object doesn't have a symbol table
-==11762== WARNING: new redirection conflicts with existing -- ignoring it
---11762--     old: 0x04020d40 (strlen              ) R-> (0000.0) 0x580608c1 ???
---11762--     new: 0x04020d40 (strlen              ) R-> (2007.0) 0x04c34db0 strlen
---11762-- REDIR: 0x401d560 (ld-linux-x86-64.so.2:strcmp) redirected to 0x4c35ee0 (strcmp)
---11762-- REDIR: 0x4021280 (ld-linux-x86-64.so.2:mempcpy) redirected to 0x4c394f0 (mempcpy)
---11762-- Reading syms from /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25
---11762--    object doesn't have a symbol table
---11762-- Reading syms from /lib/x86_64-linux-gnu/libgcc_s.so.1
---11762--    object doesn't have a symbol table
---11762-- Reading syms from /lib/x86_64-linux-gnu/libc-2.27.so
---11762--   Considering /lib/x86_64-linux-gnu/libc-2.27.so ..
---11762--   .. CRC mismatch (computed eabd4889 wanted a033e032)
---11762--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libc-2.27.so ..
---11762--   .. CRC is valid
---11762-- Reading syms from /lib/x86_64-linux-gnu/libm-2.27.so
---11762--   Considering /lib/x86_64-linux-gnu/libm-2.27.so ..
---11762--   .. CRC mismatch (computed 4fa27e7c wanted 85c547d3)
---11762--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libm-2.27.so ..
---11762--   .. CRC is valid
---11762-- REDIR: 0x547db70 (libc.so.6:memmove) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547ce80 (libc.so.6:strncpy) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547de50 (libc.so.6:strcasecmp) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547c8d0 (libc.so.6:strcat) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547ceb0 (libc.so.6:rindex) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547f5a0 (libc.so.6:rawmemchr) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547dce0 (libc.so.6:mempcpy) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547db10 (libc.so.6:bcmp) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547ce40 (libc.so.6:strncmp) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547c940 (libc.so.6:strcmp) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547dc40 (libc.so.6:memset) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x549aed0 (libc.so.6:wcschr) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547cde0 (libc.so.6:strnlen) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547c9b0 (libc.so.6:strcspn) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547dea0 (libc.so.6:strncasecmp) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547c980 (libc.so.6:strcpy) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547dfe0 (libc.so.6:memcpy@@GLIBC_2.14) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547cee0 (libc.so.6:strpbrk) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547c900 (libc.so.6:index) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547cdb0 (libc.so.6:strlen) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x54874a0 (libc.so.6:memrchr) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547def0 (libc.so.6:strcasecmp_l) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547dae0 (libc.so.6:memchr) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x549bc90 (libc.so.6:wcslen) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547d190 (libc.so.6:strspn) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547de20 (libc.so.6:stpncpy) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547ddf0 (libc.so.6:stpcpy) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547f5d0 (libc.so.6:strchrnul) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x547df40 (libc.so.6:strncasecmp_l) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
---11762-- REDIR: 0x556d300 (libc.so.6:__strrchr_avx2) redirected to 0x4c34730 (rindex)
---11762-- REDIR: 0x5476140 (libc.so.6:malloc) redirected to 0x4c31aa0 (malloc)
---11762-- REDIR: 0x556d4d0 (libc.so.6:__strlen_avx2) redirected to 0x4c34cf0 (strlen)
---11762-- REDIR: 0x5569ae0 (libc.so.6:__memcmp_avx2_movbe) redirected to 0x4c37e00 (bcmp)
---11762-- REDIR: 0x5488c50 (libc.so.6:__strcmp_sse2_unaligned) redirected to 0x4c35da0 (strcmp)
---11762-- REDIR: 0x556da10 (libc.so.6:__memcpy_avx_unaligned_erms) redirected to 0x4c386e0 (memmove)
---11762-- REDIR: 0x4ed1280 (libstdc++.so.6:operator new(unsigned long)) redirected to 0x4c32110 (operator new(unsigned long))
---11762-- REDIR: 0x556d9f0 (libc.so.6:__mempcpy_avx_unaligned_erms) redirected to 0x4c39130 (mempcpy)
---11762-- REDIR: 0x4ed1330 (libstdc++.so.6:operator new[](unsigned long)) redirected to 0x4c32830 (operator new[](unsigned long))
---11762-- REDIR: 0x5495320 (libc.so.6:__strcpy_sse2_unaligned) redirected to 0x4c34dd0 (strcpy)
---11762-- REDIR: 0x4ecf3c0 (libstdc++.so.6:operator delete[](void*)) redirected to 0x4c336d0 (operator delete[](void*))
---11762-- REDIR: 0x5569360 (libc.so.6:__memchr_avx2) redirected to 0x4c35f80 (memchr)
---11762-- REDIR: 0x556de90 (libc.so.6:__memset_avx2_unaligned_erms) redirected to 0x4c385d0 (memset)
---11762-- REDIR: 0x4ecf390 (libstdc++.so.6:operator delete(void*)) redirected to 0x4c331d0 (operator delete(void*))
---11765-- REDIR: 0x5476a30 (libc.so.6:free) redirected to 0x4c32cd0 (free)
---11766-- REDIR: 0x5476a30 (libc.so.6:free) redirected to 0x4c32cd0 (free)
-==11766== 
-==11766== HEAP SUMMARY:
-==11766==     in use at exit: 1,278 bytes in 23 blocks
-==11766==   total heap usage: 34 allocs, 11 frees, 82,617 bytes allocated
-==11766== 
-==11766== Searching for pointers to 23 not-freed blocks
-==11766== Checked 111,400 bytes
-==11766== 
-==11766== LEAK SUMMARY:
-==11766==    definitely lost: 0 bytes in 0 blocks
-==11766==    indirectly lost: 0 bytes in 0 blocks
-==11766==      possibly lost: 0 bytes in 0 blocks
-==11766==    still reachable: 1,278 bytes in 23 blocks
-==11766==         suppressed: 0 bytes in 0 blocks
-==11766== Reachable blocks (those to which a pointer was found) are not shown.
-==11766== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11766== 
-==11766== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11766== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11765== 
-==11765== HEAP SUMMARY:
-==11765==     in use at exit: 1,278 bytes in 23 blocks
-==11765==   total heap usage: 34 allocs, 11 frees, 82,617 bytes allocated
-==11765== 
-==11765== Searching for pointers to 23 not-freed blocks
-==11765== Checked 111,392 bytes
-==11765== 
-==11765== LEAK SUMMARY:
-==11765==    definitely lost: 0 bytes in 0 blocks
-==11765==    indirectly lost: 0 bytes in 0 blocks
-==11765==      possibly lost: 0 bytes in 0 blocks
-==11765==    still reachable: 1,278 bytes in 23 blocks
-==11765==         suppressed: 0 bytes in 0 blocks
-==11765== Reachable blocks (those to which a pointer was found) are not shown.
-==11765== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11765== 
-==11765== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11765== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
---11762-- REDIR: 0x5476a30 (libc.so.6:free) redirected to 0x4c32cd0 (free)
-==11769== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11769-by-student-on-???
-==11769== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11769-by-student-on-???
-==11770== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11770-by-student-on-???
-==11770== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11770-by-student-on-???
-==11770== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11770-by-student-on-???
-==11770== 
-==11770== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11770== don't want to do, unless you know exactly what you're doing,
-==11770== or are doing some strange experiment):
-==11770==   /usr/lib/valgrind/../../bin/vgdb --pid=11770 ...command...
-==11770== 
-==11770== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11770==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11770== and then give GDB the following command
-==11770==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11770
-==11770== --pid is optional if only one valgrind process is running
-==11770== 
-==11769== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11769-by-student-on-???
-==11769== 
-==11769== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11769== don't want to do, unless you know exactly what you're doing,
-==11769== or are doing some strange experiment):
-==11769==   /usr/lib/valgrind/../../bin/vgdb --pid=11769 ...command...
-==11769== 
-==11769== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11769==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11769== and then give GDB the following command
-==11769==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11769
-==11769== --pid is optional if only one valgrind process is running
-==11769== 
-==11770== 
-==11770== HEAP SUMMARY:
-==11770==     in use at exit: 1,414 bytes in 33 blocks
-==11770==   total heap usage: 100 allocs, 67 frees, 85,225 bytes allocated
-==11770== 
-==11770== Searching for pointers to 33 not-freed blocks
-==11770== Checked 111,608 bytes
-==11770== 
-==11770== LEAK SUMMARY:
-==11770==    definitely lost: 0 bytes in 0 blocks
-==11770==    indirectly lost: 0 bytes in 0 blocks
-==11770==      possibly lost: 0 bytes in 0 blocks
-==11770==    still reachable: 1,414 bytes in 33 blocks
-==11770==         suppressed: 0 bytes in 0 blocks
-==11770== Reachable blocks (those to which a pointer was found) are not shown.
-==11770== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11770== 
-==11770== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11770== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11769== 
-==11769== HEAP SUMMARY:
-==11769==     in use at exit: 1,414 bytes in 33 blocks
-==11769==   total heap usage: 100 allocs, 67 frees, 85,225 bytes allocated
-==11769== 
-==11769== Searching for pointers to 33 not-freed blocks
-==11769== Checked 111,600 bytes
-==11769== 
-==11769== LEAK SUMMARY:
-==11769==    definitely lost: 0 bytes in 0 blocks
-==11769==    indirectly lost: 0 bytes in 0 blocks
-==11769==      possibly lost: 0 bytes in 0 blocks
-==11769==    still reachable: 1,414 bytes in 33 blocks
-==11769==         suppressed: 0 bytes in 0 blocks
-==11769== Reachable blocks (those to which a pointer was found) are not shown.
-==11769== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11769== 
-==11769== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11769== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11774== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11774-by-student-on-???
-==11774== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11774-by-student-on-???
-==11774== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11774-by-student-on-???
-==11774== 
-==11774== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11774== don't want to do, unless you know exactly what you're doing,
-==11774== or are doing some strange experiment):
-==11774==   /usr/lib/valgrind/../../bin/vgdb --pid=11774 ...command...
-==11774== 
-==11774== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11774==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11774== and then give GDB the following command
-==11774==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11774
-==11774== --pid is optional if only one valgrind process is running
-==11774== 
-==11774== 
-==11774== HEAP SUMMARY:
-==11774==     in use at exit: 1,362 bytes in 23 blocks
-==11774==   total heap usage: 159 allocs, 136 frees, 87,644 bytes allocated
-==11774== 
-==11774== Searching for pointers to 23 not-freed blocks
-==11774== Checked 111,512 bytes
-==11774== 
-==11774== LEAK SUMMARY:
-==11774==    definitely lost: 0 bytes in 0 blocks
-==11774==    indirectly lost: 0 bytes in 0 blocks
-==11774==      possibly lost: 0 bytes in 0 blocks
-==11774==    still reachable: 1,362 bytes in 23 blocks
-==11774==         suppressed: 0 bytes in 0 blocks
-==11774== Reachable blocks (those to which a pointer was found) are not shown.
-==11774== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11774== 
-==11774== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11774== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11773== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11773-by-student-on-???
-==11773== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11773-by-student-on-???
-==11773== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11773-by-student-on-???
-==11773== 
-==11773== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11773== don't want to do, unless you know exactly what you're doing,
-==11773== or are doing some strange experiment):
-==11773==   /usr/lib/valgrind/../../bin/vgdb --pid=11773 ...command...
-==11773== 
-==11773== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11773==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11773== and then give GDB the following command
-==11773==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11773
-==11773== --pid is optional if only one valgrind process is running
-==11773== 
-==11773== 
-==11773== HEAP SUMMARY:
-==11773==     in use at exit: 1,362 bytes in 23 blocks
-==11773==   total heap usage: 159 allocs, 136 frees, 87,644 bytes allocated
-==11773== 
-==11773== Searching for pointers to 23 not-freed blocks
-==11773== Checked 111,504 bytes
-==11773== 
-==11773== LEAK SUMMARY:
-==11773==    definitely lost: 0 bytes in 0 blocks
-==11773==    indirectly lost: 0 bytes in 0 blocks
-==11773==      possibly lost: 0 bytes in 0 blocks
-==11773==    still reachable: 1,362 bytes in 23 blocks
-==11773==         suppressed: 0 bytes in 0 blocks
-==11773== Reachable blocks (those to which a pointer was found) are not shown.
-==11773== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11773== 
-==11773== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11773== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11784== 
-==11784== HEAP SUMMARY:
-==11784==     in use at exit: 1,313 bytes in 24 blocks
-==11784==   total heap usage: 203 allocs, 179 frees, 89,580 bytes allocated
-==11784== 
-==11784== Searching for pointers to 24 not-freed blocks
-==11785== 
-==11785== HEAP SUMMARY:
-==11785==     in use at exit: 1,313 bytes in 24 blocks
-==11785==   total heap usage: 203 allocs, 179 frees, 89,580 bytes allocated
-==11785== 
-==11785== Searching for pointers to 24 not-freed blocks
-==11784== Checked 111,432 bytes
-==11784== 
-==11784== LEAK SUMMARY:
-==11784==    definitely lost: 0 bytes in 0 blocks
-==11784==    indirectly lost: 0 bytes in 0 blocks
-==11784==      possibly lost: 0 bytes in 0 blocks
-==11784==    still reachable: 1,313 bytes in 24 blocks
-==11784==         suppressed: 0 bytes in 0 blocks
-==11784== Reachable blocks (those to which a pointer was found) are not shown.
-==11784== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11784== 
-==11784== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11784== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11785== Checked 111,440 bytes
-==11785== 
-==11785== LEAK SUMMARY:
-==11785==    definitely lost: 0 bytes in 0 blocks
-==11785==    indirectly lost: 0 bytes in 0 blocks
-==11785==      possibly lost: 0 bytes in 0 blocks
-==11785==    still reachable: 1,313 bytes in 24 blocks
-==11785==         suppressed: 0 bytes in 0 blocks
-==11785== Reachable blocks (those to which a pointer was found) are not shown.
-==11785== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11785== 
-==11785== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11785== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11796== 
-==11796== HEAP SUMMARY:
-==11796==     in use at exit: 1,278 bytes in 21 blocks
-==11796==   total heap usage: 230 allocs, 209 frees, 91,229 bytes allocated
-==11796== 
-==11796== Searching for pointers to 21 not-freed blocks
-==11796== Checked 111,384 bytes
-==11796== 
-==11796== LEAK SUMMARY:
-==11796==    definitely lost: 0 bytes in 0 blocks
-==11796==    indirectly lost: 0 bytes in 0 blocks
-==11796==      possibly lost: 0 bytes in 0 blocks
-==11796==    still reachable: 1,278 bytes in 21 blocks
-==11796==         suppressed: 0 bytes in 0 blocks
-==11796== Reachable blocks (those to which a pointer was found) are not shown.
-==11796== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11796== 
-==11796== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11796== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11795== 
-==11795== HEAP SUMMARY:
-==11795==     in use at exit: 1,278 bytes in 21 blocks
-==11795==   total heap usage: 230 allocs, 209 frees, 91,229 bytes allocated
-==11795== 
-==11795== Searching for pointers to 21 not-freed blocks
-==11795== Checked 111,376 bytes
-==11795== 
-==11795== LEAK SUMMARY:
-==11795==    definitely lost: 0 bytes in 0 blocks
-==11795==    indirectly lost: 0 bytes in 0 blocks
-==11795==      possibly lost: 0 bytes in 0 blocks
-==11795==    still reachable: 1,278 bytes in 21 blocks
-==11795==         suppressed: 0 bytes in 0 blocks
-==11795== Reachable blocks (those to which a pointer was found) are not shown.
-==11795== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11795== 
-==11795== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11795== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11800== 
-==11800== HEAP SUMMARY:
-==11800==     in use at exit: 1,315 bytes in 24 blocks
-==11800==   total heap usage: 274 allocs, 250 frees, 93,181 bytes allocated
-==11800== 
-==11800== Searching for pointers to 24 not-freed blocks
-==11800== Checked 111,440 bytes
-==11800== 
-==11800== LEAK SUMMARY:
-==11800==    definitely lost: 0 bytes in 0 blocks
-==11800==    indirectly lost: 0 bytes in 0 blocks
-==11800==      possibly lost: 0 bytes in 0 blocks
-==11800==    still reachable: 1,315 bytes in 24 blocks
-==11800==         suppressed: 0 bytes in 0 blocks
-==11800== Reachable blocks (those to which a pointer was found) are not shown.
-==11800== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11800== 
-==11800== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11800== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11799== 
-==11799== HEAP SUMMARY:
-==11799==     in use at exit: 1,315 bytes in 24 blocks
-==11799==   total heap usage: 274 allocs, 250 frees, 93,181 bytes allocated
-==11799== 
-==11799== Searching for pointers to 24 not-freed blocks
-==11799== Checked 111,432 bytes
-==11799== 
-==11799== LEAK SUMMARY:
-==11799==    definitely lost: 0 bytes in 0 blocks
-==11799==    indirectly lost: 0 bytes in 0 blocks
-==11799==      possibly lost: 0 bytes in 0 blocks
-==11799==    still reachable: 1,315 bytes in 24 blocks
-==11799==         suppressed: 0 bytes in 0 blocks
-==11799== Reachable blocks (those to which a pointer was found) are not shown.
-==11799== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11799== 
-==11799== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11799== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11818== 
-==11818== HEAP SUMMARY:
-==11818==     in use at exit: 1,278 bytes in 21 blocks
-==11818==   total heap usage: 301 allocs, 280 frees, 94,830 bytes allocated
-==11818== 
-==11818== Searching for pointers to 21 not-freed blocks
-==11818== Checked 111,384 bytes
-==11818== 
-==11818== LEAK SUMMARY:
-==11818==    definitely lost: 0 bytes in 0 blocks
-==11818==    indirectly lost: 0 bytes in 0 blocks
-==11818==      possibly lost: 0 bytes in 0 blocks
-==11818==    still reachable: 1,278 bytes in 21 blocks
-==11818==         suppressed: 0 bytes in 0 blocks
-==11818== Reachable blocks (those to which a pointer was found) are not shown.
-==11818== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11818== 
-==11818== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11818== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11817== 
-==11817== HEAP SUMMARY:
-==11817==     in use at exit: 1,278 bytes in 21 blocks
-==11817==   total heap usage: 301 allocs, 280 frees, 94,830 bytes allocated
-==11817== 
-==11817== Searching for pointers to 21 not-freed blocks
-==11817== Checked 111,376 bytes
-==11817== 
-==11817== LEAK SUMMARY:
-==11817==    definitely lost: 0 bytes in 0 blocks
-==11817==    indirectly lost: 0 bytes in 0 blocks
-==11817==      possibly lost: 0 bytes in 0 blocks
-==11817==    still reachable: 1,278 bytes in 21 blocks
-==11817==         suppressed: 0 bytes in 0 blocks
-==11817== Reachable blocks (those to which a pointer was found) are not shown.
-==11817== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11817== 
-==11817== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11817== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11821== 
-==11821== HEAP SUMMARY:
-==11821==     in use at exit: 1,315 bytes in 24 blocks
-==11821==   total heap usage: 345 allocs, 321 frees, 96,782 bytes allocated
-==11821== 
-==11821== Searching for pointers to 24 not-freed blocks
-==11821== Checked 111,432 bytes
-==11821== 
-==11821== LEAK SUMMARY:
-==11821==    definitely lost: 0 bytes in 0 blocks
-==11821==    indirectly lost: 0 bytes in 0 blocks
-==11821==      possibly lost: 0 bytes in 0 blocks
-==11821==    still reachable: 1,315 bytes in 24 blocks
-==11821==         suppressed: 0 bytes in 0 blocks
-==11821== Reachable blocks (those to which a pointer was found) are not shown.
-==11821== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11821== 
-==11821== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11821== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11822== 
-==11822== HEAP SUMMARY:
-==11822==     in use at exit: 1,315 bytes in 24 blocks
-==11822==   total heap usage: 345 allocs, 321 frees, 96,782 bytes allocated
-==11822== 
-==11822== Searching for pointers to 24 not-freed blocks
-==11822== Checked 111,440 bytes
-==11822== 
-==11822== LEAK SUMMARY:
-==11822==    definitely lost: 0 bytes in 0 blocks
-==11822==    indirectly lost: 0 bytes in 0 blocks
-==11822==      possibly lost: 0 bytes in 0 blocks
-==11822==    still reachable: 1,315 bytes in 24 blocks
-==11822==         suppressed: 0 bytes in 0 blocks
-==11822== Reachable blocks (those to which a pointer was found) are not shown.
-==11822== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11822== 
-==11822== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11822== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11835== 
-==11835== HEAP SUMMARY:
-==11835==     in use at exit: 1,278 bytes in 21 blocks
-==11835==   total heap usage: 372 allocs, 351 frees, 98,431 bytes allocated
-==11835== 
-==11835== Searching for pointers to 21 not-freed blocks
-==11835== Checked 111,384 bytes
-==11835== 
-==11835== LEAK SUMMARY:
-==11835==    definitely lost: 0 bytes in 0 blocks
-==11835==    indirectly lost: 0 bytes in 0 blocks
-==11835==      possibly lost: 0 bytes in 0 blocks
-==11835==    still reachable: 1,278 bytes in 21 blocks
-==11835==         suppressed: 0 bytes in 0 blocks
-==11835== Reachable blocks (those to which a pointer was found) are not shown.
-==11835== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11835== 
-==11835== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11835== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11834== 
-==11834== HEAP SUMMARY:
-==11834==     in use at exit: 1,278 bytes in 21 blocks
-==11834==   total heap usage: 372 allocs, 351 frees, 98,431 bytes allocated
-==11834== 
-==11834== Searching for pointers to 21 not-freed blocks
-==11834== Checked 111,376 bytes
-==11834== 
-==11834== LEAK SUMMARY:
-==11834==    definitely lost: 0 bytes in 0 blocks
-==11834==    indirectly lost: 0 bytes in 0 blocks
-==11834==      possibly lost: 0 bytes in 0 blocks
-==11834==    still reachable: 1,278 bytes in 21 blocks
-==11834==         suppressed: 0 bytes in 0 blocks
-==11834== Reachable blocks (those to which a pointer was found) are not shown.
-==11834== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11834== 
-==11834== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11834== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11838== 
-==11838== HEAP SUMMARY:
-==11838==     in use at exit: 1,357 bytes in 27 blocks
-==11838==   total heap usage: 419 allocs, 392 frees, 100,405 bytes allocated
-==11838== 
-==11838== Searching for pointers to 27 not-freed blocks
-==11838== Checked 111,448 bytes
-==11838== 
-==11838== 40 bytes in 1 blocks are definitely lost in loss record 7 of 19
-==11838==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==11838==    by 0x110540: JobsList::addJob(Command*, int, bool, bool, long) (Commands.cpp:530)
-==11838==    by 0x11202D: ExternalCommand::execute() (Commands.cpp:708)
-==11838==    by 0x116328: PipeCommand::execute() (Commands.cpp:928)
-==11838==    by 0x10E152: SmallShell::executeCommand(char const*) (Commands.cpp:243)
-==11838==    by 0x10C8D6: main (smash.cpp:41)
-==11838== 
-==11838== LEAK SUMMARY:
-==11838==    definitely lost: 40 bytes in 1 blocks
-==11838==    indirectly lost: 0 bytes in 0 blocks
-==11838==      possibly lost: 0 bytes in 0 blocks
-==11838==    still reachable: 1,317 bytes in 26 blocks
-==11838==         suppressed: 0 bytes in 0 blocks
-==11838== Reachable blocks (those to which a pointer was found) are not shown.
-==11838== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11838== 
-==11838== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
-==11838== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
-==11839== 
-==11839== HEAP SUMMARY:
-==11839==     in use at exit: 1,317 bytes in 26 blocks
-==11839==   total heap usage: 418 allocs, 392 frees, 100,397 bytes allocated
-==11839== 
-==11839== Searching for pointers to 26 not-freed blocks
-==11839== Checked 111,456 bytes
-==11839== 
-==11839== LEAK SUMMARY:
-==11839==    definitely lost: 0 bytes in 0 blocks
-==11839==    indirectly lost: 0 bytes in 0 blocks
-==11839==      possibly lost: 0 bytes in 0 blocks
-==11839==    still reachable: 1,317 bytes in 26 blocks
-==11839==         suppressed: 0 bytes in 0 blocks
-==11839== Reachable blocks (those to which a pointer was found) are not shown.
-==11839== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11839== 
-==11839== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11839== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11849== 
-==11849== HEAP SUMMARY:
-==11849==     in use at exit: 1,357 bytes in 27 blocks
-==11849==   total heap usage: 489 allocs, 462 frees, 104,219 bytes allocated
-==11849== 
-==11849== Searching for pointers to 27 not-freed blocks
-==11849== Checked 111,448 bytes
-==11849== 
-==11849== 40 bytes in 1 blocks are definitely lost in loss record 7 of 19
-==11849==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==11849==    by 0x110540: JobsList::addJob(Command*, int, bool, bool, long) (Commands.cpp:530)
-==11849==    by 0x11202D: ExternalCommand::execute() (Commands.cpp:708)
-==11849==    by 0x116328: PipeCommand::execute() (Commands.cpp:928)
-==11849==    by 0x10E152: SmallShell::executeCommand(char const*) (Commands.cpp:243)
-==11849==    by 0x10C8D6: main (smash.cpp:41)
-==11849== 
-==11849== LEAK SUMMARY:
-==11849==    definitely lost: 40 bytes in 1 blocks
-==11849==    indirectly lost: 0 bytes in 0 blocks
-==11849==      possibly lost: 0 bytes in 0 blocks
-==11849==    still reachable: 1,317 bytes in 26 blocks
-==11849==         suppressed: 0 bytes in 0 blocks
-==11849== Reachable blocks (those to which a pointer was found) are not shown.
-==11849== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11849== 
-==11849== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
-==11849== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
-==11850== 
-==11850== HEAP SUMMARY:
-==11850==     in use at exit: 1,317 bytes in 26 blocks
-==11850==   total heap usage: 488 allocs, 462 frees, 104,211 bytes allocated
-==11850== 
-==11850== Searching for pointers to 26 not-freed blocks
-==11850== Checked 111,456 bytes
-==11850== 
-==11850== LEAK SUMMARY:
-==11850==    definitely lost: 0 bytes in 0 blocks
-==11850==    indirectly lost: 0 bytes in 0 blocks
-==11850==      possibly lost: 0 bytes in 0 blocks
-==11850==    still reachable: 1,317 bytes in 26 blocks
-==11850==         suppressed: 0 bytes in 0 blocks
-==11850== Reachable blocks (those to which a pointer was found) are not shown.
-==11850== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11850== 
-==11850== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11850== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11854== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11854-by-student-on-???
-==11854== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11854-by-student-on-???
-==11854== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11854-by-student-on-???
-==11854== 
-==11854== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11854== don't want to do, unless you know exactly what you're doing,
-==11854== or are doing some strange experiment):
-==11854==   /usr/lib/valgrind/../../bin/vgdb --pid=11854 ...command...
-==11854== 
-==11854== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11854==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11854== and then give GDB the following command
-==11854==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11854
-==11854== --pid is optional if only one valgrind process is running
-==11854== 
-==11854== 
-==11854== HEAP SUMMARY:
-==11854==     in use at exit: 1,272 bytes in 21 blocks
-==11854==   total heap usage: 539 allocs, 518 frees, 107,702 bytes allocated
-==11854== 
-==11854== Searching for pointers to 21 not-freed blocks
-==11854== Checked 111,368 bytes
-==11854== 
-==11854== LEAK SUMMARY:
-==11854==    definitely lost: 0 bytes in 0 blocks
-==11854==    indirectly lost: 0 bytes in 0 blocks
-==11854==      possibly lost: 0 bytes in 0 blocks
-==11854==    still reachable: 1,272 bytes in 21 blocks
-==11854==         suppressed: 0 bytes in 0 blocks
-==11854== Reachable blocks (those to which a pointer was found) are not shown.
-==11854== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11854== 
-==11854== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11854== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11853== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11853-by-student-on-???
-==11853== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11853-by-student-on-???
-==11853== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11853-by-student-on-???
-==11853== 
-==11853== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11853== don't want to do, unless you know exactly what you're doing,
-==11853== or are doing some strange experiment):
-==11853==   /usr/lib/valgrind/../../bin/vgdb --pid=11853 ...command...
-==11853== 
-==11853== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11853==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11853== and then give GDB the following command
-==11853==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11853
-==11853== --pid is optional if only one valgrind process is running
-==11853== 
-==11853== 
-==11853== HEAP SUMMARY:
-==11853==     in use at exit: 1,272 bytes in 21 blocks
-==11853==   total heap usage: 539 allocs, 518 frees, 107,702 bytes allocated
-==11853== 
-==11853== Searching for pointers to 21 not-freed blocks
-==11853== Checked 111,360 bytes
-==11853== 
-==11853== LEAK SUMMARY:
-==11853==    definitely lost: 0 bytes in 0 blocks
-==11853==    indirectly lost: 0 bytes in 0 blocks
-==11853==      possibly lost: 0 bytes in 0 blocks
-==11853==    still reachable: 1,272 bytes in 21 blocks
-==11853==         suppressed: 0 bytes in 0 blocks
-==11853== Reachable blocks (those to which a pointer was found) are not shown.
-==11853== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11853== 
-==11853== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11853== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11863== 
-==11863== HEAP SUMMARY:
-==11863==     in use at exit: 1,272 bytes in 21 blocks
-==11863==   total heap usage: 566 allocs, 545 frees, 109,345 bytes allocated
-==11863== 
-==11863== Searching for pointers to 21 not-freed blocks
-==11863== Checked 111,360 bytes
-==11863== 
-==11863== LEAK SUMMARY:
-==11863==    definitely lost: 0 bytes in 0 blocks
-==11863==    indirectly lost: 0 bytes in 0 blocks
-==11863==      possibly lost: 0 bytes in 0 blocks
-==11863==    still reachable: 1,272 bytes in 21 blocks
-==11863==         suppressed: 0 bytes in 0 blocks
-==11863== Reachable blocks (those to which a pointer was found) are not shown.
-==11863== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11863== 
-==11863== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11863== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11864== 
-==11864== HEAP SUMMARY:
-==11864==     in use at exit: 1,272 bytes in 21 blocks
-==11864==   total heap usage: 566 allocs, 545 frees, 109,345 bytes allocated
-==11864== 
-==11864== Searching for pointers to 21 not-freed blocks
-==11864== Checked 111,368 bytes
-==11864== 
-==11864== LEAK SUMMARY:
-==11864==    definitely lost: 0 bytes in 0 blocks
-==11864==    indirectly lost: 0 bytes in 0 blocks
-==11864==      possibly lost: 0 bytes in 0 blocks
-==11864==    still reachable: 1,272 bytes in 21 blocks
-==11864==         suppressed: 0 bytes in 0 blocks
-==11864== Reachable blocks (those to which a pointer was found) are not shown.
-==11864== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11864== 
-==11864== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11864== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11868== 
-==11868== HEAP SUMMARY:
-==11868==     in use at exit: 1,458 bytes in 29 blocks
-==11868==   total heap usage: 628 allocs, 599 frees, 112,461 bytes allocated
-==11868== 
-==11868== Searching for pointers to 29 not-freed blocks
-==11868== Checked 111,736 bytes
-==11868== 
-==11868== LEAK SUMMARY:
-==11868==    definitely lost: 0 bytes in 0 blocks
-==11868==    indirectly lost: 0 bytes in 0 blocks
-==11868==      possibly lost: 0 bytes in 0 blocks
-==11868==    still reachable: 1,458 bytes in 29 blocks
-==11868==         suppressed: 0 bytes in 0 blocks
-==11868== Reachable blocks (those to which a pointer was found) are not shown.
-==11868== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11868== 
-==11868== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11868== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11867== 
-==11867== HEAP SUMMARY:
-==11867==     in use at exit: 1,458 bytes in 29 blocks
-==11867==   total heap usage: 628 allocs, 599 frees, 112,461 bytes allocated
-==11867== 
-==11867== Searching for pointers to 29 not-freed blocks
-==11867== Checked 111,728 bytes
-==11867== 
-==11867== LEAK SUMMARY:
-==11867==    definitely lost: 0 bytes in 0 blocks
-==11867==    indirectly lost: 0 bytes in 0 blocks
-==11867==      possibly lost: 0 bytes in 0 blocks
-==11867==    still reachable: 1,458 bytes in 29 blocks
-==11867==         suppressed: 0 bytes in 0 blocks
-==11867== Reachable blocks (those to which a pointer was found) are not shown.
-==11867== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11867== 
-==11867== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11867== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11883== 
-==11883== HEAP SUMMARY:
-==11883==     in use at exit: 1,458 bytes in 29 blocks
-==11883==   total heap usage: 690 allocs, 661 frees, 115,577 bytes allocated
-==11883== 
-==11883== Searching for pointers to 29 not-freed blocks
-==11883== Checked 111,736 bytes
-==11883== 
-==11883== LEAK SUMMARY:
-==11883==    definitely lost: 0 bytes in 0 blocks
-==11883==    indirectly lost: 0 bytes in 0 blocks
-==11883==      possibly lost: 0 bytes in 0 blocks
-==11883==    still reachable: 1,458 bytes in 29 blocks
-==11883==         suppressed: 0 bytes in 0 blocks
-==11883== Reachable blocks (those to which a pointer was found) are not shown.
-==11883== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11883== 
-==11883== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11883== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11882== 
-==11882== HEAP SUMMARY:
-==11882==     in use at exit: 1,458 bytes in 29 blocks
-==11882==   total heap usage: 690 allocs, 661 frees, 115,577 bytes allocated
-==11882== 
-==11882== Searching for pointers to 29 not-freed blocks
-==11882== Checked 111,728 bytes
-==11882== 
-==11882== LEAK SUMMARY:
-==11882==    definitely lost: 0 bytes in 0 blocks
-==11882==    indirectly lost: 0 bytes in 0 blocks
-==11882==      possibly lost: 0 bytes in 0 blocks
-==11882==    still reachable: 1,458 bytes in 29 blocks
-==11882==         suppressed: 0 bytes in 0 blocks
-==11882== Reachable blocks (those to which a pointer was found) are not shown.
-==11882== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11882== 
-==11882== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11882== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11886== 
-==11886== HEAP SUMMARY:
-==11886==     in use at exit: 1,504 bytes in 32 blocks
-==11886==   total heap usage: 755 allocs, 723 frees, 118,755 bytes allocated
-==11886== 
-==11886== Searching for pointers to 32 not-freed blocks
-==11886== Checked 111,768 bytes
-==11886== 
-==11886== 40 bytes in 1 blocks are definitely lost in loss record 4 of 20
-==11886==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==11886==    by 0x110540: JobsList::addJob(Command*, int, bool, bool, long) (Commands.cpp:530)
-==11886==    by 0x11202D: ExternalCommand::execute() (Commands.cpp:708)
-==11886==    by 0x116328: PipeCommand::execute() (Commands.cpp:928)
-==11886==    by 0x10E152: SmallShell::executeCommand(char const*) (Commands.cpp:243)
-==11886==    by 0x10C8D6: main (smash.cpp:41)
-==11886== 
-==11886== LEAK SUMMARY:
-==11886==    definitely lost: 40 bytes in 1 blocks
-==11886==    indirectly lost: 0 bytes in 0 blocks
-==11886==      possibly lost: 0 bytes in 0 blocks
-==11886==    still reachable: 1,464 bytes in 31 blocks
-==11886==         suppressed: 0 bytes in 0 blocks
-==11886== Reachable blocks (those to which a pointer was found) are not shown.
-==11886== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11886== 
-==11886== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
-==11886== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
-==11887== 
-==11887== HEAP SUMMARY:
-==11887==     in use at exit: 1,464 bytes in 31 blocks
-==11887==   total heap usage: 754 allocs, 723 frees, 118,747 bytes allocated
-==11887== 
-==11887== Searching for pointers to 31 not-freed blocks
-==11887== Checked 111,776 bytes
-==11887== 
-==11887== LEAK SUMMARY:
-==11887==    definitely lost: 0 bytes in 0 blocks
-==11887==    indirectly lost: 0 bytes in 0 blocks
-==11887==      possibly lost: 0 bytes in 0 blocks
-==11887==    still reachable: 1,464 bytes in 31 blocks
-==11887==         suppressed: 0 bytes in 0 blocks
-==11887== Reachable blocks (those to which a pointer was found) are not shown.
-==11887== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11887== 
-==11887== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11887== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11891== 
-==11891== HEAP SUMMARY:
-==11891==     in use at exit: 1,504 bytes in 32 blocks
-==11891==   total heap usage: 831 allocs, 799 frees, 122,849 bytes allocated
-==11891== 
-==11891== Searching for pointers to 32 not-freed blocks
-==11891== Checked 111,768 bytes
-==11891== 
-==11891== 40 bytes in 1 blocks are definitely lost in loss record 4 of 20
-==11891==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==11891==    by 0x110540: JobsList::addJob(Command*, int, bool, bool, long) (Commands.cpp:530)
-==11891==    by 0x11202D: ExternalCommand::execute() (Commands.cpp:708)
-==11891==    by 0x116328: PipeCommand::execute() (Commands.cpp:928)
-==11891==    by 0x10E152: SmallShell::executeCommand(char const*) (Commands.cpp:243)
-==11891==    by 0x10C8D6: main (smash.cpp:41)
-==11891== 
-==11891== LEAK SUMMARY:
-==11891==    definitely lost: 40 bytes in 1 blocks
-==11891==    indirectly lost: 0 bytes in 0 blocks
-==11891==      possibly lost: 0 bytes in 0 blocks
-==11891==    still reachable: 1,464 bytes in 31 blocks
-==11891==         suppressed: 0 bytes in 0 blocks
-==11891== Reachable blocks (those to which a pointer was found) are not shown.
-==11891== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11891== 
-==11891== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
-==11891== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
-==11892== 
-==11892== HEAP SUMMARY:
-==11892==     in use at exit: 1,464 bytes in 31 blocks
-==11892==   total heap usage: 830 allocs, 799 frees, 122,841 bytes allocated
-==11892== 
-==11892== Searching for pointers to 31 not-freed blocks
-==11892== Checked 111,776 bytes
-==11892== 
-==11892== LEAK SUMMARY:
-==11892==    definitely lost: 0 bytes in 0 blocks
-==11892==    indirectly lost: 0 bytes in 0 blocks
-==11892==      possibly lost: 0 bytes in 0 blocks
-==11892==    still reachable: 1,464 bytes in 31 blocks
-==11892==         suppressed: 0 bytes in 0 blocks
-==11892== Reachable blocks (those to which a pointer was found) are not shown.
-==11892== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11892== 
-==11892== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11892== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
---11762-- REDIR: 0x556d110 (libc.so.6:__strchrnul_avx2) redirected to 0x4c39020 (strchrnul)
-==11896== 
-==11896== HEAP SUMMARY:
-==11896==     in use at exit: 1,311 bytes in 24 blocks
-==11896==   total heap usage: 901 allocs, 877 frees, 126,691 bytes allocated
-==11896== 
-==11896== Searching for pointers to 24 not-freed blocks
-==11896== Checked 111,448 bytes
-==11896== 
-==11896== LEAK SUMMARY:
-==11896==    definitely lost: 0 bytes in 0 blocks
-==11896==    indirectly lost: 0 bytes in 0 blocks
-==11896==      possibly lost: 0 bytes in 0 blocks
-==11896==    still reachable: 1,311 bytes in 24 blocks
-==11896==         suppressed: 0 bytes in 0 blocks
-==11896== Reachable blocks (those to which a pointer was found) are not shown.
-==11896== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11896== 
-==11896== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11896== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11895== 
-==11895== HEAP SUMMARY:
-==11895==     in use at exit: 1,311 bytes in 24 blocks
-==11895==   total heap usage: 902 allocs, 878 frees, 126,731 bytes allocated
-==11895== 
-==11895== Searching for pointers to 24 not-freed blocks
-==11895== Checked 111,440 bytes
-==11895== 
-==11895== LEAK SUMMARY:
-==11895==    definitely lost: 0 bytes in 0 blocks
-==11895==    indirectly lost: 0 bytes in 0 blocks
-==11895==      possibly lost: 0 bytes in 0 blocks
-==11895==    still reachable: 1,311 bytes in 24 blocks
-==11895==         suppressed: 0 bytes in 0 blocks
-==11895== Reachable blocks (those to which a pointer was found) are not shown.
-==11895== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11895== 
-==11895== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11895== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11899== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11899-by-student-on-???
-==11899== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11899-by-student-on-???
-==11899== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11899-by-student-on-???
-==11899== 
-==11899== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11899== don't want to do, unless you know exactly what you're doing,
-==11899== or are doing some strange experiment):
-==11899==   /usr/lib/valgrind/../../bin/vgdb --pid=11899 ...command...
-==11899== 
-==11899== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11899==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11899== and then give GDB the following command
-==11899==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11899
-==11899== --pid is optional if only one valgrind process is running
-==11899== 
-==11898== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11898-by-student-on-???
-==11898== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11898-by-student-on-???
-==11898== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11898-by-student-on-???
-==11898== 
-==11898== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11898== don't want to do, unless you know exactly what you're doing,
-==11898== or are doing some strange experiment):
-==11898==   /usr/lib/valgrind/../../bin/vgdb --pid=11898 ...command...
-==11898== 
-==11898== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11898==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11898== and then give GDB the following command
-==11898==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11898
-==11898== --pid is optional if only one valgrind process is running
-==11898== 
-==11899== 
-==11899== HEAP SUMMARY:
-==11899==     in use at exit: 1,303 bytes in 24 blocks
-==11899==   total heap usage: 945 allocs, 921 frees, 128,603 bytes allocated
-==11899== 
-==11899== Searching for pointers to 24 not-freed blocks
-==11899== Checked 111,408 bytes
-==11899== 
-==11899== LEAK SUMMARY:
-==11899==    definitely lost: 0 bytes in 0 blocks
-==11899==    indirectly lost: 0 bytes in 0 blocks
-==11899==      possibly lost: 0 bytes in 0 blocks
-==11899==    still reachable: 1,303 bytes in 24 blocks
-==11899==         suppressed: 0 bytes in 0 blocks
-==11899== Reachable blocks (those to which a pointer was found) are not shown.
-==11899== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11899== 
-==11899== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11899== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11898== 
-==11898== HEAP SUMMARY:
-==11898==     in use at exit: 1,303 bytes in 24 blocks
-==11898==   total heap usage: 946 allocs, 922 frees, 128,643 bytes allocated
-==11898== 
-==11898== Searching for pointers to 24 not-freed blocks
-==11898== Checked 111,400 bytes
-==11898== 
-==11898== LEAK SUMMARY:
-==11898==    definitely lost: 0 bytes in 0 blocks
-==11898==    indirectly lost: 0 bytes in 0 blocks
-==11898==      possibly lost: 0 bytes in 0 blocks
-==11898==    still reachable: 1,303 bytes in 24 blocks
-==11898==         suppressed: 0 bytes in 0 blocks
-==11898== Reachable blocks (those to which a pointer was found) are not shown.
-==11898== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11898== 
-==11898== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11898== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11902== 
-==11902== HEAP SUMMARY:
-==11902==     in use at exit: 1,313 bytes in 24 blocks
-==11902==   total heap usage: 989 allocs, 965 frees, 130,539 bytes allocated
-==11902== 
-==11902== Searching for pointers to 24 not-freed blocks
-==11902== Checked 111,416 bytes
-==11902== 
-==11902== LEAK SUMMARY:
-==11902==    definitely lost: 0 bytes in 0 blocks
-==11902==    indirectly lost: 0 bytes in 0 blocks
-==11902==      possibly lost: 0 bytes in 0 blocks
-==11902==    still reachable: 1,313 bytes in 24 blocks
-==11902==         suppressed: 0 bytes in 0 blocks
-==11902== Reachable blocks (those to which a pointer was found) are not shown.
-==11902== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11902== 
-==11902== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11902== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11901== 
-==11901== HEAP SUMMARY:
-==11901==     in use at exit: 1,313 bytes in 24 blocks
-==11901==   total heap usage: 990 allocs, 966 frees, 130,579 bytes allocated
-==11901== 
-==11901== Searching for pointers to 24 not-freed blocks
-==11901== Checked 111,408 bytes
-==11901== 
-==11901== LEAK SUMMARY:
-==11901==    definitely lost: 0 bytes in 0 blocks
-==11901==    indirectly lost: 0 bytes in 0 blocks
-==11901==      possibly lost: 0 bytes in 0 blocks
-==11901==    still reachable: 1,313 bytes in 24 blocks
-==11901==         suppressed: 0 bytes in 0 blocks
-==11901== Reachable blocks (those to which a pointer was found) are not shown.
-==11901== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11901== 
-==11901== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11901== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11907== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11907-by-student-on-???
-==11907== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11907-by-student-on-???
-==11907== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11907-by-student-on-???
-==11907== 
-==11907== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11907== don't want to do, unless you know exactly what you're doing,
-==11907== or are doing some strange experiment):
-==11907==   /usr/lib/valgrind/../../bin/vgdb --pid=11907 ...command...
-==11907== 
-==11907== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11907==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11907== and then give GDB the following command
-==11907==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11907
-==11907== --pid is optional if only one valgrind process is running
-==11907== 
-==11907== 
-==11907== HEAP SUMMARY:
-==11907==     in use at exit: 1,879 bytes in 39 blocks
-==11907==   total heap usage: 1,131 allocs, 1,092 frees, 137,754 bytes allocated
-==11907== 
-==11907== Searching for pointers to 39 not-freed blocks
-==11907== Checked 111,736 bytes
-==11907== 
-==11907== 427 (40 direct, 387 indirect) bytes in 1 blocks are definitely lost in loss record 25 of 25
-==11907==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==11907==    by 0x110540: JobsList::addJob(Command*, int, bool, bool, long) (Commands.cpp:530)
-==11907==    by 0x11202D: ExternalCommand::execute() (Commands.cpp:708)
-==11907==    by 0x10E152: SmallShell::executeCommand(char const*) (Commands.cpp:243)
-==11907==    by 0x10C8D6: main (smash.cpp:41)
-==11907== 
-==11907== LEAK SUMMARY:
-==11907==    definitely lost: 40 bytes in 1 blocks
-==11907==    indirectly lost: 387 bytes in 7 blocks
-==11907==      possibly lost: 0 bytes in 0 blocks
-==11907==    still reachable: 1,452 bytes in 31 blocks
-==11907==         suppressed: 0 bytes in 0 blocks
-==11907== Reachable blocks (those to which a pointer was found) are not shown.
-==11907== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11907== 
-==11907== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
-==11907== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
-==11906== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11906-by-student-on-???
-==11906== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11906-by-student-on-???
-==11906== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11906-by-student-on-???
-==11906== 
-==11906== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11906== don't want to do, unless you know exactly what you're doing,
-==11906== or are doing some strange experiment):
-==11906==   /usr/lib/valgrind/../../bin/vgdb --pid=11906 ...command...
-==11906== 
-==11906== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11906==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11906== and then give GDB the following command
-==11906==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11906
-==11906== --pid is optional if only one valgrind process is running
-==11906== 
-==11906== 
-==11906== HEAP SUMMARY:
-==11906==     in use at exit: 1,452 bytes in 31 blocks
-==11906==   total heap usage: 1,132 allocs, 1,101 frees, 137,794 bytes allocated
-==11906== 
-==11906== Searching for pointers to 31 not-freed blocks
-==11906== Checked 111,728 bytes
-==11906== 
-==11906== LEAK SUMMARY:
-==11906==    definitely lost: 0 bytes in 0 blocks
-==11906==    indirectly lost: 0 bytes in 0 blocks
-==11906==      possibly lost: 0 bytes in 0 blocks
-==11906==    still reachable: 1,452 bytes in 31 blocks
-==11906==         suppressed: 0 bytes in 0 blocks
-==11906== Reachable blocks (those to which a pointer was found) are not shown.
-==11906== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11906== 
-==11906== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11906== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11910== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11910-by-student-on-???
-==11910== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11910-by-student-on-???
-==11910== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11910-by-student-on-???
-==11910== 
-==11910== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11910== don't want to do, unless you know exactly what you're doing,
-==11910== or are doing some strange experiment):
-==11910==   /usr/lib/valgrind/../../bin/vgdb --pid=11910 ...command...
-==11910== 
-==11910== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11910==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11910== and then give GDB the following command
-==11910==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11910
-==11910== --pid is optional if only one valgrind process is running
-==11910== 
-==11910== 
-==11910== HEAP SUMMARY:
-==11910==     in use at exit: 1,738 bytes in 32 blocks
-==11910==   total heap usage: 1,191 allocs, 1,159 frees, 140,652 bytes allocated
-==11910== 
-==11910== Searching for pointers to 32 not-freed blocks
-==11911== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11911-by-student-on-???
-==11911== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11911-by-student-on-???
-==11911== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11911-by-student-on-???
-==11911== 
-==11911== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11911== don't want to do, unless you know exactly what you're doing,
-==11911== or are doing some strange experiment):
-==11911==   /usr/lib/valgrind/../../bin/vgdb --pid=11911 ...command...
-==11911== 
-==11911== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11911==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11911== and then give GDB the following command
-==11911==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11911
-==11911== --pid is optional if only one valgrind process is running
-==11911== 
-==11910== Checked 111,408 bytes
-==11910== 
-==11910== 427 (40 direct, 387 indirect) bytes in 1 blocks are definitely lost in loss record 24 of 24
-==11910==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==11910==    by 0x110540: JobsList::addJob(Command*, int, bool, bool, long) (Commands.cpp:530)
-==11910==    by 0x11202D: ExternalCommand::execute() (Commands.cpp:708)
-==11910==    by 0x10E152: SmallShell::executeCommand(char const*) (Commands.cpp:243)
-==11910==    by 0x10C8D6: main (smash.cpp:41)
-==11910== 
-==11910== LEAK SUMMARY:
-==11910==    definitely lost: 40 bytes in 1 blocks
-==11910==    indirectly lost: 387 bytes in 7 blocks
-==11910==      possibly lost: 0 bytes in 0 blocks
-==11910==    still reachable: 1,311 bytes in 24 blocks
-==11910==         suppressed: 0 bytes in 0 blocks
-==11910== Reachable blocks (those to which a pointer was found) are not shown.
-==11910== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11910== 
-==11910== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
-==11910== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
-==11911== 
-==11911== HEAP SUMMARY:
-==11911==     in use at exit: 1,311 bytes in 24 blocks
-==11911==   total heap usage: 1,192 allocs, 1,168 frees, 140,692 bytes allocated
-==11911== 
-==11911== Searching for pointers to 24 not-freed blocks
-==11911== Checked 111,416 bytes
-==11911== 
-==11911== LEAK SUMMARY:
-==11911==    definitely lost: 0 bytes in 0 blocks
-==11911==    indirectly lost: 0 bytes in 0 blocks
-==11911==      possibly lost: 0 bytes in 0 blocks
-==11911==    still reachable: 1,311 bytes in 24 blocks
-==11911==         suppressed: 0 bytes in 0 blocks
-==11911== Reachable blocks (those to which a pointer was found) are not shown.
-==11911== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11911== 
-==11911== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11911== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11913== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11913-by-student-on-???
-==11913== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11913-by-student-on-???
-==11913== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11913-by-student-on-???
-==11913== 
-==11913== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11913== don't want to do, unless you know exactly what you're doing,
-==11913== or are doing some strange experiment):
-==11913==   /usr/lib/valgrind/../../bin/vgdb --pid=11913 ...command...
-==11913== 
-==11913== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11913==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11913== and then give GDB the following command
-==11913==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11913
-==11913== --pid is optional if only one valgrind process is running
-==11913== 
-==11913== 
-==11913== HEAP SUMMARY:
-==11913==     in use at exit: 1,504 bytes in 32 blocks
-==11913==   total heap usage: 1,262 allocs, 1,230 frees, 144,324 bytes allocated
-==11913== 
-==11913== Searching for pointers to 32 not-freed blocks
-==11913== Checked 111,768 bytes
-==11913== 
-==11913== 40 bytes in 1 blocks are definitely lost in loss record 4 of 20
-==11913==    at 0x4C3217F: operator new(unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==11913==    by 0x110540: JobsList::addJob(Command*, int, bool, bool, long) (Commands.cpp:530)
-==11913==    by 0x11202D: ExternalCommand::execute() (Commands.cpp:708)
-==11913==    by 0x116328: PipeCommand::execute() (Commands.cpp:928)
-==11913==    by 0x10E152: SmallShell::executeCommand(char const*) (Commands.cpp:243)
-==11913==    by 0x10C8D6: main (smash.cpp:41)
-==11913== 
-==11913== LEAK SUMMARY:
-==11913==    definitely lost: 40 bytes in 1 blocks
-==11913==    indirectly lost: 0 bytes in 0 blocks
-==11913==      possibly lost: 0 bytes in 0 blocks
-==11913==    still reachable: 1,464 bytes in 31 blocks
-==11913==         suppressed: 0 bytes in 0 blocks
-==11913== Reachable blocks (those to which a pointer was found) are not shown.
-==11913== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11913== 
-==11913== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
-==11913== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
-==11914== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11914-by-student-on-???
-==11914== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11914-by-student-on-???
-==11914== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11914-by-student-on-???
-==11914== 
-==11914== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11914== don't want to do, unless you know exactly what you're doing,
-==11914== or are doing some strange experiment):
-==11914==   /usr/lib/valgrind/../../bin/vgdb --pid=11914 ...command...
-==11914== 
-==11914== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11914==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11914== and then give GDB the following command
-==11914==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11914
-==11914== --pid is optional if only one valgrind process is running
-==11914== 
-==11914== 
-==11914== HEAP SUMMARY:
-==11914==     in use at exit: 1,464 bytes in 31 blocks
-==11914==   total heap usage: 1,262 allocs, 1,231 frees, 144,324 bytes allocated
-==11914== 
-==11914== Searching for pointers to 31 not-freed blocks
-==11914== Checked 111,776 bytes
-==11914== 
-==11914== LEAK SUMMARY:
-==11914==    definitely lost: 0 bytes in 0 blocks
-==11914==    indirectly lost: 0 bytes in 0 blocks
-==11914==      possibly lost: 0 bytes in 0 blocks
-==11914==    still reachable: 1,464 bytes in 31 blocks
-==11914==         suppressed: 0 bytes in 0 blocks
-==11914== Reachable blocks (those to which a pointer was found) are not shown.
-==11914== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11914== 
-==11914== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11914== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11918== 
-==11918== HEAP SUMMARY:
-==11918==     in use at exit: 1,458 bytes in 29 blocks
-==11918==   total heap usage: 1,344 allocs, 1,315 frees, 148,868 bytes allocated
-==11918== 
-==11918== Searching for pointers to 29 not-freed blocks
-==11918== Checked 111,736 bytes
-==11918== 
-==11918== LEAK SUMMARY:
-==11918==    definitely lost: 0 bytes in 0 blocks
-==11918==    indirectly lost: 0 bytes in 0 blocks
-==11918==      possibly lost: 0 bytes in 0 blocks
-==11918==    still reachable: 1,458 bytes in 29 blocks
-==11918==         suppressed: 0 bytes in 0 blocks
-==11918== Reachable blocks (those to which a pointer was found) are not shown.
-==11918== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11918== 
-==11918== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11918== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11917== 
-==11917== HEAP SUMMARY:
-==11917==     in use at exit: 1,458 bytes in 29 blocks
-==11917==   total heap usage: 1,344 allocs, 1,315 frees, 148,868 bytes allocated
-==11917== 
-==11917== Searching for pointers to 29 not-freed blocks
-==11917== Checked 111,728 bytes
-==11917== 
-==11917== LEAK SUMMARY:
-==11917==    definitely lost: 0 bytes in 0 blocks
-==11917==    indirectly lost: 0 bytes in 0 blocks
-==11917==      possibly lost: 0 bytes in 0 blocks
-==11917==    still reachable: 1,458 bytes in 29 blocks
-==11917==         suppressed: 0 bytes in 0 blocks
-==11917== Reachable blocks (those to which a pointer was found) are not shown.
-==11917== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11917== 
-==11917== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11917== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
---11924-- REDIR: 0x5496930 (libc.so.6:__stpcpy_sse2_unaligned) redirected to 0x4c38200 (__stpcpy_sse2_unaligned)
-==11924== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11924-by-student-on-???
-==11924== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11924-by-student-on-???
-==11924== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11924-by-student-on-???
-==11924== 
-==11924== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11924== don't want to do, unless you know exactly what you're doing,
-==11924== or are doing some strange experiment):
-==11924==   /usr/lib/valgrind/../../bin/vgdb --pid=11924 ...command...
-==11924== 
-==11924== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11924==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11924== and then give GDB the following command
-==11924==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11924
-==11924== --pid is optional if only one valgrind process is running
-==11924== 
-==11924== 
-==11924== HEAP SUMMARY:
-==11924==     in use at exit: 1,399 bytes in 27 blocks
-==11924==   total heap usage: 1,423 allocs, 1,396 frees, 152,551 bytes allocated
-==11924== 
-==11924== Searching for pointers to 27 not-freed blocks
-==11924== Checked 111,560 bytes
-==11924== 
-==11924== LEAK SUMMARY:
-==11924==    definitely lost: 0 bytes in 0 blocks
-==11924==    indirectly lost: 0 bytes in 0 blocks
-==11924==      possibly lost: 0 bytes in 0 blocks
-==11924==    still reachable: 1,399 bytes in 27 blocks
-==11924==         suppressed: 0 bytes in 0 blocks
-==11924== Reachable blocks (those to which a pointer was found) are not shown.
-==11924== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11924== 
-==11924== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11924== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11923== 
-==11923== HEAP SUMMARY:
-==11923==     in use at exit: 1,399 bytes in 27 blocks
-==11923==   total heap usage: 1,419 allocs, 1,392 frees, 152,471 bytes allocated
-==11923== 
-==11923== Searching for pointers to 27 not-freed blocks
-==11923== Checked 111,552 bytes
-==11923== 
-==11923== LEAK SUMMARY:
-==11923==    definitely lost: 0 bytes in 0 blocks
-==11923==    indirectly lost: 0 bytes in 0 blocks
-==11923==      possibly lost: 0 bytes in 0 blocks
-==11923==    still reachable: 1,399 bytes in 27 blocks
-==11923==         suppressed: 0 bytes in 0 blocks
-==11923== Reachable blocks (those to which a pointer was found) are not shown.
-==11923== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11923== 
-==11923== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11923== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
---11927-- REDIR: 0x5496930 (libc.so.6:__stpcpy_sse2_unaligned) redirected to 0x4c38200 (__stpcpy_sse2_unaligned)
-==11927== 
-==11927== HEAP SUMMARY:
-==11927==     in use at exit: 1,405 bytes in 27 blocks
-==11927==   total heap usage: 1,481 allocs, 1,454 frees, 155,085 bytes allocated
-==11927== 
-==11927== Searching for pointers to 27 not-freed blocks
-==11927== Checked 111,568 bytes
-==11927== 
-==11927== LEAK SUMMARY:
-==11927==    definitely lost: 0 bytes in 0 blocks
-==11927==    indirectly lost: 0 bytes in 0 blocks
-==11927==      possibly lost: 0 bytes in 0 blocks
-==11927==    still reachable: 1,405 bytes in 27 blocks
-==11927==         suppressed: 0 bytes in 0 blocks
-==11927== Reachable blocks (those to which a pointer was found) are not shown.
-==11927== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11927== 
-==11927== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11927== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11926== 
-==11926== HEAP SUMMARY:
-==11926==     in use at exit: 1,405 bytes in 27 blocks
-==11926==   total heap usage: 1,481 allocs, 1,454 frees, 155,094 bytes allocated
-==11926== 
-==11926== Searching for pointers to 27 not-freed blocks
-==11926== Checked 111,560 bytes
-==11926== 
-==11926== LEAK SUMMARY:
-==11926==    definitely lost: 0 bytes in 0 blocks
-==11926==    indirectly lost: 0 bytes in 0 blocks
-==11926==      possibly lost: 0 bytes in 0 blocks
-==11926==    still reachable: 1,405 bytes in 27 blocks
-==11926==         suppressed: 0 bytes in 0 blocks
-==11926== Reachable blocks (those to which a pointer was found) are not shown.
-==11926== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11926== 
-==11926== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11926== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11930== 
-==11930== HEAP SUMMARY:
-==11930==     in use at exit: 1,314 bytes in 26 blocks
-==11930==   total heap usage: 1,527 allocs, 1,501 frees, 157,069 bytes allocated
-==11930== 
-==11930== Searching for pointers to 26 not-freed blocks
-==11930== Checked 111,432 bytes
-==11930== 
-==11930== LEAK SUMMARY:
-==11930==    definitely lost: 0 bytes in 0 blocks
-==11930==    indirectly lost: 0 bytes in 0 blocks
-==11930==      possibly lost: 0 bytes in 0 blocks
-==11930==    still reachable: 1,314 bytes in 26 blocks
-==11930==         suppressed: 0 bytes in 0 blocks
-==11930== Reachable blocks (those to which a pointer was found) are not shown.
-==11930== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11930== 
-==11930== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11930== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11929== 
-==11929== HEAP SUMMARY:
-==11929==     in use at exit: 1,314 bytes in 26 blocks
-==11929==   total heap usage: 1,527 allocs, 1,501 frees, 157,090 bytes allocated
-==11929== 
-==11929== Searching for pointers to 26 not-freed blocks
-==11929== Checked 111,424 bytes
-==11929== 
-==11929== LEAK SUMMARY:
-==11929==    definitely lost: 0 bytes in 0 blocks
-==11929==    indirectly lost: 0 bytes in 0 blocks
-==11929==      possibly lost: 0 bytes in 0 blocks
-==11929==    still reachable: 1,314 bytes in 26 blocks
-==11929==         suppressed: 0 bytes in 0 blocks
-==11929== Reachable blocks (those to which a pointer was found) are not shown.
-==11929== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11929== 
-==11929== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11929== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11932== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11932-by-student-on-???
-==11932== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11932-by-student-on-???
-==11932== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11932-by-student-on-???
-==11932== 
-==11932== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11932== don't want to do, unless you know exactly what you're doing,
-==11932== or are doing some strange experiment):
-==11932==   /usr/lib/valgrind/../../bin/vgdb --pid=11932 ...command...
-==11932== 
-==11932== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11932==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11932== and then give GDB the following command
-==11932==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11932
-==11932== --pid is optional if only one valgrind process is running
-==11932== 
-==11933== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11933-by-student-on-???
-==11933== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11933-by-student-on-???
-==11933== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11933-by-student-on-???
-==11933== 
-==11933== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11933== don't want to do, unless you know exactly what you're doing,
-==11933== or are doing some strange experiment):
-==11933==   /usr/lib/valgrind/../../bin/vgdb --pid=11933 ...command...
-==11933== 
-==11933== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11933==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11933== and then give GDB the following command
-==11933==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11933
-==11933== --pid is optional if only one valgrind process is running
-==11933== 
-==11933== 
-==11933== HEAP SUMMARY:
-==11933==     in use at exit: 1,369 bytes in 29 blocks
-==11933==   total heap usage: 1,588 allocs, 1,559 frees, 159,492 bytes allocated
-==11933== 
-==11933== Searching for pointers to 29 not-freed blocks
-==11933== Checked 111,528 bytes
-==11933== 
-==11933== LEAK SUMMARY:
-==11933==    definitely lost: 0 bytes in 0 blocks
-==11933==    indirectly lost: 0 bytes in 0 blocks
-==11933==      possibly lost: 0 bytes in 0 blocks
-==11933==    still reachable: 1,369 bytes in 29 blocks
-==11933==         suppressed: 0 bytes in 0 blocks
-==11933== Reachable blocks (those to which a pointer was found) are not shown.
-==11933== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11933== 
-==11933== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11933== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11932== 
-==11932== HEAP SUMMARY:
-==11932==     in use at exit: 1,369 bytes in 29 blocks
-==11932==   total heap usage: 1,588 allocs, 1,559 frees, 159,509 bytes allocated
-==11932== 
-==11932== Searching for pointers to 29 not-freed blocks
-==11932== Checked 111,520 bytes
-==11932== 
-==11932== LEAK SUMMARY:
-==11932==    definitely lost: 0 bytes in 0 blocks
-==11932==    indirectly lost: 0 bytes in 0 blocks
-==11932==      possibly lost: 0 bytes in 0 blocks
-==11932==    still reachable: 1,369 bytes in 29 blocks
-==11932==         suppressed: 0 bytes in 0 blocks
-==11932== Reachable blocks (those to which a pointer was found) are not shown.
-==11932== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11932== 
-==11932== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11932== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11936== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11936-by-student-on-???
-==11936== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11936-by-student-on-???
-==11936== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11936-by-student-on-???
-==11936== 
-==11936== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11936== don't want to do, unless you know exactly what you're doing,
-==11936== or are doing some strange experiment):
-==11936==   /usr/lib/valgrind/../../bin/vgdb --pid=11936 ...command...
-==11936== 
-==11936== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11936==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11936== and then give GDB the following command
-==11936==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11936
-==11936== --pid is optional if only one valgrind process is running
-==11936== 
-==11936== 
-==11936== HEAP SUMMARY:
-==11936==     in use at exit: 1,326 bytes in 28 blocks
-==11936==   total heap usage: 1,637 allocs, 1,609 frees, 161,617 bytes allocated
-==11936== 
-==11936== Searching for pointers to 28 not-freed blocks
-==11936== Checked 111,496 bytes
-==11936== 
-==11936== LEAK SUMMARY:
-==11936==    definitely lost: 0 bytes in 0 blocks
-==11936==    indirectly lost: 0 bytes in 0 blocks
-==11936==      possibly lost: 0 bytes in 0 blocks
-==11936==    still reachable: 1,326 bytes in 28 blocks
-==11936==         suppressed: 0 bytes in 0 blocks
-==11936== Reachable blocks (those to which a pointer was found) are not shown.
-==11936== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11936== 
-==11936== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11936== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11935== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11935-by-student-on-???
-==11935== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11935-by-student-on-???
-==11935== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11935-by-student-on-???
-==11935== 
-==11935== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11935== don't want to do, unless you know exactly what you're doing,
-==11935== or are doing some strange experiment):
-==11935==   /usr/lib/valgrind/../../bin/vgdb --pid=11935 ...command...
-==11935== 
-==11935== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11935==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11935== and then give GDB the following command
-==11935==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11935
-==11935== --pid is optional if only one valgrind process is running
-==11935== 
-==11935== 
-==11935== HEAP SUMMARY:
-==11935==     in use at exit: 1,326 bytes in 28 blocks
-==11935==   total heap usage: 1,636 allocs, 1,608 frees, 161,595 bytes allocated
-==11935== 
-==11935== Searching for pointers to 28 not-freed blocks
-==11935== Checked 111,488 bytes
-==11935== 
-==11935== LEAK SUMMARY:
-==11935==    definitely lost: 0 bytes in 0 blocks
-==11935==    indirectly lost: 0 bytes in 0 blocks
-==11935==      possibly lost: 0 bytes in 0 blocks
-==11935==    still reachable: 1,326 bytes in 28 blocks
-==11935==         suppressed: 0 bytes in 0 blocks
-==11935== Reachable blocks (those to which a pointer was found) are not shown.
-==11935== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11935== 
-==11935== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11935== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11939== 
-==11939== HEAP SUMMARY:
-==11939==     in use at exit: 1,314 bytes in 24 blocks
-==11939==   total heap usage: 1,680 allocs, 1,656 frees, 163,575 bytes allocated
-==11939== 
-==11939== Searching for pointers to 24 not-freed blocks
-==11939== Checked 111,416 bytes
-==11939== 
-==11939== LEAK SUMMARY:
-==11939==    definitely lost: 0 bytes in 0 blocks
-==11939==    indirectly lost: 0 bytes in 0 blocks
-==11939==      possibly lost: 0 bytes in 0 blocks
-==11939==    still reachable: 1,314 bytes in 24 blocks
-==11939==         suppressed: 0 bytes in 0 blocks
-==11939== Reachable blocks (those to which a pointer was found) are not shown.
-==11939== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11939== 
-==11939== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11939== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11938== 
-==11938== HEAP SUMMARY:
-==11938==     in use at exit: 1,314 bytes in 24 blocks
-==11938==   total heap usage: 1,680 allocs, 1,656 frees, 163,591 bytes allocated
-==11938== 
-==11938== Searching for pointers to 24 not-freed blocks
-==11938== Checked 111,408 bytes
-==11938== 
-==11938== LEAK SUMMARY:
-==11938==    definitely lost: 0 bytes in 0 blocks
-==11938==    indirectly lost: 0 bytes in 0 blocks
-==11938==      possibly lost: 0 bytes in 0 blocks
-==11938==    still reachable: 1,314 bytes in 24 blocks
-==11938==         suppressed: 0 bytes in 0 blocks
-==11938== Reachable blocks (those to which a pointer was found) are not shown.
-==11938== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11938== 
-==11938== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11938== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11942== 
-==11942== HEAP SUMMARY:
-==11942==     in use at exit: 1,327 bytes in 27 blocks
-==11942==   total heap usage: 1,727 allocs, 1,700 frees, 165,662 bytes allocated
-==11942== 
-==11942== Searching for pointers to 27 not-freed blocks
-==11942== Checked 111,488 bytes
-==11942== 
-==11942== LEAK SUMMARY:
-==11942==    definitely lost: 0 bytes in 0 blocks
-==11942==    indirectly lost: 0 bytes in 0 blocks
-==11942==      possibly lost: 0 bytes in 0 blocks
-==11942==    still reachable: 1,327 bytes in 27 blocks
-==11942==         suppressed: 0 bytes in 0 blocks
-==11942== Reachable blocks (those to which a pointer was found) are not shown.
-==11942== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11942== 
-==11942== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11942== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11941== 
-==11941== HEAP SUMMARY:
-==11941==     in use at exit: 1,327 bytes in 27 blocks
-==11941==   total heap usage: 1,727 allocs, 1,700 frees, 165,678 bytes allocated
-==11941== 
-==11941== Searching for pointers to 27 not-freed blocks
-==11941== Checked 111,480 bytes
-==11941== 
-==11941== LEAK SUMMARY:
-==11941==    definitely lost: 0 bytes in 0 blocks
-==11941==    indirectly lost: 0 bytes in 0 blocks
-==11941==      possibly lost: 0 bytes in 0 blocks
-==11941==    still reachable: 1,327 bytes in 27 blocks
-==11941==         suppressed: 0 bytes in 0 blocks
-==11941== Reachable blocks (those to which a pointer was found) are not shown.
-==11941== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11941== 
-==11941== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11941== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11944== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11944-by-student-on-???
-==11944== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11944-by-student-on-???
-==11944== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11944-by-student-on-???
-==11944== 
-==11944== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11944== don't want to do, unless you know exactly what you're doing,
-==11944== or are doing some strange experiment):
-==11944==   /usr/lib/valgrind/../../bin/vgdb --pid=11944 ...command...
-==11944== 
-==11944== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11944==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11944== and then give GDB the following command
-==11944==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11944
-==11944== --pid is optional if only one valgrind process is running
-==11944== 
-==11945== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11945-by-student-on-???
-==11945== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11945-by-student-on-???
-==11945== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11945-by-student-on-???
-==11945== 
-==11945== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11945== don't want to do, unless you know exactly what you're doing,
-==11945== or are doing some strange experiment):
-==11945==   /usr/lib/valgrind/../../bin/vgdb --pid=11945 ...command...
-==11945== 
-==11945== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11945==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11945== and then give GDB the following command
-==11945==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11945
-==11945== --pid is optional if only one valgrind process is running
-==11945== 
-==11945== 
-==11945== HEAP SUMMARY:
-==11945==     in use at exit: 1,368 bytes in 24 blocks
-==11945==   total heap usage: 1,788 allocs, 1,764 frees, 168,190 bytes allocated
-==11945== 
-==11945== Searching for pointers to 24 not-freed blocks
-==11945== Checked 111,520 bytes
-==11945== 
-==11945== LEAK SUMMARY:
-==11945==    definitely lost: 0 bytes in 0 blocks
-==11945==    indirectly lost: 0 bytes in 0 blocks
-==11945==      possibly lost: 0 bytes in 0 blocks
-==11945==    still reachable: 1,368 bytes in 24 blocks
-==11945==         suppressed: 0 bytes in 0 blocks
-==11945== Reachable blocks (those to which a pointer was found) are not shown.
-==11945== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11945== 
-==11945== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11945== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11944== 
-==11944== HEAP SUMMARY:
-==11944==     in use at exit: 1,368 bytes in 24 blocks
-==11944==   total heap usage: 1,788 allocs, 1,764 frees, 168,190 bytes allocated
-==11944== 
-==11944== Searching for pointers to 24 not-freed blocks
-==11944== Checked 111,512 bytes
-==11944== 
-==11944== LEAK SUMMARY:
-==11944==    definitely lost: 0 bytes in 0 blocks
-==11944==    indirectly lost: 0 bytes in 0 blocks
-==11944==      possibly lost: 0 bytes in 0 blocks
-==11944==    still reachable: 1,368 bytes in 24 blocks
-==11944==         suppressed: 0 bytes in 0 blocks
-==11944== Reachable blocks (those to which a pointer was found) are not shown.
-==11944== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11944== 
-==11944== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11944== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11949== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11949-by-student-on-???
-==11949== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11949-by-student-on-???
-==11949== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11949-by-student-on-???
-==11949== 
-==11949== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11949== don't want to do, unless you know exactly what you're doing,
-==11949== or are doing some strange experiment):
-==11949==   /usr/lib/valgrind/../../bin/vgdb --pid=11949 ...command...
-==11949== 
-==11949== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11949==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11949== and then give GDB the following command
-==11949==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11949
-==11949== --pid is optional if only one valgrind process is running
-==11949== 
-==11949== 
-==11949== HEAP SUMMARY:
-==11949==     in use at exit: 1,310 bytes in 24 blocks
-==11949==   total heap usage: 1,838 allocs, 1,814 frees, 170,601 bytes allocated
-==11949== 
-==11949== Searching for pointers to 24 not-freed blocks
-==11949== Checked 111,416 bytes
-==11949== 
-==11949== LEAK SUMMARY:
-==11949==    definitely lost: 0 bytes in 0 blocks
-==11949==    indirectly lost: 0 bytes in 0 blocks
-==11949==      possibly lost: 0 bytes in 0 blocks
-==11949==    still reachable: 1,310 bytes in 24 blocks
-==11949==         suppressed: 0 bytes in 0 blocks
-==11949== Reachable blocks (those to which a pointer was found) are not shown.
-==11949== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11949== 
-==11949== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11949== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11948== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-11948-by-student-on-???
-==11948== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-11948-by-student-on-???
-==11948== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-11948-by-student-on-???
-==11948== 
-==11948== TO CONTROL THIS PROCESS USING vgdb (which you probably
-==11948== don't want to do, unless you know exactly what you're doing,
-==11948== or are doing some strange experiment):
-==11948==   /usr/lib/valgrind/../../bin/vgdb --pid=11948 ...command...
-==11948== 
-==11948== TO DEBUG THIS PROCESS USING GDB: start GDB like this
-==11948==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
-==11948== and then give GDB the following command
-==11948==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=11948
-==11948== --pid is optional if only one valgrind process is running
-==11948== 
-==11948== 
-==11948== HEAP SUMMARY:
-==11948==     in use at exit: 1,310 bytes in 24 blocks
-==11948==   total heap usage: 1,838 allocs, 1,814 frees, 170,618 bytes allocated
-==11948== 
-==11948== Searching for pointers to 24 not-freed blocks
-==11948== Checked 111,408 bytes
-==11948== 
-==11948== LEAK SUMMARY:
-==11948==    definitely lost: 0 bytes in 0 blocks
-==11948==    indirectly lost: 0 bytes in 0 blocks
-==11948==      possibly lost: 0 bytes in 0 blocks
-==11948==    still reachable: 1,310 bytes in 24 blocks
-==11948==         suppressed: 0 bytes in 0 blocks
-==11948== Reachable blocks (those to which a pointer was found) are not shown.
-==11948== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11948== 
-==11948== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11948== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11952== 
-==11952== HEAP SUMMARY:
-==11952==     in use at exit: 1,314 bytes in 26 blocks
-==11952==   total heap usage: 1,885 allocs, 1,859 frees, 172,633 bytes allocated
-==11952== 
-==11952== Searching for pointers to 26 not-freed blocks
-==11952== Checked 111,432 bytes
-==11952== 
-==11952== LEAK SUMMARY:
-==11952==    definitely lost: 0 bytes in 0 blocks
-==11952==    indirectly lost: 0 bytes in 0 blocks
-==11952==      possibly lost: 0 bytes in 0 blocks
-==11952==    still reachable: 1,314 bytes in 26 blocks
-==11952==         suppressed: 0 bytes in 0 blocks
-==11952== Reachable blocks (those to which a pointer was found) are not shown.
-==11952== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11952== 
-==11952== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11952== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11951== 
-==11951== HEAP SUMMARY:
-==11951==     in use at exit: 1,314 bytes in 26 blocks
-==11951==   total heap usage: 1,884 allocs, 1,858 frees, 172,614 bytes allocated
-==11951== 
-==11951== Searching for pointers to 26 not-freed blocks
-==11951== Checked 111,424 bytes
-==11951== 
-==11951== LEAK SUMMARY:
-==11951==    definitely lost: 0 bytes in 0 blocks
-==11951==    indirectly lost: 0 bytes in 0 blocks
-==11951==      possibly lost: 0 bytes in 0 blocks
-==11951==    still reachable: 1,314 bytes in 26 blocks
-==11951==         suppressed: 0 bytes in 0 blocks
-==11951== Reachable blocks (those to which a pointer was found) are not shown.
-==11951== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11951== 
-==11951== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11951== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11955== 
-==11955== HEAP SUMMARY:
-==11955==     in use at exit: 1,318 bytes in 26 blocks
-==11955==   total heap usage: 1,930 allocs, 1,904 frees, 174,622 bytes allocated
-==11955== 
-==11955== Searching for pointers to 26 not-freed blocks
-==11955== Checked 111,456 bytes
-==11955== 
-==11955== LEAK SUMMARY:
-==11955==    definitely lost: 0 bytes in 0 blocks
-==11955==    indirectly lost: 0 bytes in 0 blocks
-==11955==      possibly lost: 0 bytes in 0 blocks
-==11955==    still reachable: 1,318 bytes in 26 blocks
-==11955==         suppressed: 0 bytes in 0 blocks
-==11955== Reachable blocks (those to which a pointer was found) are not shown.
-==11955== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11955== 
-==11955== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11955== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11954== 
-==11954== HEAP SUMMARY:
-==11954==     in use at exit: 1,318 bytes in 26 blocks
-==11954==   total heap usage: 1,930 allocs, 1,904 frees, 174,640 bytes allocated
-==11954== 
-==11954== Searching for pointers to 26 not-freed blocks
-==11954== Checked 111,448 bytes
-==11954== 
-==11954== LEAK SUMMARY:
-==11954==    definitely lost: 0 bytes in 0 blocks
-==11954==    indirectly lost: 0 bytes in 0 blocks
-==11954==      possibly lost: 0 bytes in 0 blocks
-==11954==    still reachable: 1,318 bytes in 26 blocks
-==11954==         suppressed: 0 bytes in 0 blocks
-==11954== Reachable blocks (those to which a pointer was found) are not shown.
-==11954== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==11954== 
-==11954== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11954== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11762== 
-==11762== HEAP SUMMARY:
-==11762==     in use at exit: 0 bytes in 0 blocks
-==11762==   total heap usage: 1,936 allocs, 1,936 frees, 175,075 bytes allocated
-==11762== 
-==11762== All heap blocks were freed -- no leaks are possible
-==11762== 
-==11762== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-==11762== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53202== Memcheck, a memory error detector
+==53202== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==53202== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+==53202== Command: /home/student/Desktop/OSshelly/Wet1/build/smash
+==53202== Parent PID: 52822
+==53202== 
+--53202-- 
+--53202-- Valgrind options:
+--53202--    -v
+--53202--    --leak-check=full
+--53202--    --log-file=/home/student/Desktop/OSshelly/Wet1/unit/pipe.mem
+--53202-- Contents of /proc/version:
+--53202--   Linux version 4.15.0-142-generic (buildd@lgw01-amd64-036) (gcc version 7.5.0 (Ubuntu 7.5.0-3ubuntu1~18.04)) #146-Ubuntu SMP Tue Apr 13 01:11:19 UTC 2021
+--53202-- 
+--53202-- Arch and hwcaps: AMD64, LittleEndian, amd64-cx16-lzcnt-rdtscp-sse3-avx-avx2-bmi
+--53202-- Page sizes: currently 4096, max supported 4096
+--53202-- Valgrind library directory: /usr/lib/valgrind
+--53202-- Reading syms from /home/student/Desktop/OSshelly/Wet1/build/smash
+--53202-- Reading syms from /lib/x86_64-linux-gnu/ld-2.27.so
+--53202--   Considering /lib/x86_64-linux-gnu/ld-2.27.so ..
+--53202--   .. CRC mismatch (computed 6c71a321 wanted b59d24a6)
+--53202--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/ld-2.27.so ..
+--53202--   .. CRC is valid
+--53202-- Reading syms from /usr/lib/valgrind/memcheck-amd64-linux
+--53202--   Considering /usr/lib/valgrind/memcheck-amd64-linux ..
+--53202--   .. CRC mismatch (computed 41ddb025 wanted 9972f546)
+--53202--    object doesn't have a symbol table
+--53202--    object doesn't have a dynamic symbol table
+--53202-- Scheduler: using generic scheduler lock implementation.
+--53202-- Reading suppressions file: /usr/lib/valgrind/default.supp
+==53202== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-53202-by-student-on-???
+==53202== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-53202-by-student-on-???
+==53202== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-53202-by-student-on-???
+==53202== 
+==53202== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==53202== don't want to do, unless you know exactly what you're doing,
+==53202== or are doing some strange experiment):
+==53202==   /usr/lib/valgrind/../../bin/vgdb --pid=53202 ...command...
+==53202== 
+==53202== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==53202==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
+==53202== and then give GDB the following command
+==53202==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=53202
+==53202== --pid is optional if only one valgrind process is running
+==53202== 
+--53202-- REDIR: 0x4020d40 (ld-linux-x86-64.so.2:strlen) redirected to 0x580608c1 (???)
+--53202-- REDIR: 0x4020b20 (ld-linux-x86-64.so.2:index) redirected to 0x580608db (???)
+--53202-- Reading syms from /usr/lib/valgrind/vgpreload_core-amd64-linux.so
+--53202--   Considering /usr/lib/valgrind/vgpreload_core-amd64-linux.so ..
+--53202--   .. CRC mismatch (computed 50df1b30 wanted 4800a4cf)
+--53202--    object doesn't have a symbol table
+--53202-- Reading syms from /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so
+--53202--   Considering /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so ..
+--53202--   .. CRC mismatch (computed f893b962 wanted 95ee359e)
+--53202--    object doesn't have a symbol table
+==53202== WARNING: new redirection conflicts with existing -- ignoring it
+--53202--     old: 0x04020d40 (strlen              ) R-> (0000.0) 0x580608c1 ???
+--53202--     new: 0x04020d40 (strlen              ) R-> (2007.0) 0x04c34db0 strlen
+--53202-- REDIR: 0x401d560 (ld-linux-x86-64.so.2:strcmp) redirected to 0x4c35ee0 (strcmp)
+--53202-- REDIR: 0x4021280 (ld-linux-x86-64.so.2:mempcpy) redirected to 0x4c394f0 (mempcpy)
+--53202-- Reading syms from /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25
+--53202--    object doesn't have a symbol table
+--53202-- Reading syms from /lib/x86_64-linux-gnu/libgcc_s.so.1
+--53202--    object doesn't have a symbol table
+--53202-- Reading syms from /lib/x86_64-linux-gnu/libc-2.27.so
+--53202--   Considering /lib/x86_64-linux-gnu/libc-2.27.so ..
+--53202--   .. CRC mismatch (computed eabd4889 wanted a033e032)
+--53202--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libc-2.27.so ..
+--53202--   .. CRC is valid
+--53202-- Reading syms from /lib/x86_64-linux-gnu/libm-2.27.so
+--53202--   Considering /lib/x86_64-linux-gnu/libm-2.27.so ..
+--53202--   .. CRC mismatch (computed 4fa27e7c wanted 85c547d3)
+--53202--   Considering /usr/lib/debug/lib/x86_64-linux-gnu/libm-2.27.so ..
+--53202--   .. CRC is valid
+--53202-- REDIR: 0x547db70 (libc.so.6:memmove) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547ce80 (libc.so.6:strncpy) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547de50 (libc.so.6:strcasecmp) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547c8d0 (libc.so.6:strcat) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547ceb0 (libc.so.6:rindex) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547f5a0 (libc.so.6:rawmemchr) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547dce0 (libc.so.6:mempcpy) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547db10 (libc.so.6:bcmp) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547ce40 (libc.so.6:strncmp) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547c940 (libc.so.6:strcmp) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547dc40 (libc.so.6:memset) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x549aed0 (libc.so.6:wcschr) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547cde0 (libc.so.6:strnlen) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547c9b0 (libc.so.6:strcspn) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547dea0 (libc.so.6:strncasecmp) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547c980 (libc.so.6:strcpy) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547dfe0 (libc.so.6:memcpy@@GLIBC_2.14) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547cee0 (libc.so.6:strpbrk) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547c900 (libc.so.6:index) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547cdb0 (libc.so.6:strlen) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x54874a0 (libc.so.6:memrchr) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547def0 (libc.so.6:strcasecmp_l) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547dae0 (libc.so.6:memchr) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x549bc90 (libc.so.6:wcslen) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547d190 (libc.so.6:strspn) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547de20 (libc.so.6:stpncpy) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547ddf0 (libc.so.6:stpcpy) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547f5d0 (libc.so.6:strchrnul) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x547df40 (libc.so.6:strncasecmp_l) redirected to 0x4a2c6e0 (_vgnU_ifunc_wrapper)
+--53202-- REDIR: 0x556d300 (libc.so.6:__strrchr_avx2) redirected to 0x4c34730 (rindex)
+--53202-- REDIR: 0x5476140 (libc.so.6:malloc) redirected to 0x4c31aa0 (malloc)
+--53202-- REDIR: 0x556d4d0 (libc.so.6:__strlen_avx2) redirected to 0x4c34cf0 (strlen)
+--53202-- REDIR: 0x5569ae0 (libc.so.6:__memcmp_avx2_movbe) redirected to 0x4c37e00 (bcmp)
+--53202-- REDIR: 0x5488c50 (libc.so.6:__strcmp_sse2_unaligned) redirected to 0x4c35da0 (strcmp)
+--53202-- REDIR: 0x556da10 (libc.so.6:__memcpy_avx_unaligned_erms) redirected to 0x4c386e0 (memmove)
+--53202-- REDIR: 0x4ed1280 (libstdc++.so.6:operator new(unsigned long)) redirected to 0x4c32110 (operator new(unsigned long))
+--53202-- REDIR: 0x556d9f0 (libc.so.6:__mempcpy_avx_unaligned_erms) redirected to 0x4c39130 (mempcpy)
+--53202-- REDIR: 0x4ed1330 (libstdc++.so.6:operator new[](unsigned long)) redirected to 0x4c32830 (operator new[](unsigned long))
+--53202-- REDIR: 0x5495320 (libc.so.6:__strcpy_sse2_unaligned) redirected to 0x4c34dd0 (strcpy)
+--53202-- REDIR: 0x4ecf3c0 (libstdc++.so.6:operator delete[](void*)) redirected to 0x4c336d0 (operator delete[](void*))
+--53202-- REDIR: 0x5569360 (libc.so.6:__memchr_avx2) redirected to 0x4c35f80 (memchr)
+--53202-- REDIR: 0x556de90 (libc.so.6:__memset_avx2_unaligned_erms) redirected to 0x4c385d0 (memset)
+--53202-- REDIR: 0x4ecf390 (libstdc++.so.6:operator delete(void*)) redirected to 0x4c331d0 (operator delete(void*))
+--53219-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+--53220-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+--53217-- REDIR: 0x5476a30 (libc.so.6:free) redirected to 0x4c32cd0 (free)
+--53218-- REDIR: 0x5476a30 (libc.so.6:free) redirected to 0x4c32cd0 (free)
+==53217== 
+==53217== HEAP SUMMARY:
+==53217==     in use at exit: 1,278 bytes in 23 blocks
+==53217==   total heap usage: 34 allocs, 11 frees, 82,617 bytes allocated
+==53217== 
+==53217== Searching for pointers to 23 not-freed blocks
+==53217== Checked 111,600 bytes
+==53217== 
+==53217== LEAK SUMMARY:
+==53217==    definitely lost: 0 bytes in 0 blocks
+==53217==    indirectly lost: 0 bytes in 0 blocks
+==53217==      possibly lost: 0 bytes in 0 blocks
+==53217==    still reachable: 1,278 bytes in 23 blocks
+==53217==         suppressed: 0 bytes in 0 blocks
+==53217== Reachable blocks (those to which a pointer was found) are not shown.
+==53217== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53217== 
+==53217== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53217== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53218== 
+==53218== HEAP SUMMARY:
+==53218==     in use at exit: 1,278 bytes in 23 blocks
+==53218==   total heap usage: 34 allocs, 11 frees, 82,617 bytes allocated
+==53218== 
+==53218== Searching for pointers to 23 not-freed blocks
+==53218== Checked 111,608 bytes
+==53218== 
+==53218== LEAK SUMMARY:
+==53218==    definitely lost: 0 bytes in 0 blocks
+==53218==    indirectly lost: 0 bytes in 0 blocks
+==53218==      possibly lost: 0 bytes in 0 blocks
+==53218==    still reachable: 1,278 bytes in 23 blocks
+==53218==         suppressed: 0 bytes in 0 blocks
+==53218== Reachable blocks (those to which a pointer was found) are not shown.
+==53218== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53218== 
+==53218== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53218== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53202-- REDIR: 0x5476a30 (libc.so.6:free) redirected to 0x4c32cd0 (free)
+==53222== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-53222-by-student-on-???
+==53221== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-53221-by-student-on-???
+==53221== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-53221-by-student-on-???
+==53221== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-53221-by-student-on-???
+==53221== 
+==53221== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==53221== don't want to do, unless you know exactly what you're doing,
+==53221== or are doing some strange experiment):
+==53221==   /usr/lib/valgrind/../../bin/vgdb --pid=53221 ...command...
+==53221== 
+==53221== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==53221==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
+==53221== and then give GDB the following command
+==53221==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=53221
+==53221== --pid is optional if only one valgrind process is running
+==53221== 
+==53222== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-53222-by-student-on-???
+==53222== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-53222-by-student-on-???
+==53222== 
+==53222== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==53222== don't want to do, unless you know exactly what you're doing,
+==53222== or are doing some strange experiment):
+==53222==   /usr/lib/valgrind/../../bin/vgdb --pid=53222 ...command...
+==53222== 
+==53222== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==53222==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
+==53222== and then give GDB the following command
+==53222==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=53222
+==53222== --pid is optional if only one valgrind process is running
+==53222== 
+--53223-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+--53224-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53221== 
+==53221== HEAP SUMMARY:
+==53221==     in use at exit: 1,414 bytes in 33 blocks
+==53221==   total heap usage: 100 allocs, 67 frees, 85,225 bytes allocated
+==53221== 
+==53221== Searching for pointers to 33 not-freed blocks
+==53221== Checked 111,808 bytes
+==53221== 
+==53221== LEAK SUMMARY:
+==53221==    definitely lost: 0 bytes in 0 blocks
+==53221==    indirectly lost: 0 bytes in 0 blocks
+==53221==      possibly lost: 0 bytes in 0 blocks
+==53221==    still reachable: 1,414 bytes in 33 blocks
+==53221==         suppressed: 0 bytes in 0 blocks
+==53221== Reachable blocks (those to which a pointer was found) are not shown.
+==53221== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53221== 
+==53221== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53221== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53222== 
+==53222== HEAP SUMMARY:
+==53222==     in use at exit: 1,414 bytes in 33 blocks
+==53222==   total heap usage: 100 allocs, 67 frees, 85,225 bytes allocated
+==53222== 
+==53222== Searching for pointers to 33 not-freed blocks
+==53222== Checked 111,816 bytes
+==53222== 
+==53222== LEAK SUMMARY:
+==53222==    definitely lost: 0 bytes in 0 blocks
+==53222==    indirectly lost: 0 bytes in 0 blocks
+==53222==      possibly lost: 0 bytes in 0 blocks
+==53222==    still reachable: 1,414 bytes in 33 blocks
+==53222==         suppressed: 0 bytes in 0 blocks
+==53222== Reachable blocks (those to which a pointer was found) are not shown.
+==53222== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53222== 
+==53222== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53222== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53227-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+--53228-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53226== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-53226-by-student-on-???
+==53226== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-53226-by-student-on-???
+==53226== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-53226-by-student-on-???
+==53226== 
+==53226== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==53226== don't want to do, unless you know exactly what you're doing,
+==53226== or are doing some strange experiment):
+==53226==   /usr/lib/valgrind/../../bin/vgdb --pid=53226 ...command...
+==53226== 
+==53226== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==53226==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
+==53226== and then give GDB the following command
+==53226==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=53226
+==53226== --pid is optional if only one valgrind process is running
+==53226== 
+==53226== 
+==53226== HEAP SUMMARY:
+==53226==     in use at exit: 1,362 bytes in 23 blocks
+==53226==   total heap usage: 159 allocs, 136 frees, 87,644 bytes allocated
+==53226== 
+==53226== Searching for pointers to 23 not-freed blocks
+==53226== Checked 111,720 bytes
+==53226== 
+==53226== LEAK SUMMARY:
+==53226==    definitely lost: 0 bytes in 0 blocks
+==53226==    indirectly lost: 0 bytes in 0 blocks
+==53226==      possibly lost: 0 bytes in 0 blocks
+==53226==    still reachable: 1,362 bytes in 23 blocks
+==53226==         suppressed: 0 bytes in 0 blocks
+==53226== Reachable blocks (those to which a pointer was found) are not shown.
+==53226== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53226== 
+==53226== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53226== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53225== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-53225-by-student-on-???
+==53225== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-53225-by-student-on-???
+==53225== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-53225-by-student-on-???
+==53225== 
+==53225== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==53225== don't want to do, unless you know exactly what you're doing,
+==53225== or are doing some strange experiment):
+==53225==   /usr/lib/valgrind/../../bin/vgdb --pid=53225 ...command...
+==53225== 
+==53225== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==53225==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
+==53225== and then give GDB the following command
+==53225==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=53225
+==53225== --pid is optional if only one valgrind process is running
+==53225== 
+==53225== 
+==53225== HEAP SUMMARY:
+==53225==     in use at exit: 1,362 bytes in 23 blocks
+==53225==   total heap usage: 159 allocs, 136 frees, 87,644 bytes allocated
+==53225== 
+==53225== Searching for pointers to 23 not-freed blocks
+==53225== Checked 111,712 bytes
+==53225== 
+==53225== LEAK SUMMARY:
+==53225==    definitely lost: 0 bytes in 0 blocks
+==53225==    indirectly lost: 0 bytes in 0 blocks
+==53225==      possibly lost: 0 bytes in 0 blocks
+==53225==    still reachable: 1,362 bytes in 23 blocks
+==53225==         suppressed: 0 bytes in 0 blocks
+==53225== Reachable blocks (those to which a pointer was found) are not shown.
+==53225== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53225== 
+==53225== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53225== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53250-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+--53251-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53248== 
+==53248== HEAP SUMMARY:
+==53248==     in use at exit: 1,313 bytes in 24 blocks
+==53248==   total heap usage: 203 allocs, 179 frees, 89,580 bytes allocated
+==53248== 
+==53248== Searching for pointers to 24 not-freed blocks
+==53248== Checked 111,640 bytes
+==53248== 
+==53248== LEAK SUMMARY:
+==53248==    definitely lost: 0 bytes in 0 blocks
+==53248==    indirectly lost: 0 bytes in 0 blocks
+==53248==      possibly lost: 0 bytes in 0 blocks
+==53248==    still reachable: 1,313 bytes in 24 blocks
+==53248==         suppressed: 0 bytes in 0 blocks
+==53248== Reachable blocks (those to which a pointer was found) are not shown.
+==53248== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53248== 
+==53248== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53248== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53249== 
+==53249== HEAP SUMMARY:
+==53249==     in use at exit: 1,313 bytes in 24 blocks
+==53249==   total heap usage: 203 allocs, 179 frees, 89,580 bytes allocated
+==53249== 
+==53249== Searching for pointers to 24 not-freed blocks
+==53249== Checked 111,648 bytes
+==53249== 
+==53249== LEAK SUMMARY:
+==53249==    definitely lost: 0 bytes in 0 blocks
+==53249==    indirectly lost: 0 bytes in 0 blocks
+==53249==      possibly lost: 0 bytes in 0 blocks
+==53249==    still reachable: 1,313 bytes in 24 blocks
+==53249==         suppressed: 0 bytes in 0 blocks
+==53249== Reachable blocks (those to which a pointer was found) are not shown.
+==53249== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53249== 
+==53249== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53249== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53260-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+--53261-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53259== 
+==53259== HEAP SUMMARY:
+==53259==     in use at exit: 1,278 bytes in 21 blocks
+==53259==   total heap usage: 230 allocs, 209 frees, 91,229 bytes allocated
+==53259== 
+==53259== Searching for pointers to 21 not-freed blocks
+==53259== Checked 111,592 bytes
+==53259== 
+==53259== LEAK SUMMARY:
+==53259==    definitely lost: 0 bytes in 0 blocks
+==53259==    indirectly lost: 0 bytes in 0 blocks
+==53259==      possibly lost: 0 bytes in 0 blocks
+==53259==    still reachable: 1,278 bytes in 21 blocks
+==53259==         suppressed: 0 bytes in 0 blocks
+==53259== Reachable blocks (those to which a pointer was found) are not shown.
+==53259== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53259== 
+==53259== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53259== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53258== 
+==53258== HEAP SUMMARY:
+==53258==     in use at exit: 1,278 bytes in 21 blocks
+==53258==   total heap usage: 230 allocs, 209 frees, 91,229 bytes allocated
+==53258== 
+==53258== Searching for pointers to 21 not-freed blocks
+==53258== Checked 111,584 bytes
+==53258== 
+==53258== LEAK SUMMARY:
+==53258==    definitely lost: 0 bytes in 0 blocks
+==53258==    indirectly lost: 0 bytes in 0 blocks
+==53258==      possibly lost: 0 bytes in 0 blocks
+==53258==    still reachable: 1,278 bytes in 21 blocks
+==53258==         suppressed: 0 bytes in 0 blocks
+==53258== Reachable blocks (those to which a pointer was found) are not shown.
+==53258== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53258== 
+==53258== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53258== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53264-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+--53265-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53263== 
+==53263== HEAP SUMMARY:
+==53263==     in use at exit: 1,315 bytes in 24 blocks
+==53263==   total heap usage: 274 allocs, 250 frees, 93,181 bytes allocated
+==53263== 
+==53263== Searching for pointers to 24 not-freed blocks
+==53263== Checked 111,648 bytes
+==53263== 
+==53263== LEAK SUMMARY:
+==53263==    definitely lost: 0 bytes in 0 blocks
+==53263==    indirectly lost: 0 bytes in 0 blocks
+==53263==      possibly lost: 0 bytes in 0 blocks
+==53263==    still reachable: 1,315 bytes in 24 blocks
+==53263==         suppressed: 0 bytes in 0 blocks
+==53263== Reachable blocks (those to which a pointer was found) are not shown.
+==53263== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53263== 
+==53263== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53263== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53262== 
+==53262== HEAP SUMMARY:
+==53262==     in use at exit: 1,315 bytes in 24 blocks
+==53262==   total heap usage: 274 allocs, 250 frees, 93,181 bytes allocated
+==53262== 
+==53262== Searching for pointers to 24 not-freed blocks
+==53262== Checked 111,640 bytes
+==53262== 
+==53262== LEAK SUMMARY:
+==53262==    definitely lost: 0 bytes in 0 blocks
+==53262==    indirectly lost: 0 bytes in 0 blocks
+==53262==      possibly lost: 0 bytes in 0 blocks
+==53262==    still reachable: 1,315 bytes in 24 blocks
+==53262==         suppressed: 0 bytes in 0 blocks
+==53262== Reachable blocks (those to which a pointer was found) are not shown.
+==53262== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53262== 
+==53262== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53262== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53301-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+--53300-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53299== 
+==53299== HEAP SUMMARY:
+==53299==     in use at exit: 1,272 bytes in 21 blocks
+==53299==   total heap usage: 301 allocs, 280 frees, 94,824 bytes allocated
+==53299== 
+==53299== Searching for pointers to 21 not-freed blocks
+==53299== Checked 111,576 bytes
+==53299== 
+==53299== LEAK SUMMARY:
+==53299==    definitely lost: 0 bytes in 0 blocks
+==53299==    indirectly lost: 0 bytes in 0 blocks
+==53299==      possibly lost: 0 bytes in 0 blocks
+==53299==    still reachable: 1,272 bytes in 21 blocks
+==53299==         suppressed: 0 bytes in 0 blocks
+==53299== Reachable blocks (those to which a pointer was found) are not shown.
+==53299== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53299== 
+==53299== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53299== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53298== 
+==53298== HEAP SUMMARY:
+==53298==     in use at exit: 1,272 bytes in 21 blocks
+==53298==   total heap usage: 301 allocs, 280 frees, 94,824 bytes allocated
+==53298== 
+==53298== Searching for pointers to 21 not-freed blocks
+==53298== Checked 111,568 bytes
+==53298== 
+==53298== LEAK SUMMARY:
+==53298==    definitely lost: 0 bytes in 0 blocks
+==53298==    indirectly lost: 0 bytes in 0 blocks
+==53298==      possibly lost: 0 bytes in 0 blocks
+==53298==    still reachable: 1,272 bytes in 21 blocks
+==53298==         suppressed: 0 bytes in 0 blocks
+==53298== Reachable blocks (those to which a pointer was found) are not shown.
+==53298== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53298== 
+==53298== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53298== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53310-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+--53311-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53308== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-53308-by-student-on-???
+==53308== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-53308-by-student-on-???
+==53308== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-53308-by-student-on-???
+==53308== 
+==53308== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==53308== don't want to do, unless you know exactly what you're doing,
+==53308== or are doing some strange experiment):
+==53308==   /usr/lib/valgrind/../../bin/vgdb --pid=53308 ...command...
+==53308== 
+==53308== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==53308==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
+==53308== and then give GDB the following command
+==53308==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=53308
+==53308== --pid is optional if only one valgrind process is running
+==53308== 
+==53308== 
+==53308== HEAP SUMMARY:
+==53308==     in use at exit: 1,272 bytes in 21 blocks
+==53308==   total heap usage: 328 allocs, 307 frees, 96,467 bytes allocated
+==53308== 
+==53308== Searching for pointers to 21 not-freed blocks
+==53308== Checked 111,568 bytes
+==53308== 
+==53308== LEAK SUMMARY:
+==53308==    definitely lost: 0 bytes in 0 blocks
+==53308==    indirectly lost: 0 bytes in 0 blocks
+==53308==      possibly lost: 0 bytes in 0 blocks
+==53308==    still reachable: 1,272 bytes in 21 blocks
+==53308==         suppressed: 0 bytes in 0 blocks
+==53308== Reachable blocks (those to which a pointer was found) are not shown.
+==53308== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53308== 
+==53308== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53308== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53309== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-53309-by-student-on-???
+==53309== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-53309-by-student-on-???
+==53309== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-53309-by-student-on-???
+==53309== 
+==53309== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==53309== don't want to do, unless you know exactly what you're doing,
+==53309== or are doing some strange experiment):
+==53309==   /usr/lib/valgrind/../../bin/vgdb --pid=53309 ...command...
+==53309== 
+==53309== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==53309==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
+==53309== and then give GDB the following command
+==53309==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=53309
+==53309== --pid is optional if only one valgrind process is running
+==53309== 
+==53309== 
+==53309== HEAP SUMMARY:
+==53309==     in use at exit: 1,272 bytes in 21 blocks
+==53309==   total heap usage: 328 allocs, 307 frees, 96,467 bytes allocated
+==53309== 
+==53309== Searching for pointers to 21 not-freed blocks
+==53309== Checked 111,576 bytes
+==53309== 
+==53309== LEAK SUMMARY:
+==53309==    definitely lost: 0 bytes in 0 blocks
+==53309==    indirectly lost: 0 bytes in 0 blocks
+==53309==      possibly lost: 0 bytes in 0 blocks
+==53309==    still reachable: 1,272 bytes in 21 blocks
+==53309==         suppressed: 0 bytes in 0 blocks
+==53309== Reachable blocks (those to which a pointer was found) are not shown.
+==53309== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53309== 
+==53309== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53309== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53314-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+--53315-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53313== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-53313-by-student-on-???
+==53313== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-53313-by-student-on-???
+==53313== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-53313-by-student-on-???
+==53313== 
+==53313== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==53313== don't want to do, unless you know exactly what you're doing,
+==53313== or are doing some strange experiment):
+==53313==   /usr/lib/valgrind/../../bin/vgdb --pid=53313 ...command...
+==53313== 
+==53313== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==53313==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
+==53313== and then give GDB the following command
+==53313==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=53313
+==53313== --pid is optional if only one valgrind process is running
+==53313== 
+==53313== 
+==53313== HEAP SUMMARY:
+==53313==     in use at exit: 1,458 bytes in 29 blocks
+==53313==   total heap usage: 390 allocs, 361 frees, 99,583 bytes allocated
+==53313== 
+==53313== Searching for pointers to 29 not-freed blocks
+==53313== Checked 111,944 bytes
+==53313== 
+==53313== LEAK SUMMARY:
+==53313==    definitely lost: 0 bytes in 0 blocks
+==53313==    indirectly lost: 0 bytes in 0 blocks
+==53313==      possibly lost: 0 bytes in 0 blocks
+==53313==    still reachable: 1,458 bytes in 29 blocks
+==53313==         suppressed: 0 bytes in 0 blocks
+==53313== Reachable blocks (those to which a pointer was found) are not shown.
+==53313== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53313== 
+==53313== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53313== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53312== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-53312-by-student-on-???
+==53312== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-53312-by-student-on-???
+==53312== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-53312-by-student-on-???
+==53312== 
+==53312== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==53312== don't want to do, unless you know exactly what you're doing,
+==53312== or are doing some strange experiment):
+==53312==   /usr/lib/valgrind/../../bin/vgdb --pid=53312 ...command...
+==53312== 
+==53312== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==53312==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
+==53312== and then give GDB the following command
+==53312==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=53312
+==53312== --pid is optional if only one valgrind process is running
+==53312== 
+==53312== 
+==53312== HEAP SUMMARY:
+==53312==     in use at exit: 1,458 bytes in 29 blocks
+==53312==   total heap usage: 390 allocs, 361 frees, 99,583 bytes allocated
+==53312== 
+==53312== Searching for pointers to 29 not-freed blocks
+==53312== Checked 111,936 bytes
+==53312== 
+==53312== LEAK SUMMARY:
+==53312==    definitely lost: 0 bytes in 0 blocks
+==53312==    indirectly lost: 0 bytes in 0 blocks
+==53312==      possibly lost: 0 bytes in 0 blocks
+==53312==    still reachable: 1,458 bytes in 29 blocks
+==53312==         suppressed: 0 bytes in 0 blocks
+==53312== Reachable blocks (those to which a pointer was found) are not shown.
+==53312== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53312== 
+==53312== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53312== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53343-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+--53342-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53341== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-53341-by-student-on-???
+==53341== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-53341-by-student-on-???
+==53341== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-53341-by-student-on-???
+==53341== 
+==53341== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==53341== don't want to do, unless you know exactly what you're doing,
+==53341== or are doing some strange experiment):
+==53341==   /usr/lib/valgrind/../../bin/vgdb --pid=53341 ...command...
+==53341== 
+==53341== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==53341==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
+==53341== and then give GDB the following command
+==53341==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=53341
+==53341== --pid is optional if only one valgrind process is running
+==53341== 
+==53341== 
+==53341== HEAP SUMMARY:
+==53341==     in use at exit: 1,458 bytes in 29 blocks
+==53341==   total heap usage: 452 allocs, 423 frees, 102,699 bytes allocated
+==53341== 
+==53341== Searching for pointers to 29 not-freed blocks
+==53341== Checked 111,944 bytes
+==53341== 
+==53341== LEAK SUMMARY:
+==53341==    definitely lost: 0 bytes in 0 blocks
+==53341==    indirectly lost: 0 bytes in 0 blocks
+==53341==      possibly lost: 0 bytes in 0 blocks
+==53341==    still reachable: 1,458 bytes in 29 blocks
+==53341==         suppressed: 0 bytes in 0 blocks
+==53341== Reachable blocks (those to which a pointer was found) are not shown.
+==53341== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53341== 
+==53341== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53341== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53340== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-53340-by-student-on-???
+==53340== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-53340-by-student-on-???
+==53340== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-53340-by-student-on-???
+==53340== 
+==53340== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==53340== don't want to do, unless you know exactly what you're doing,
+==53340== or are doing some strange experiment):
+==53340==   /usr/lib/valgrind/../../bin/vgdb --pid=53340 ...command...
+==53340== 
+==53340== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==53340==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
+==53340== and then give GDB the following command
+==53340==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=53340
+==53340== --pid is optional if only one valgrind process is running
+==53340== 
+==53340== 
+==53340== HEAP SUMMARY:
+==53340==     in use at exit: 1,458 bytes in 29 blocks
+==53340==   total heap usage: 452 allocs, 423 frees, 102,699 bytes allocated
+==53340== 
+==53340== Searching for pointers to 29 not-freed blocks
+==53340== Checked 111,936 bytes
+==53340== 
+==53340== LEAK SUMMARY:
+==53340==    definitely lost: 0 bytes in 0 blocks
+==53340==    indirectly lost: 0 bytes in 0 blocks
+==53340==      possibly lost: 0 bytes in 0 blocks
+==53340==    still reachable: 1,458 bytes in 29 blocks
+==53340==         suppressed: 0 bytes in 0 blocks
+==53340== Reachable blocks (those to which a pointer was found) are not shown.
+==53340== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53340== 
+==53340== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53340== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53370-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53369== 
+==53369== HEAP SUMMARY:
+==53369==     in use at exit: 1,311 bytes in 24 blocks
+==53369==   total heap usage: 495 allocs, 471 frees, 104,635 bytes allocated
+==53369== 
+==53369== Searching for pointers to 24 not-freed blocks
+==53369== Checked 111,656 bytes
+==53369== 
+==53368== 
+==53368== HEAP SUMMARY:
+==53368==     in use at exit: 1,311 bytes in 24 blocks
+==53368==   total heap usage: 496 allocs, 472 frees, 104,675 bytes allocated
+==53368== 
+==53368== Searching for pointers to 24 not-freed blocks
+==53368== Checked 111,648 bytes
+==53368== 
+==53368== LEAK SUMMARY:
+==53368==    definitely lost: 0 bytes in 0 blocks
+==53368==    indirectly lost: 0 bytes in 0 blocks
+==53368==      possibly lost: 0 bytes in 0 blocks
+==53368==    still reachable: 1,311 bytes in 24 blocks
+==53368==         suppressed: 0 bytes in 0 blocks
+==53368== Reachable blocks (those to which a pointer was found) are not shown.
+==53368== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53368== 
+==53368== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53368== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53369== LEAK SUMMARY:
+==53369==    definitely lost: 0 bytes in 0 blocks
+==53369==    indirectly lost: 0 bytes in 0 blocks
+==53369==      possibly lost: 0 bytes in 0 blocks
+==53369==    still reachable: 1,311 bytes in 24 blocks
+==53369==         suppressed: 0 bytes in 0 blocks
+==53369== Reachable blocks (those to which a pointer was found) are not shown.
+==53369== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53369== 
+==53369== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53369== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53373-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53372== 
+==53372== HEAP SUMMARY:
+==53372==     in use at exit: 1,303 bytes in 24 blocks
+==53372==   total heap usage: 539 allocs, 515 frees, 106,547 bytes allocated
+==53372== 
+==53372== Searching for pointers to 24 not-freed blocks
+==53372== Checked 111,616 bytes
+==53372== 
+==53372== LEAK SUMMARY:
+==53372==    definitely lost: 0 bytes in 0 blocks
+==53372==    indirectly lost: 0 bytes in 0 blocks
+==53372==      possibly lost: 0 bytes in 0 blocks
+==53372==    still reachable: 1,303 bytes in 24 blocks
+==53372==         suppressed: 0 bytes in 0 blocks
+==53372== Reachable blocks (those to which a pointer was found) are not shown.
+==53372== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53372== 
+==53372== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53372== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53371== 
+==53371== HEAP SUMMARY:
+==53371==     in use at exit: 1,303 bytes in 24 blocks
+==53371==   total heap usage: 540 allocs, 516 frees, 106,587 bytes allocated
+==53371== 
+==53371== Searching for pointers to 24 not-freed blocks
+==53371== Checked 111,608 bytes
+==53371== 
+==53371== LEAK SUMMARY:
+==53371==    definitely lost: 0 bytes in 0 blocks
+==53371==    indirectly lost: 0 bytes in 0 blocks
+==53371==      possibly lost: 0 bytes in 0 blocks
+==53371==    still reachable: 1,303 bytes in 24 blocks
+==53371==         suppressed: 0 bytes in 0 blocks
+==53371== Reachable blocks (those to which a pointer was found) are not shown.
+==53371== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53371== 
+==53371== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53371== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53376-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53375== 
+==53375== HEAP SUMMARY:
+==53375==     in use at exit: 1,313 bytes in 24 blocks
+==53375==   total heap usage: 583 allocs, 559 frees, 108,483 bytes allocated
+==53375== 
+==53375== Searching for pointers to 24 not-freed blocks
+==53375== Checked 111,624 bytes
+==53375== 
+==53375== LEAK SUMMARY:
+==53375==    definitely lost: 0 bytes in 0 blocks
+==53375==    indirectly lost: 0 bytes in 0 blocks
+==53375==      possibly lost: 0 bytes in 0 blocks
+==53375==    still reachable: 1,313 bytes in 24 blocks
+==53375==         suppressed: 0 bytes in 0 blocks
+==53375== Reachable blocks (those to which a pointer was found) are not shown.
+==53375== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53375== 
+==53375== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53375== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53374== 
+==53374== HEAP SUMMARY:
+==53374==     in use at exit: 1,313 bytes in 24 blocks
+==53374==   total heap usage: 584 allocs, 560 frees, 108,523 bytes allocated
+==53374== 
+==53374== Searching for pointers to 24 not-freed blocks
+==53374== Checked 111,616 bytes
+==53374== 
+==53374== LEAK SUMMARY:
+==53374==    definitely lost: 0 bytes in 0 blocks
+==53374==    indirectly lost: 0 bytes in 0 blocks
+==53374==      possibly lost: 0 bytes in 0 blocks
+==53374==    still reachable: 1,313 bytes in 24 blocks
+==53374==         suppressed: 0 bytes in 0 blocks
+==53374== Reachable blocks (those to which a pointer was found) are not shown.
+==53374== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53374== 
+==53374== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53374== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53377-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+--53202-- REDIR: 0x556d110 (libc.so.6:__strchrnul_avx2) redirected to 0x4c39020 (strchrnul)
+--53380-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+--53379-- REDIR: 0x5496930 (libc.so.6:__stpcpy_sse2_unaligned) redirected to 0x4c38200 (__stpcpy_sse2_unaligned)
+==53379== 
+==53379== HEAP SUMMARY:
+==53379==     in use at exit: 1,399 bytes in 27 blocks
+==53379==   total heap usage: 718 allocs, 691 frees, 114,876 bytes allocated
+==53379== 
+==53379== Searching for pointers to 27 not-freed blocks
+==53379== Checked 111,768 bytes
+==53379== 
+==53379== LEAK SUMMARY:
+==53379==    definitely lost: 0 bytes in 0 blocks
+==53379==    indirectly lost: 0 bytes in 0 blocks
+==53379==      possibly lost: 0 bytes in 0 blocks
+==53379==    still reachable: 1,399 bytes in 27 blocks
+==53379==         suppressed: 0 bytes in 0 blocks
+==53379== Reachable blocks (those to which a pointer was found) are not shown.
+==53379== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53379== 
+==53379== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53379== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53378== 
+==53378== HEAP SUMMARY:
+==53378==     in use at exit: 1,399 bytes in 27 blocks
+==53378==   total heap usage: 714 allocs, 687 frees, 114,796 bytes allocated
+==53378== 
+==53378== Searching for pointers to 27 not-freed blocks
+==53378== Checked 111,760 bytes
+==53378== 
+==53378== LEAK SUMMARY:
+==53378==    definitely lost: 0 bytes in 0 blocks
+==53378==    indirectly lost: 0 bytes in 0 blocks
+==53378==      possibly lost: 0 bytes in 0 blocks
+==53378==    still reachable: 1,399 bytes in 27 blocks
+==53378==         suppressed: 0 bytes in 0 blocks
+==53378== Reachable blocks (those to which a pointer was found) are not shown.
+==53378== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53378== 
+==53378== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53378== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53383-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+--53382-- REDIR: 0x5496930 (libc.so.6:__stpcpy_sse2_unaligned) redirected to 0x4c38200 (__stpcpy_sse2_unaligned)
+==53382== 
+==53382== HEAP SUMMARY:
+==53382==     in use at exit: 1,405 bytes in 27 blocks
+==53382==   total heap usage: 776 allocs, 749 frees, 117,410 bytes allocated
+==53382== 
+==53382== Searching for pointers to 27 not-freed blocks
+==53382== Checked 111,776 bytes
+==53382== 
+==53382== LEAK SUMMARY:
+==53382==    definitely lost: 0 bytes in 0 blocks
+==53382==    indirectly lost: 0 bytes in 0 blocks
+==53382==      possibly lost: 0 bytes in 0 blocks
+==53382==    still reachable: 1,405 bytes in 27 blocks
+==53382==         suppressed: 0 bytes in 0 blocks
+==53382== Reachable blocks (those to which a pointer was found) are not shown.
+==53382== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53382== 
+==53382== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53382== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53381== 
+==53381== HEAP SUMMARY:
+==53381==     in use at exit: 1,405 bytes in 27 blocks
+==53381==   total heap usage: 776 allocs, 749 frees, 117,419 bytes allocated
+==53381== 
+==53381== Searching for pointers to 27 not-freed blocks
+==53381== Checked 111,768 bytes
+==53381== 
+==53381== LEAK SUMMARY:
+==53381==    definitely lost: 0 bytes in 0 blocks
+==53381==    indirectly lost: 0 bytes in 0 blocks
+==53381==      possibly lost: 0 bytes in 0 blocks
+==53381==    still reachable: 1,405 bytes in 27 blocks
+==53381==         suppressed: 0 bytes in 0 blocks
+==53381== Reachable blocks (those to which a pointer was found) are not shown.
+==53381== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53381== 
+==53381== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53381== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53386-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53385== 
+==53385== HEAP SUMMARY:
+==53385==     in use at exit: 1,314 bytes in 26 blocks
+==53385==   total heap usage: 822 allocs, 796 frees, 119,394 bytes allocated
+==53385== 
+==53385== Searching for pointers to 26 not-freed blocks
+==53385== Checked 111,640 bytes
+==53385== 
+==53385== LEAK SUMMARY:
+==53385==    definitely lost: 0 bytes in 0 blocks
+==53385==    indirectly lost: 0 bytes in 0 blocks
+==53385==      possibly lost: 0 bytes in 0 blocks
+==53385==    still reachable: 1,314 bytes in 26 blocks
+==53385==         suppressed: 0 bytes in 0 blocks
+==53385== Reachable blocks (those to which a pointer was found) are not shown.
+==53385== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53385== 
+==53385== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53385== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53384== 
+==53384== HEAP SUMMARY:
+==53384==     in use at exit: 1,314 bytes in 26 blocks
+==53384==   total heap usage: 822 allocs, 796 frees, 119,415 bytes allocated
+==53384== 
+==53384== Searching for pointers to 26 not-freed blocks
+==53384== Checked 111,632 bytes
+==53384== 
+==53384== LEAK SUMMARY:
+==53384==    definitely lost: 0 bytes in 0 blocks
+==53384==    indirectly lost: 0 bytes in 0 blocks
+==53384==      possibly lost: 0 bytes in 0 blocks
+==53384==    still reachable: 1,314 bytes in 26 blocks
+==53384==         suppressed: 0 bytes in 0 blocks
+==53384== Reachable blocks (those to which a pointer was found) are not shown.
+==53384== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53384== 
+==53384== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53384== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53388== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-53388-by-student-on-???
+==53388== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-53388-by-student-on-???
+==53388== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-53388-by-student-on-???
+==53388== 
+==53388== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==53388== don't want to do, unless you know exactly what you're doing,
+==53388== or are doing some strange experiment):
+==53388==   /usr/lib/valgrind/../../bin/vgdb --pid=53388 ...command...
+--53389-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53388== 
+==53388== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==53388==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
+==53388== and then give GDB the following command
+==53388==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=53388
+==53388== --pid is optional if only one valgrind process is running
+==53388== 
+==53388== 
+==53388== HEAP SUMMARY:
+==53388==     in use at exit: 1,369 bytes in 29 blocks
+==53388==   total heap usage: 883 allocs, 854 frees, 121,817 bytes allocated
+==53388== 
+==53388== Searching for pointers to 29 not-freed blocks
+==53388== Checked 111,736 bytes
+==53388== 
+==53388== LEAK SUMMARY:
+==53388==    definitely lost: 0 bytes in 0 blocks
+==53388==    indirectly lost: 0 bytes in 0 blocks
+==53388==      possibly lost: 0 bytes in 0 blocks
+==53388==    still reachable: 1,369 bytes in 29 blocks
+==53388==         suppressed: 0 bytes in 0 blocks
+==53388== Reachable blocks (those to which a pointer was found) are not shown.
+==53388== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53388== 
+==53388== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53388== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53387== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-53387-by-student-on-???
+==53387== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-53387-by-student-on-???
+==53387== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-53387-by-student-on-???
+==53387== 
+==53387== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==53387== don't want to do, unless you know exactly what you're doing,
+==53387== or are doing some strange experiment):
+==53387==   /usr/lib/valgrind/../../bin/vgdb --pid=53387 ...command...
+==53387== 
+==53387== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==53387==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
+==53387== and then give GDB the following command
+==53387==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=53387
+==53387== --pid is optional if only one valgrind process is running
+==53387== 
+==53387== 
+==53387== HEAP SUMMARY:
+==53387==     in use at exit: 1,369 bytes in 29 blocks
+==53387==   total heap usage: 883 allocs, 854 frees, 121,834 bytes allocated
+==53387== 
+==53387== Searching for pointers to 29 not-freed blocks
+==53387== Checked 111,728 bytes
+==53387== 
+==53387== LEAK SUMMARY:
+==53387==    definitely lost: 0 bytes in 0 blocks
+==53387==    indirectly lost: 0 bytes in 0 blocks
+==53387==      possibly lost: 0 bytes in 0 blocks
+==53387==    still reachable: 1,369 bytes in 29 blocks
+==53387==         suppressed: 0 bytes in 0 blocks
+==53387== Reachable blocks (those to which a pointer was found) are not shown.
+==53387== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53387== 
+==53387== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53387== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53392-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53391== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-53391-by-student-on-???
+==53391== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-53391-by-student-on-???
+==53391== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-53391-by-student-on-???
+==53391== 
+==53391== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==53391== don't want to do, unless you know exactly what you're doing,
+==53391== or are doing some strange experiment):
+==53391==   /usr/lib/valgrind/../../bin/vgdb --pid=53391 ...command...
+==53391== 
+==53391== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==53391==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
+==53391== and then give GDB the following command
+==53391==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=53391
+==53391== --pid is optional if only one valgrind process is running
+==53391== 
+==53391== 
+==53391== HEAP SUMMARY:
+==53391==     in use at exit: 1,326 bytes in 28 blocks
+==53391==   total heap usage: 932 allocs, 904 frees, 123,942 bytes allocated
+==53391== 
+==53391== Searching for pointers to 28 not-freed blocks
+==53391== Checked 111,704 bytes
+==53391== 
+==53391== LEAK SUMMARY:
+==53391==    definitely lost: 0 bytes in 0 blocks
+==53391==    indirectly lost: 0 bytes in 0 blocks
+==53391==      possibly lost: 0 bytes in 0 blocks
+==53391==    still reachable: 1,326 bytes in 28 blocks
+==53391==         suppressed: 0 bytes in 0 blocks
+==53391== Reachable blocks (those to which a pointer was found) are not shown.
+==53391== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53391== 
+==53391== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53391== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53390== 
+==53390== HEAP SUMMARY:
+==53390==     in use at exit: 1,326 bytes in 28 blocks
+==53390==   total heap usage: 931 allocs, 903 frees, 123,920 bytes allocated
+==53390== 
+==53390== Searching for pointers to 28 not-freed blocks
+==53390== Checked 111,696 bytes
+==53390== 
+==53390== LEAK SUMMARY:
+==53390==    definitely lost: 0 bytes in 0 blocks
+==53390==    indirectly lost: 0 bytes in 0 blocks
+==53390==      possibly lost: 0 bytes in 0 blocks
+==53390==    still reachable: 1,326 bytes in 28 blocks
+==53390==         suppressed: 0 bytes in 0 blocks
+==53390== Reachable blocks (those to which a pointer was found) are not shown.
+==53390== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53390== 
+==53390== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53390== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53395-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53394== 
+==53394== HEAP SUMMARY:
+==53394==     in use at exit: 1,314 bytes in 24 blocks
+==53394==   total heap usage: 975 allocs, 951 frees, 125,900 bytes allocated
+==53394== 
+==53394== Searching for pointers to 24 not-freed blocks
+==53394== Checked 111,624 bytes
+==53394== 
+==53394== LEAK SUMMARY:
+==53394==    definitely lost: 0 bytes in 0 blocks
+==53394==    indirectly lost: 0 bytes in 0 blocks
+==53394==      possibly lost: 0 bytes in 0 blocks
+==53394==    still reachable: 1,314 bytes in 24 blocks
+==53394==         suppressed: 0 bytes in 0 blocks
+==53394== Reachable blocks (those to which a pointer was found) are not shown.
+==53394== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53394== 
+==53394== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53394== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53393== 
+==53393== HEAP SUMMARY:
+==53393==     in use at exit: 1,314 bytes in 24 blocks
+==53393==   total heap usage: 975 allocs, 951 frees, 125,916 bytes allocated
+==53393== 
+==53393== Searching for pointers to 24 not-freed blocks
+==53393== Checked 111,616 bytes
+==53393== 
+==53393== LEAK SUMMARY:
+==53393==    definitely lost: 0 bytes in 0 blocks
+==53393==    indirectly lost: 0 bytes in 0 blocks
+==53393==      possibly lost: 0 bytes in 0 blocks
+==53393==    still reachable: 1,314 bytes in 24 blocks
+==53393==         suppressed: 0 bytes in 0 blocks
+==53393== Reachable blocks (those to which a pointer was found) are not shown.
+==53393== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53393== 
+==53393== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53393== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53398-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53397== 
+==53397== HEAP SUMMARY:
+==53397==     in use at exit: 1,327 bytes in 27 blocks
+==53397==   total heap usage: 1,022 allocs, 995 frees, 127,987 bytes allocated
+==53397== 
+==53397== Searching for pointers to 27 not-freed blocks
+==53397== Checked 111,696 bytes
+==53397== 
+==53397== LEAK SUMMARY:
+==53397==    definitely lost: 0 bytes in 0 blocks
+==53397==    indirectly lost: 0 bytes in 0 blocks
+==53397==      possibly lost: 0 bytes in 0 blocks
+==53397==    still reachable: 1,327 bytes in 27 blocks
+==53397==         suppressed: 0 bytes in 0 blocks
+==53397== Reachable blocks (those to which a pointer was found) are not shown.
+==53397== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53397== 
+==53397== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53397== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53396== 
+==53396== HEAP SUMMARY:
+==53396==     in use at exit: 1,327 bytes in 27 blocks
+==53396==   total heap usage: 1,022 allocs, 995 frees, 128,003 bytes allocated
+==53396== 
+==53396== Searching for pointers to 27 not-freed blocks
+==53396== Checked 111,688 bytes
+==53396== 
+==53396== LEAK SUMMARY:
+==53396==    definitely lost: 0 bytes in 0 blocks
+==53396==    indirectly lost: 0 bytes in 0 blocks
+==53396==      possibly lost: 0 bytes in 0 blocks
+==53396==    still reachable: 1,327 bytes in 27 blocks
+==53396==         suppressed: 0 bytes in 0 blocks
+==53396== Reachable blocks (those to which a pointer was found) are not shown.
+==53396== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53396== 
+==53396== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53396== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53401-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+--53402-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53400== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-53400-by-student-on-???
+==53400== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-53400-by-student-on-???
+==53400== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-53400-by-student-on-???
+==53400== 
+==53400== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==53400== don't want to do, unless you know exactly what you're doing,
+==53400== or are doing some strange experiment):
+==53400==   /usr/lib/valgrind/../../bin/vgdb --pid=53400 ...command...
+==53400== 
+==53400== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==53400==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
+==53400== and then give GDB the following command
+==53400==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=53400
+==53400== --pid is optional if only one valgrind process is running
+==53400== 
+==53400== 
+==53400== HEAP SUMMARY:
+==53400==     in use at exit: 1,368 bytes in 24 blocks
+==53400==   total heap usage: 1,083 allocs, 1,059 frees, 130,515 bytes allocated
+==53400== 
+==53400== Searching for pointers to 24 not-freed blocks
+==53400== Checked 111,728 bytes
+==53400== 
+==53400== LEAK SUMMARY:
+==53400==    definitely lost: 0 bytes in 0 blocks
+==53400==    indirectly lost: 0 bytes in 0 blocks
+==53400==      possibly lost: 0 bytes in 0 blocks
+==53400==    still reachable: 1,368 bytes in 24 blocks
+==53400==         suppressed: 0 bytes in 0 blocks
+==53400== Reachable blocks (those to which a pointer was found) are not shown.
+==53400== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53400== 
+==53400== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53400== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53399== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-53399-by-student-on-???
+==53399== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-53399-by-student-on-???
+==53399== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-53399-by-student-on-???
+==53399== 
+==53399== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==53399== don't want to do, unless you know exactly what you're doing,
+==53399== or are doing some strange experiment):
+==53399==   /usr/lib/valgrind/../../bin/vgdb --pid=53399 ...command...
+==53399== 
+==53399== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==53399==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
+==53399== and then give GDB the following command
+==53399==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=53399
+==53399== --pid is optional if only one valgrind process is running
+==53399== 
+==53399== 
+==53399== HEAP SUMMARY:
+==53399==     in use at exit: 1,368 bytes in 24 blocks
+==53399==   total heap usage: 1,083 allocs, 1,059 frees, 130,515 bytes allocated
+==53399== 
+==53399== Searching for pointers to 24 not-freed blocks
+==53399== Checked 111,720 bytes
+==53399== 
+==53399== LEAK SUMMARY:
+==53399==    definitely lost: 0 bytes in 0 blocks
+==53399==    indirectly lost: 0 bytes in 0 blocks
+==53399==      possibly lost: 0 bytes in 0 blocks
+==53399==    still reachable: 1,368 bytes in 24 blocks
+==53399==         suppressed: 0 bytes in 0 blocks
+==53399== Reachable blocks (those to which a pointer was found) are not shown.
+==53399== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53399== 
+==53399== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53399== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53405-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53404== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-53404-by-student-on-???
+==53404== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-53404-by-student-on-???
+==53404== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-53404-by-student-on-???
+==53404== 
+==53404== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==53404== don't want to do, unless you know exactly what you're doing,
+==53404== or are doing some strange experiment):
+==53404==   /usr/lib/valgrind/../../bin/vgdb --pid=53404 ...command...
+==53404== 
+==53404== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==53404==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
+==53404== and then give GDB the following command
+==53404==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=53404
+==53404== --pid is optional if only one valgrind process is running
+==53404== 
+==53404== 
+==53404== HEAP SUMMARY:
+==53404==     in use at exit: 1,310 bytes in 24 blocks
+==53404==   total heap usage: 1,133 allocs, 1,109 frees, 132,926 bytes allocated
+==53404== 
+==53404== Searching for pointers to 24 not-freed blocks
+==53404== Checked 111,624 bytes
+==53404== 
+==53404== LEAK SUMMARY:
+==53404==    definitely lost: 0 bytes in 0 blocks
+==53404==    indirectly lost: 0 bytes in 0 blocks
+==53404==      possibly lost: 0 bytes in 0 blocks
+==53404==    still reachable: 1,310 bytes in 24 blocks
+==53404==         suppressed: 0 bytes in 0 blocks
+==53404== Reachable blocks (those to which a pointer was found) are not shown.
+==53404== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53404== 
+==53404== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53404== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53403== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-53403-by-student-on-???
+==53403== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-53403-by-student-on-???
+==53403== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-53403-by-student-on-???
+==53403== 
+==53403== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==53403== don't want to do, unless you know exactly what you're doing,
+==53403== or are doing some strange experiment):
+==53403==   /usr/lib/valgrind/../../bin/vgdb --pid=53403 ...command...
+==53403== 
+==53403== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==53403==   /path/to/gdb /home/student/Desktop/OSshelly/Wet1/build/smash
+==53403== and then give GDB the following command
+==53403==   target remote | /usr/lib/valgrind/../../bin/vgdb --pid=53403
+==53403== --pid is optional if only one valgrind process is running
+==53403== 
+==53403== 
+==53403== HEAP SUMMARY:
+==53403==     in use at exit: 1,310 bytes in 24 blocks
+==53403==   total heap usage: 1,133 allocs, 1,109 frees, 132,943 bytes allocated
+==53403== 
+==53403== Searching for pointers to 24 not-freed blocks
+==53403== Checked 111,616 bytes
+==53403== 
+==53403== LEAK SUMMARY:
+==53403==    definitely lost: 0 bytes in 0 blocks
+==53403==    indirectly lost: 0 bytes in 0 blocks
+==53403==      possibly lost: 0 bytes in 0 blocks
+==53403==    still reachable: 1,310 bytes in 24 blocks
+==53403==         suppressed: 0 bytes in 0 blocks
+==53403== Reachable blocks (those to which a pointer was found) are not shown.
+==53403== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53403== 
+==53403== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53403== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53408-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53407== 
+==53407== HEAP SUMMARY:
+==53407==     in use at exit: 1,314 bytes in 26 blocks
+==53407==   total heap usage: 1,180 allocs, 1,154 frees, 134,958 bytes allocated
+==53407== 
+==53407== Searching for pointers to 26 not-freed blocks
+==53407== Checked 111,640 bytes
+==53407== 
+==53407== LEAK SUMMARY:
+==53407==    definitely lost: 0 bytes in 0 blocks
+==53407==    indirectly lost: 0 bytes in 0 blocks
+==53407==      possibly lost: 0 bytes in 0 blocks
+==53407==    still reachable: 1,314 bytes in 26 blocks
+==53407==         suppressed: 0 bytes in 0 blocks
+==53407== Reachable blocks (those to which a pointer was found) are not shown.
+==53407== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53407== 
+==53407== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53407== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53406== 
+==53406== HEAP SUMMARY:
+==53406==     in use at exit: 1,314 bytes in 26 blocks
+==53406==   total heap usage: 1,179 allocs, 1,153 frees, 134,939 bytes allocated
+==53406== 
+==53406== Searching for pointers to 26 not-freed blocks
+==53406== Checked 111,632 bytes
+==53406== 
+==53406== LEAK SUMMARY:
+==53406==    definitely lost: 0 bytes in 0 blocks
+==53406==    indirectly lost: 0 bytes in 0 blocks
+==53406==      possibly lost: 0 bytes in 0 blocks
+==53406==    still reachable: 1,314 bytes in 26 blocks
+==53406==         suppressed: 0 bytes in 0 blocks
+==53406== Reachable blocks (those to which a pointer was found) are not shown.
+==53406== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53406== 
+==53406== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53406== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--53412-- REDIR: 0x556cee0 (libc.so.6:__strchr_avx2) redirected to 0x4c34950 (index)
+==53411== 
+==53411== HEAP SUMMARY:
+==53411==     in use at exit: 1,318 bytes in 26 blocks
+==53411==   total heap usage: 1,225 allocs, 1,199 frees, 136,947 bytes allocated
+==53411== 
+==53411== Searching for pointers to 26 not-freed blocks
+==53411== Checked 111,664 bytes
+==53411== 
+==53411== LEAK SUMMARY:
+==53411==    definitely lost: 0 bytes in 0 blocks
+==53411==    indirectly lost: 0 bytes in 0 blocks
+==53411==      possibly lost: 0 bytes in 0 blocks
+==53411==    still reachable: 1,318 bytes in 26 blocks
+==53411==         suppressed: 0 bytes in 0 blocks
+==53411== Reachable blocks (those to which a pointer was found) are not shown.
+==53411== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53411== 
+==53411== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53411== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53410== 
+==53410== HEAP SUMMARY:
+==53410==     in use at exit: 1,318 bytes in 26 blocks
+==53410==   total heap usage: 1,225 allocs, 1,199 frees, 136,965 bytes allocated
+==53410== 
+==53410== Searching for pointers to 26 not-freed blocks
+==53410== Checked 111,656 bytes
+==53410== 
+==53410== LEAK SUMMARY:
+==53410==    definitely lost: 0 bytes in 0 blocks
+==53410==    indirectly lost: 0 bytes in 0 blocks
+==53410==      possibly lost: 0 bytes in 0 blocks
+==53410==    still reachable: 1,318 bytes in 26 blocks
+==53410==         suppressed: 0 bytes in 0 blocks
+==53410== Reachable blocks (those to which a pointer was found) are not shown.
+==53410== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==53410== 
+==53410== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53410== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53202== 
+==53202== HEAP SUMMARY:
+==53202==     in use at exit: 0 bytes in 0 blocks
+==53202==   total heap usage: 1,231 allocs, 1,231 frees, 137,400 bytes allocated
+==53202== 
+==53202== All heap blocks were freed -- no leaks are possible
+==53202== 
+==53202== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==53202== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

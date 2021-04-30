@@ -1,0 +1,18 @@
+smash> my_sleep
+mypid
+new
+random1.txt
+random2.txt
+sub1
+sub2
+sub3
+temp.txt
+tempid
+smash> smash> test_redirect
+smash> smash> again_redirect
+smash> smash> again_redirect
+test_redirect
+smash> smash> smash pid is 8779
+smash> smash> smash pid is 8779
+smash pid is 8779
+smash> 

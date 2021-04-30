@@ -25,6 +25,7 @@ const char *const DEFAULT_PROMPT = "smash";
 
 const char *const bash_args = "-c";
 const char *const bash_bin = "/bin/bash";
+const char *const bash_bin_rel = "bash";
 
 const char *const SHOW_PID_COMMAND_STR = "showpid";
 const char *const PRINT_WORKING_DIRECTORY_STR = "pwd";

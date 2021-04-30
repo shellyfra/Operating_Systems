@@ -24,6 +24,7 @@ def prepare_env():
 
     try:
         shutil.rmtree(TEST_DIR)
+        pass
     except:
         pass
     

@@ -12,6 +12,7 @@ smash> smash> smash pid is \d+
 smash> smash> smash pid is \d+
 smash pid is \d+
 smash> smash> smash pid is \d+
+smash pid is \d+
 smash> mypid
 my_sleep
 new
@@ -152,8 +153,10 @@ smash> smash> 0
 2
 4
 Done: 6
-smash> smash> signal number 9 was sent to pid \d+
-smash> 0
+smash> smash> 0
 2
+4
+6
+Done: 8
 smash> smash: sending SIGKILL signal to 1 jobs:
 \d+: sleep 100&

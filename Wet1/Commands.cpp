@@ -39,11 +39,23 @@ string _trim(const string &s);
 int _parseCommandLine(const char *cmd_line, char **args);
 bool _isBackgroundCommand(const char *cmd_line);
 void _removeBackgroundSign(char *cmd_line);
-
+static bool _isNumber(char *str);
 static bool _isNumber(char *str, CHECK_TYPE check);
 vector<string> _stringSplit(string str, const string delimiter);
 
 // String manipulation
+bool _isNumber(char *str)
+{
+    char *it = str;
+    while (char current = (*it++))
+    {
+        if (!std::isdigit(current) && current != MINUS_SIGN)
+        {
+            return false;
+        }
+    }
+    return true;
+}
 string _ltrim(const string &s)
 {
     size_t start = s.find_first_not_of(WHITESPACE);
@@ -108,7 +120,7 @@ void _removeBackgroundSign(char *cmd_line)
     cmd_line[str.find_last_not_of(WHITESPACE, idx) + 1] = 0;
 }
 
-static bool _isNumber(char *str, CHECK_TYPE check = NONE)
+static bool _isNumber(char *str, CHECK_TYPE check)
 {
     char *it = str;
     bool has_minus = false;
@@ -736,8 +748,8 @@ void ExternalCommand::execute()
     { // child
         setpgrp();
 
-        char *const arguments[] = {(char *)bash_bin, (char *)bash_args, cmd_to_bash, nullptr};
-        DO_SYS(execve(bash_bin, arguments, NULL));
+        char *const arguments[] = {(char *)bash_bin_rel, (char *)bash_args, cmd_to_bash, NULL};
+        DO_SYS(execvp(bash_bin, arguments));
     }
 }
 

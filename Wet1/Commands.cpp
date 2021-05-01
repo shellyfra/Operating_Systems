@@ -29,7 +29,6 @@ enum CHECK_TYPE
 {
     CHECK_POSITIVE,
     CHECK_NEGATIVE,
-    NONE
 };
 const string GetCurrentWorkingDirectory();
 string _ltrim(const string &s);
@@ -129,7 +128,7 @@ static bool _isNumber(char *str, CHECK_TYPE check)
 
         if (!std::isdigit(current))
         {
-            if ((check == CHECK_POSITIVE) || (check == NONE) || (check == CHECK_NEGATIVE && (current != MINUS_SIGN)))
+            if ((check != CHECK_NEGATIVE) || (check == CHECK_NEGATIVE && (current != MINUS_SIGN)))
             {
                 return false;
             }
@@ -599,12 +598,15 @@ void ChangePromptCommand::execute()
 void KillCommand::execute()
 {
     //parse args
-    if (this->argc != 3 || !_isNumber(args[1], CHECK_NEGATIVE) || stoi(args[1]) >= 0 || !_isNumber(args[2]))
+    if (this->argc != 3 || !_isNumber(args[1], CHECK_NEGATIVE) || !_isNumber(args[2])) // don't need || stoi(args[1]) >= 0
     {
         _logError("kill: invalid arguments");
         return;
     }
-    const int signal_num = stoi(args[1]) * -1;
+    if (args[1][0] == '-'){
+        memmove (args[1], args[1]+1, strlen (args[1]));
+    }
+    const int signal_num = stoi(args[1]) ; // don't need * -1 any more
     const int req_job_id = stoi(args[2]);
 
     JobsList::JobEntry *entry = jobs->getJobById(req_job_id);

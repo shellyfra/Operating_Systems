@@ -750,7 +750,7 @@ void ExternalCommand::execute()
     { // child
         setpgrp();
 
-        char *const arguments[] = {(char *)bash_bin_rel, (char *)bash_args, cmd_to_bash, NULL};
+        char *const arguments[] = {(char *)bash_bin, (char *)bash_args, cmd_to_bash, NULL};
         DO_SYS(execvp(bash_bin, arguments));
     }
 }
@@ -765,11 +765,14 @@ void CatCommand::execute()
     for (unsigned short i = 1; i < argc; i++)
     {
         int ch_buffer;
+        bool error=false;
         const char *file_path = args[i];
         string new_file_path = file_path;
         _trim(new_file_path);
         int fd;
-        DO_SYS_VAL_NO_RETURN(open(new_file_path.c_str(), O_RDONLY), fd);
+
+        // If not opened, return immediately
+        DO_SYS_VAL(open(new_file_path.c_str(), O_RDONLY), fd);
         if (fd != -1)
         {
             int read_status;
@@ -779,11 +782,24 @@ void CatCommand::execute()
                 int write_status;
                 DO_SYS_VAL_NO_RETURN(write(STDOUT_FILENO, &ch_buffer, 1), write_status);
                 if (write_status < 0)
-                    break; // Continue to next file
+                {
+                    error=true;
+                    break;
+                }
+                    
                 DO_SYS_VAL_NO_RETURN(read(fd, &ch_buffer, 1), read_status);
             }
-
-            close(fd);
+            if(read_status!=0)
+            {
+                // error was not due to EOF
+                error=true;
+            }
+            int dummy;
+            DO_SYS_VAL_NO_RETURN(close(fd),dummy);
+            if(error)
+            {
+                break;
+            }
         }
     }
 }

@@ -33,6 +33,7 @@
 .vscode/*
 build/*
 Wet3/build/*
+Wet1/tests_final/*
 Wet1/build/*
 Wet1/build/CMakeList.txt
 Wet1/build/Smash

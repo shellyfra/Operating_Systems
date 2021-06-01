@@ -21,31 +21,38 @@ void getargs(enum SCHED_ALGS *sched_alg, int *threads_count,int *queue_size, int
         fprintf(stderr, "Usage: %s <portnum> <threads> <queue_size> <schedalg>\n", argv[0]);
         exit(1);
     }
+    short valid_args = 1;   
     *port = atoi(argv[1]);
     *threads_count = atoi(argv[2]);
     *queue_size = atoi(argv[3]);
     
-    if(strcmp(argv[4],"block"))
+    if(!strcmp(argv[4],"block"))
     {
         *sched_alg = BLOCK;
     }
-    else if (strcmp(argv[4],"dt"))
+    else if (!strcmp(argv[4],"dt"))
    {
        *sched_alg = DT;
    }
-    else if (strcmp(argv[4],"dh"))
+    else if (!strcmp(argv[4],"dh"))
    {
        *sched_alg = DH;
    }
-   else if (strcmp(argv[4],"random"))
+   else if (!strcmp(argv[4],"random"))
    {
        *sched_alg = RANDOM;
    }
    else
    {
+       valid_args = 0;
+       
+   }
+    valid_args =valid_args && (*port)>=0 && (*threads_count)>0 && (*queue_size)>0;
+    if(!valid_args)
+    {
         fprintf(stderr, "Usage: %s <portnum> <threads> <queue_size> <schedalg>\n", argv[0]); // TODO make clearer
         exit(1);
-   }
+    }
 }
 
 int main(int argc, char *argv[])

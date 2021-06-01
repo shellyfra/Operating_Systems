@@ -1,6 +1,6 @@
 #include "segel.h"
 #include "request.h"
-
+#include "queue.h"
 //
 // server.c: A very, very simple web server
 //
@@ -10,6 +10,10 @@
 // Repeatedly handles HTTP requests sent to this port number.
 // Most of the work is done within routines written in request.c
 //
+#define SCHED_ALG_BLOCK "block"
+#define SCHED_ALG_DT "dt"
+#define SCHED_ALG_DH "dh"
+#define SCHED_ALG_RANDOM "random"
 
 enum SCHED_ALGS{BLOCK=0 , DT, DH, RANDOM};
 // HW3: Parse the new arguments too
@@ -26,19 +30,19 @@ void getargs(enum SCHED_ALGS *sched_alg, int *threads_count,int *queue_size, int
     *threads_count = atoi(argv[2]);
     *queue_size = atoi(argv[3]);
     
-    if(!strcmp(argv[4],"block"))
+    if(!strcmp(argv[4],SCHED_ALG_BLOCK))
     {
         *sched_alg = BLOCK;
     }
-    else if (!strcmp(argv[4],"dt"))
+    else if (!strcmp(argv[4],SCHED_ALG_DT))
    {
        *sched_alg = DT;
    }
-    else if (!strcmp(argv[4],"dh"))
+    else if (!strcmp(argv[4],SCHED_ALG_DH))
    {
        *sched_alg = DH;
    }
-   else if (!strcmp(argv[4],"random"))
+   else if (!strcmp(argv[4],SCHED_ALG_RANDOM))
    {
        *sched_alg = RANDOM;
    }
@@ -54,14 +58,33 @@ void getargs(enum SCHED_ALGS *sched_alg, int *threads_count,int *queue_size, int
         exit(1);
     }
 }
+void threadWrapper()
+{
+
+    //requestHandle ()
+
+}
 
 int main(int argc, char *argv[])
 {
+    pthread_t * threads;
+    int * waiting_queue;
+    int * running_queue;
     int listenfd, connfd, port, clientlen,threads_count,queue_size;
     enum SCHED_ALGS sched_alg;
     struct sockaddr_in clientaddr;
 
     getargs(&sched_alg, &threads_count,&queue_size, &port, argc, argv);
+    threads = (pthread_t*)malloc(sizeof(pthread_t)*threads_count);
+    // TODO check return values for errors
+
+    Queue * waiting_queue = newQueue(queue_size);
+    pthread_cond_t waiting_queue_cond_t = PTHREAD_COND_INITIALIZER;
+    pthread_mutex_t waiting_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+    Queue * running_queue = newQueue(queue_size);
+    pthread_mutex_t running_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_cond_t running_queue_cond_t = PTHREAD_COND_INITIALIZER;
 
     //
     // HW3: Create some threads...
@@ -73,6 +96,15 @@ int main(int argc, char *argv[])
         clientlen = sizeof(clientaddr);
         connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *)&clientlen);
 
+        if(getTotalElements(waiting_queue,waiting_queue_mutex)
+            +getTotalElements(running_queue,running_queue_mutex)>=queue_size)
+        {
+            // TODO handle overload alg
+        }
+        else
+        {
+            // TODO enqueue to waiting list
+        }
         //
         // HW3: In general, don't handle the request in the main thread.
         // Save the relevant info in a buffer and have one of the worker threads
@@ -82,4 +114,7 @@ int main(int argc, char *argv[])
 
         Close(connfd);
     }
+    free(threads);
+    free(waiting_queue);
+    free(running_queue);
 }

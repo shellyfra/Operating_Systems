@@ -1,0 +1,17 @@
+{
+    "cmake.debugConfig": {
+        "args": [
+            "8008",
+            "5",
+            "10",
+            "dt"
+        ]
+    },
+    "files.associations": {
+        "array": "c",
+        "deque": "c",
+        "list": "c",
+        "vector": "c",
+        "string_view": "c"
+    }
+}

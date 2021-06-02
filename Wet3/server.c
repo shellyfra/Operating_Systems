@@ -60,7 +60,7 @@ void getargs(enum SCHED_ALGS *sched_alg, int *threads_count,int *queue_size, int
 }
 void threadWrapper()
 {
-
+    // Shai
     //requestHandle ()
 
 }
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
     pthread_mutex_t running_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
     pthread_cond_t running_queue_cond_t = PTHREAD_COND_INITIALIZER;
 
-    //
+    // TODO Shelly
     // HW3: Create some threads...
     //
 
@@ -99,11 +99,11 @@ int main(int argc, char *argv[])
         if(getTotalElements(waiting_queue,waiting_queue_mutex)
             +getTotalElements(running_queue,running_queue_mutex)>=queue_size)
         {
-            // TODO handle overload alg
+            // TODO handle overload alg (part 2)
         }
         else
         {
-            // TODO enqueue to waiting list
+            // TODO enqueue to waiting list Shelly
         }
         //
         // HW3: In general, don't handle the request in the main thread.

@@ -9,7 +9,7 @@ Queue *newQueue(unsigned int size)
 
     
     queue->end =  - 1; // So that the first element will be added at 0 index
-    queue->elements = (int*)malloc(sizeof(int)* queue->size);
+    queue->elements = (Connection*)malloc(sizeof(Connection)* queue->size);
     return queue;
 }
 
@@ -23,7 +23,7 @@ int isEmpty(Queue* queue)
     return (queue->element_count == 0);
 }
  
-void enqueue(Queue* queue, int item , pthread_cond_t condition ,pthread_mutex_t mutex )
+void enqueue(Queue* queue, Connection item , pthread_cond_t condition ,pthread_mutex_t mutex )
 {
     pthread_mutex_lock(&mutex);
     // This is the critical part modyifing queue properties
@@ -38,7 +38,7 @@ void enqueue(Queue* queue, int item , pthread_cond_t condition ,pthread_mutex_t 
  
 // Function to remove an item from queue.
 // It changes front and size
-int dequeue(Queue* queue, pthread_cond_t condition ,pthread_mutex_t mutex )
+Connection dequeue(Queue* queue, pthread_cond_t condition ,pthread_mutex_t mutex )
 {
     pthread_mutex_lock(&mutex);
     // This is the critical part modyifing queue properties
@@ -47,7 +47,7 @@ int dequeue(Queue* queue, pthread_cond_t condition ,pthread_mutex_t mutex )
         pthread_cond_wait(&condition,&mutex);
     }
         
-    int item = queue->elements[queue->start];
+    Connection item = queue->elements[queue->start];
     queue->start = (queue->start + 1) % queue->size;
     queue->element_count--;
     pthread_mutex_unlock(&mutex);

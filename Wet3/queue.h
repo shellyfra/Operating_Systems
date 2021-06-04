@@ -24,7 +24,8 @@ int isFull(Queue* queue);
 int isEmpty(Queue* queue);
  
 void enqueue(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_mutex_t* mutex);
- 
+void enqueue_drop_head(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_mutex_t* mutex);
+void enqueue_drop_random(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_mutex_t* mutex);
 // Function to remove an item from queue.
 // It changes front and size
 Connection dequeue(Queue* queue, pthread_cond_t* condition ,pthread_mutex_t* mutex );

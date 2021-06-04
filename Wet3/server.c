@@ -67,15 +67,15 @@ void getargs(enum SCHED_ALGS *sched_alg, int *threads_count, int *queue_size, in
 }
 
 Queue *waiting_queue;
-pthread_cond_t waiting_queue_cond_t = PTHREAD_COND_INITIALIZER;
-pthread_mutex_t waiting_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t waiting_queue_cond_t;
+pthread_mutex_t waiting_queue_mutex;
 
-pthread_cond_t waiting_queue_cond_block = PTHREAD_COND_INITIALIZER;
-pthread_mutex_t waiting_queue_mutex_block = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t waiting_queue_cond_block;
+pthread_mutex_t waiting_queue_mutex_block;
 
 Queue *running_queue;
-pthread_mutex_t running_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t running_queue_cond_t = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t running_queue_mutex;
+pthread_cond_t running_queue_cond_t;
 
 enum SCHED_ALGS sched_alg; // Setup once in the master thread. Will never change
 void *threadWrapper(void *ts)
@@ -131,6 +131,15 @@ int main(int argc, char *argv[])
     waiting_queue = newQueue(queue_size);
     running_queue = newQueue(queue_size);
 
+    pthread_cond_init(&waiting_queue_cond_t, NULL);
+    pthread_mutex_init(&waiting_queue_mutex, NULL);
+
+    pthread_cond_init(&waiting_queue_cond_block, NULL);
+    pthread_mutex_init(&waiting_queue_mutex_block, NULL);
+
+    pthread_cond_init(&running_queue_cond_t, NULL);
+    pthread_mutex_init(&running_queue_mutex, NULL);
+
     for (int i = 0; i < threads_count; ++i)
     {
         thread_statistics *ts = malloc (sizeof (thread_statistics));
@@ -157,7 +166,6 @@ int main(int argc, char *argv[])
             switch (sched_alg)
             {
             case BLOCK:
-
                 // Use a lock, although there is only one server thread
                 pthread_mutex_lock(&waiting_queue_mutex_block);
 
@@ -174,6 +182,12 @@ int main(int argc, char *argv[])
             case DROP_TAIL:
                 // Do not handle, drop immediately:
                 Close(con.connfd);
+                break;
+            case DROP_HEAD:
+                enqueue_drop_head(waiting_queue, con, &waiting_queue_cond_t, &waiting_queue_mutex);
+                break;
+            case RANDOM:
+                enqueue_drop_random(waiting_queue, con, &waiting_queue_cond_t, &waiting_queue_mutex);
                 break;
             default:
                 break;

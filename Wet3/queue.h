@@ -8,7 +8,7 @@
 typedef struct connection_t {
     int connfd;
     struct timeval  start_req_arrival;
-    struct timeval  start_req_dispatch;
+    double  start_req_dispatch;
 } Connection;
 
 typedef struct Queue_t {

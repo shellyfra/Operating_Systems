@@ -79,7 +79,7 @@ pthread_cond_t running_queue_cond_t = PTHREAD_COND_INITIALIZER;
 void* threadWrapper(void* id_in_threads)
 {
     int threadnumber = (intptr_t) id_in_threads;
-    printf("Creating thread number %d",threadnumber);
+    fprintf(stdout, "Creating thread number %d",threadnumber);
     while (RUN_ALWAYS)
     {
         // This will run and wait for the lock when there is an available connection:

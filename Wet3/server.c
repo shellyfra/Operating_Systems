@@ -1,6 +1,7 @@
 #include "segel.h"
 #include "request.h"
 #include "queue.h"
+#include <pthread.h>
 //
 // server.c: A very, very simple web server
 //
@@ -75,15 +76,22 @@ Queue *running_queue;
 pthread_mutex_t running_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t running_queue_cond_t = PTHREAD_COND_INITIALIZER;
 
-void threadWrapper()
+void* threadWrapper(void* id_in_threads)
 {
+    int threadnumber = (intptr_t) id_in_threads;
+    printf("Creating thread number %d",threadnumber);
     while (RUN_ALWAYS)
     {
         // This will run and wait for the lock when there is an available connection:
         Connection con = dequeue(waiting_queue,waiting_queue_cond_t,waiting_queue_mutex);
-        gettimeofday(&con.start_req_dispatch,NULL);
+        struct timeval current_time;
+        gettimeofday(&current_time,NULL);
+        double  elapsedTime = (current_time.tv_sec - con.start_req_arrival.tv_sec) * 1000.0;      // sec to ms
+        elapsedTime += (current_time.tv_usec - con.start_req_arrival.tv_usec) / 1000.0;   // us to ms
+        con.start_req_dispatch = elapsedTime;
+
         // Add the connection to the running queue
-       // enqueue(running_queue,con,running_queue_cond_t,running_queue_mutex);
+        // enqueue(running_queue,con,running_queue_cond_t,running_queue_mutex);
 
         // Actually handle the request. Will block the thread
         requestHandle(con.connfd);
@@ -92,26 +100,32 @@ void threadWrapper()
         Close(con.connfd);
         // TODO remove from running queue
     }
+    pthread_exit(NULL);
 }
 
 int main(int argc, char *argv[])
 {
-    pthread_t *threads;
-    int listenfd, connfd, port, clientlen, threads_count, queue_size;
+    pthread_t * threads;
+    int listenfd, connfd, port, clientlen,threads_count,queue_size;
     enum SCHED_ALGS sched_alg;
     struct sockaddr_in clientaddr;
 
-    getargs(&sched_alg, &threads_count, &queue_size, &port, argc, argv);
-    threads = (pthread_t *)malloc(sizeof(pthread_t) * threads_count);
+    getargs(&sched_alg, &threads_count,&queue_size, &port, argc, argv);
+    threads = (pthread_t*)malloc(sizeof(pthread_t)*threads_count);
+    memset(threads, 0, threads_count*sizeof(threads[0]));
     // TODO check return values for errors
 
-    waiting_queue = newQueue(queue_size);
 
+    waiting_queue = newQueue(queue_size);
     running_queue = newQueue(queue_size);
 
-    // TODO Shelly
-    // HW3: Create some threads...
-    //
+    for (int i = 0; i < threads_count ; ++i) {
+        int rc = pthread_create(&threads[i], NULL, threadWrapper, (void*)(intptr_t)i);
+        if(rc)
+        {
+            fprintf(stderr, "pthread_create failure for thread %d", i);
+        }
+    }
 
     listenfd = Open_listenfd(port);
     while (RUN_ALWAYS)
@@ -127,16 +141,8 @@ int main(int argc, char *argv[])
         }
         else
         {
-            // TODO enqueue to waiting list Shelly
-             //
-            // HW3: In general, don't handle the request in the main thread.
-            // Save the relevant שinfo in a buffer and have one of the worker threads
-            // do the work.
-            //
-            
+            enqueue(waiting_queue, c, waiting_queue_cond_t, waiting_queue_mutex);
         }
-       
-        
     }
     free(threads);
     free(waiting_queue);

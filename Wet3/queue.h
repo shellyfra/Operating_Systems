@@ -23,12 +23,12 @@ int isFull(Queue* queue);
  
 int isEmpty(Queue* queue);
  
-void enqueue(Queue* queue, Connection item , pthread_cond_t condition ,pthread_mutex_t mutex );
+void enqueue(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_mutex_t* mutex );
  
 // Function to remove an item from queue.
 // It changes front and size
-Connection dequeue(Queue* queue, pthread_cond_t condition ,pthread_mutex_t mutex );
-int getTotalElements(Queue* queue ,pthread_mutex_t mutex );
+Connection dequeue(Queue* queue, pthread_cond_t* condition ,pthread_mutex_t* mutex );
+int getTotalElements(Queue* queue ,pthread_mutex_t* mutex );
 // Function to get front of queue
 int front(Queue* queue);
 // Function to get rear of queue

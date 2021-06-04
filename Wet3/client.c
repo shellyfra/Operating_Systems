@@ -22,6 +22,7 @@
  */
 
 #include "segel.h"
+#include <sys/time.h>
 
 /*
  * Send an HTTP request for the specified file 
@@ -91,7 +92,8 @@ int main(int argc, char *argv[])
   
   clientSend(clientfd, filename);
   clientPrint(clientfd);
-    
+  
+  
   Close(clientfd);
 
   exit(0);

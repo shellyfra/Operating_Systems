@@ -23,42 +23,42 @@ int isEmpty(Queue* queue)
     return (queue->element_count == 0);
 }
  
-void enqueue(Queue* queue, Connection item , pthread_cond_t condition ,pthread_mutex_t mutex )
+void enqueue(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_mutex_t* mutex )
 {
-    pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(mutex);
     // This is the critical part modyifing queue properties
     if (isFull(queue)) // TODO add in overloading handling PT2
         return;
     queue->end = (queue->end + 1) % queue->size;
     queue->elements[queue->end] = item;
     queue->element_count++;
-    pthread_cond_signal(&condition);
-    pthread_mutex_unlock(&mutex);
+    pthread_cond_signal(condition);
+    pthread_mutex_unlock(mutex);
 }
  
 // Function to remove an item from queue.
 // It changes front and size
-Connection dequeue(Queue* queue, pthread_cond_t condition ,pthread_mutex_t mutex )
+Connection dequeue(Queue* queue, pthread_cond_t* condition ,pthread_mutex_t* mutex )
 {
-    pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(mutex);
     // This is the critical part modyifing queue properties
     while (isEmpty(queue))
     {
-        pthread_cond_wait(&condition,&mutex);
+        pthread_cond_wait(condition,mutex);
     }
         
     Connection item = queue->elements[queue->start];
     queue->start = (queue->start + 1) % queue->size;
     queue->element_count--;
-    pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(mutex);
     return item;
 }
-int getTotalElements(Queue* queue ,pthread_mutex_t mutex )
+int getTotalElements(Queue* queue ,pthread_mutex_t* mutex )
 {
-    pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(mutex);
 
     int elements_count = queue->element_count;
-    pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(mutex);
     return elements_count;
 }
  /*

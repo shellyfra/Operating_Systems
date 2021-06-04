@@ -66,8 +66,6 @@ void getargs(enum SCHED_ALGS *sched_alg, int *threads_count, int *queue_size, in
     }
 }
 
-
-
 Queue *waiting_queue;
 pthread_cond_t waiting_queue_cond_t = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t waiting_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -76,18 +74,18 @@ Queue *running_queue;
 pthread_mutex_t running_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t running_queue_cond_t = PTHREAD_COND_INITIALIZER;
 
-void* threadWrapper(void* id_in_threads)
+void *threadWrapper(void *id_in_threads)
 {
-    int threadnumber = (intptr_t) id_in_threads;
-    fprintf(stdout, "Creating thread number %d",threadnumber);
+    int threadnumber = (intptr_t)id_in_threads;
+    fprintf(stdout, "Creating thread number %d", threadnumber);
     while (RUN_ALWAYS)
     {
         // This will run and wait for the lock when there is an available connection:
-        Connection con = dequeue(waiting_queue,waiting_queue_cond_t,waiting_queue_mutex);
+        Connection con = dequeue(waiting_queue, &waiting_queue_cond_t, &waiting_queue_mutex);
         struct timeval current_time;
-        gettimeofday(&current_time,NULL);
-        double  elapsedTime = (current_time.tv_sec - con.start_req_arrival.tv_sec) * 1000.0;      // sec to ms
-        elapsedTime += (current_time.tv_usec - con.start_req_arrival.tv_usec) / 1000.0;   // us to ms
+        gettimeofday(&current_time, NULL);
+        double elapsedTime = (current_time.tv_sec - con.start_req_arrival.tv_sec) * 1000.0; // sec to ms
+        elapsedTime += (current_time.tv_usec - con.start_req_arrival.tv_usec) / 1000.0;     // us to ms
         con.start_req_dispatch = elapsedTime;
 
         // Add the connection to the running queue
@@ -95,7 +93,7 @@ void* threadWrapper(void* id_in_threads)
 
         // Actually handle the request. Will block the thread
         requestHandle(con.connfd);
-  
+
         // Close the connection
         Close(con.connfd);
         // TODO remove from running queue
@@ -105,23 +103,23 @@ void* threadWrapper(void* id_in_threads)
 
 int main(int argc, char *argv[])
 {
-    pthread_t * threads;
-    int listenfd, connfd, port, clientlen,threads_count,queue_size;
+    pthread_t *threads;
+    int listenfd, connfd, port, clientlen, threads_count, queue_size;
     enum SCHED_ALGS sched_alg;
     struct sockaddr_in clientaddr;
 
-    getargs(&sched_alg, &threads_count,&queue_size, &port, argc, argv);
-    threads = (pthread_t*)malloc(sizeof(pthread_t)*threads_count);
-    memset(threads, 0, threads_count*sizeof(threads[0]));
+    getargs(&sched_alg, &threads_count, &queue_size, &port, argc, argv);
+    threads = (pthread_t *)malloc(sizeof(pthread_t) * threads_count);
+    memset(threads, 0, threads_count * sizeof(threads[0]));
     // TODO check return values for errors
-
 
     waiting_queue = newQueue(queue_size);
     running_queue = newQueue(queue_size);
 
-    for (int i = 0; i < threads_count ; ++i) {
-        int rc = pthread_create(&threads[i], NULL, threadWrapper, (void*)(intptr_t)i);
-        if(rc)
+    for (int i = 0; i < threads_count; ++i)
+    {
+        int rc = pthread_create(&threads[i], NULL, threadWrapper, (void *)(intptr_t)i);
+        if (rc)
         {
             fprintf(stderr, "pthread_create failure for thread %d", i);
         }
@@ -132,16 +130,18 @@ int main(int argc, char *argv[])
     {
         clientlen = sizeof(clientaddr);
         connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *)&clientlen);
+        fprintf(stdout, "Accepted connection fd %d", connfd);
         Connection c;
         c.connfd = connfd;
-        gettimeofday(&c.start_req_arrival,NULL);
-        if (getTotalElements(waiting_queue, waiting_queue_mutex) + getTotalElements(running_queue, running_queue_mutex) >= queue_size)
+        gettimeofday(&c.start_req_arrival, NULL);
+        if (getTotalElements(waiting_queue, &waiting_queue_mutex) + getTotalElements(running_queue, &running_queue_mutex) >= queue_size)
+
         {
             // TODO handle overload alg (part 2)
         }
         else
         {
-            enqueue(waiting_queue, c, waiting_queue_cond_t, waiting_queue_mutex);
+            enqueue(waiting_queue, c, &waiting_queue_cond_t, &waiting_queue_mutex);
         }
     }
     free(threads);

@@ -161,3 +161,6 @@ Wet3/.vscode/settings.json
 Wet3/public/favicon.ico
 Wet3/public/home.html
 Wet3/public/output.cgi
+Wet3/.vscode/settings.json
+Wet3/client
+Wet3/CMakeLists.txt

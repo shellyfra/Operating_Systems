@@ -23,7 +23,7 @@ int isFull(Queue* queue);
  
 int isEmpty(Queue* queue);
  
-void enqueue(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_mutex_t* mutex );
+void enqueue(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_mutex_t* mutex);
  
 // Function to remove an item from queue.
 // It changes front and size

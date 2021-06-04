@@ -3,7 +3,7 @@
         "args": [
             "8008",
             "5",
-            "10",
+            "1",
             "dt"
         ]
     },
@@ -12,6 +12,7 @@
         "deque": "c",
         "list": "c",
         "vector": "c",
-        "string_view": "c"
+        "string_view": "c",
+        "time.h": "c"
     }
 }

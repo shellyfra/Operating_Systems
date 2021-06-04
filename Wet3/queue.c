@@ -27,15 +27,14 @@ void enqueue(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_
 {
     pthread_mutex_lock(mutex);
     // This is the critical part modyifing queue properties
-    if (isFull(queue)) // TODO add in overloading handling PT2
-        return;
+   
     queue->end = (queue->end + 1) % queue->size;
     queue->elements[queue->end] = item;
     queue->element_count++;
     pthread_cond_signal(condition);
     pthread_mutex_unlock(mutex);
 }
- 
+
 // Function to remove an item from queue.
 // It changes front and size
 Connection dequeue(Queue* queue, pthread_cond_t* condition ,pthread_mutex_t* mutex )

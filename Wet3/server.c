@@ -20,8 +20,8 @@
 enum SCHED_ALGS
 {
     BLOCK = 0,
-    DT,
-    DH,
+    DROP_TAIL,
+    DROP_HEAD,
     RANDOM
 };
 // HW3: Parse the new arguments too
@@ -44,11 +44,11 @@ void getargs(enum SCHED_ALGS *sched_alg, int *threads_count, int *queue_size, in
     }
     else if (!strcmp(argv[4], SCHED_ALG_DT))
     {
-        *sched_alg = DT;
+        *sched_alg = DROP_TAIL;
     }
     else if (!strcmp(argv[4], SCHED_ALG_DH))
     {
-        *sched_alg = DH;
+        *sched_alg = DROP_HEAD;
     }
     else if (!strcmp(argv[4], SCHED_ALG_RANDOM))
     {
@@ -70,14 +70,18 @@ Queue *waiting_queue;
 pthread_cond_t waiting_queue_cond_t = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t waiting_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+pthread_cond_t waiting_queue_cond_block = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t waiting_queue_mutex_block = PTHREAD_MUTEX_INITIALIZER;
+
 Queue *running_queue;
 pthread_mutex_t running_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t running_queue_cond_t = PTHREAD_COND_INITIALIZER;
 
+enum SCHED_ALGS sched_alg; // Setup once in the master thread. Will never change
 void *threadWrapper(void *id_in_threads)
 {
-    int threadnumber = (intptr_t)id_in_threads;
-    fprintf(stdout, "Creating thread number %d", threadnumber);
+    int thread_number = (intptr_t)id_in_threads;
+    fprintf(stdout, "Creating thread number %d", thread_number);
     while (RUN_ALWAYS)
     {
         // This will run and wait for the lock when there is an available connection:
@@ -89,14 +93,21 @@ void *threadWrapper(void *id_in_threads)
         con.start_req_dispatch = elapsedTime;
 
         // Add the connection to the running queue
-        // enqueue(running_queue,con,running_queue_cond_t,running_queue_mutex);
+        enqueue(running_queue, con, &running_queue_cond_t, &running_queue_mutex);
 
-        // Actually handle the request. Will block the thread
+        // Handle the request. Will block the thread
         requestHandle(con.connfd);
 
         // Close the connection
         Close(con.connfd);
-        // TODO remove from running queue
+        // Dequeuing is not in order. Only used for evaluating how many requests are running,
+        // So we don't care if this thread deque's another thread's request
+        dequeue(running_queue, &running_queue_cond_t, &running_queue_mutex);
+        // Signal the block algorithm that it can insert a new request if it was blocked:
+        if (sched_alg == BLOCK)
+        {
+            pthread_cond_signal(&waiting_queue_cond_block);
+        }
     }
     pthread_exit(NULL);
 }
@@ -105,10 +116,11 @@ int main(int argc, char *argv[])
 {
     pthread_t *threads;
     int listenfd, connfd, port, clientlen, threads_count, queue_size;
-    enum SCHED_ALGS sched_alg;
+
     struct sockaddr_in clientaddr;
 
     getargs(&sched_alg, &threads_count, &queue_size, &port, argc, argv);
+
     threads = (pthread_t *)malloc(sizeof(pthread_t) * threads_count);
     memset(threads, 0, threads_count * sizeof(threads[0]));
     // TODO check return values for errors
@@ -130,18 +142,40 @@ int main(int argc, char *argv[])
     {
         clientlen = sizeof(clientaddr);
         connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *)&clientlen);
-        fprintf(stdout, "Accepted connection fd %d", connfd);
-        Connection c;
-        c.connfd = connfd;
-        gettimeofday(&c.start_req_arrival, NULL);
-        if (getTotalElements(waiting_queue, &waiting_queue_mutex) + getTotalElements(running_queue, &running_queue_mutex) >= queue_size)
-
+        Connection con;
+        con.connfd = connfd;
+        gettimeofday(&con.start_req_arrival, NULL);
+        int num_of_requests = getTotalElements(waiting_queue, &waiting_queue_mutex) + getTotalElements(running_queue, &running_queue_mutex);
+        if (num_of_requests >= queue_size)
         {
-            // TODO handle overload alg (part 2)
+            switch (sched_alg)
+            {
+            case BLOCK:
+
+                // Use a lock, although there is only one server thread
+                pthread_mutex_lock(&waiting_queue_mutex_block);
+
+                // Give up proccessor until signaled by the dequeing from running_queue
+                pthread_cond_wait(&waiting_queue_cond_block, &waiting_queue_mutex_block);
+                // No need for a while to check the number of requests again,
+                // Since we only have dequeing once the server gave up the proccessor
+
+                pthread_mutex_unlock(&waiting_queue_mutex_block);
+
+                // Guaranteed to have space for more requests:
+                enqueue(waiting_queue, con, &waiting_queue_cond_t, &waiting_queue_mutex);
+                break;
+            case DROP_TAIL:
+                // Do not handle, drop immediately:
+                Close(con.connfd);
+                break;
+            default:
+                break;
+            }
         }
         else
         {
-            enqueue(waiting_queue, c, &waiting_queue_cond_t, &waiting_queue_mutex);
+            enqueue(waiting_queue, con, &waiting_queue_cond_t, &waiting_queue_mutex);
         }
     }
     free(threads);

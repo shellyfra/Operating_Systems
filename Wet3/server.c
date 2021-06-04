@@ -1,6 +1,7 @@
 #include "segel.h"
 #include "request.h"
 #include "queue.h"
+#include <pthread.h>
 //
 // server.c: A very, very simple web server
 //
@@ -58,37 +59,40 @@ void getargs(enum SCHED_ALGS *sched_alg, int *threads_count,int *queue_size, int
         exit(1);
     }
 }
-void threadWrapper()
+void* threadWrapper(void* id_in_threads)
 {
     // Shai
     //requestHandle ()
-
+    return NULL;
 }
 
 int main(int argc, char *argv[])
 {
     pthread_t * threads;
-    int * waiting_queue;
-    int * running_queue;
     int listenfd, connfd, port, clientlen,threads_count,queue_size;
     enum SCHED_ALGS sched_alg;
     struct sockaddr_in clientaddr;
 
     getargs(&sched_alg, &threads_count,&queue_size, &port, argc, argv);
     threads = (pthread_t*)malloc(sizeof(pthread_t)*threads_count);
+    memset(threads, 0, threads_count*sizeof(threads[0]));
     // TODO check return values for errors
 
     Queue * waiting_queue = newQueue(queue_size);
-    pthread_cond_t waiting_queue_cond_t = PTHREAD_COND_INITIALIZER;
-    pthread_mutex_t waiting_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_cond_t waiting_queue_cond_t;
+    pthread_cond_init(&waiting_queue_cond_t, NULL);
+    pthread_mutex_t waiting_queue_mutex;
+    pthread_mutex_init(&waiting_queue_mutex, NULL);
 
     Queue * running_queue = newQueue(queue_size);
-    pthread_mutex_t running_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
-    pthread_cond_t running_queue_cond_t = PTHREAD_COND_INITIALIZER;
+    pthread_mutex_t running_queue_mutex;
+    pthread_mutex_init(&running_queue_mutex, NULL);
+    pthread_cond_t running_queue_cond_t;
+    pthread_cond_init(&running_queue_cond_t, NULL);
 
-    // TODO Shelly
-    // HW3: Create some threads...
-    //
+    for (int i = 0; i < threads_count ; ++i) {
+        pthread_create(&threads[i], NULL, threadWrapper, (void*)i);
+    }
 
     listenfd = Open_listenfd(port);
     while (1)
@@ -103,7 +107,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            // TODO enqueue to waiting list Shelly
+            enqueue(waiting_queue, connfd,waiting_queue_cond_t,waiting_queue_mutex);
         }
         //
         // HW3: In general, don't handle the request in the main thread.

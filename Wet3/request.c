@@ -152,7 +152,7 @@ void requestServeStatic(int fd, char *filename, int filesize)
 }
 
 // handle a request
-void requestHandle(int fd)
+void requestHandle(int fd,thread_statistics* thread_statistics_p,Connection con)
 {
 
    int is_static;
@@ -160,6 +160,9 @@ void requestHandle(int fd)
    char buf[MAXLINE], method[MAXLINE], uri[MAXLINE], version[MAXLINE];
    char filename[MAXLINE], cgiargs[MAXLINE];
    rio_t rio;
+
+   // Increment num of requests
+   thread_statistics_p->thread_count++;
 
    Rio_readinitb(&rio, fd);
    Rio_readlineb(&rio, buf, MAXLINE);
@@ -192,6 +195,23 @@ void requestHandle(int fd)
       }
       requestServeDynamic(fd, filename, cgiargs);
    }
+   
+
+double elapsedTime = (con.start_req_arrival.tv_sec) * 1000.0; // sec to ms
+        elapsedTime += (con.start_req_arrival.tv_usec) / 1000.0;     // us to ms
+
+   sprintf(buf, "Stat-req-arrival: %f\n", elapsedTime);
+   Rio_writen(fd, buf, strlen(buf));
+   printf("%s", buf);
+
+
+   sprintf(buf, "Stat-req-dispatch: %f\n", con.start_req_dispatch);
+   Rio_writen(fd, buf, strlen(buf));
+   printf("%s", buf);
+
+   sprintf(buf, "Stat-thread-id: %d\n", thread_statistics_p->thread_id);
+   Rio_writen(fd, buf, strlen(buf));
+   printf("%s", buf);
 }
 
 

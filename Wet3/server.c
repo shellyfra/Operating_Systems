@@ -78,10 +78,10 @@ pthread_mutex_t running_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t running_queue_cond_t = PTHREAD_COND_INITIALIZER;
 
 enum SCHED_ALGS sched_alg; // Setup once in the master thread. Will never change
-void *threadWrapper(void *id_in_threads)
+void *threadWrapper(void *ts)
 {
-    int thread_number = (intptr_t)id_in_threads;
-    fprintf(stdout, "Creating thread number %d", thread_number);
+    thread_statistics* thread_statistics_p = (thread_statistics*)ts;
+    fprintf(stdout, "Creating thread number %d", thread_statistics_p->thread_id);
     while (RUN_ALWAYS)
     {
         // This will run and wait for the lock when there is an available connection:
@@ -96,7 +96,7 @@ void *threadWrapper(void *id_in_threads)
         enqueue(running_queue, con, &running_queue_cond_t, &running_queue_mutex);
 
         // Handle the request. Will block the thread
-        requestHandle(con.connfd);
+        requestHandle(con.connfd,thread_statistics_p,con);
 
         // Close the connection
         Close(con.connfd);
@@ -109,6 +109,9 @@ void *threadWrapper(void *id_in_threads)
             pthread_cond_signal(&waiting_queue_cond_block);
         }
     }
+
+    // Will never reach here..
+    free(thread_statistics_p);
     pthread_exit(NULL);
 }
 
@@ -130,7 +133,10 @@ int main(int argc, char *argv[])
 
     for (int i = 0; i < threads_count; ++i)
     {
-        int rc = pthread_create(&threads[i], NULL, threadWrapper, (void *)(intptr_t)i);
+        thread_statistics *ts = malloc (sizeof (thread_statistics));
+        
+        ts->thread_id = i;        
+        int rc = pthread_create(&threads[i], NULL, threadWrapper, (void *)ts);
         if (rc)
         {
             fprintf(stderr, "pthread_create failure for thread %d", i);

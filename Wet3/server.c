@@ -81,7 +81,7 @@ enum SCHED_ALGS sched_alg; // Setup once in the master thread. Will never change
 void *threadWrapper(void *ts)
 {
     thread_statistics* thread_statistics_p = (thread_statistics*)ts;
-    fprintf(stdout, "Creating thread number %d", thread_statistics_p->thread_id);
+    //fprintf(stdout, "Creating thread number %d", thread_statistics_p->thread_id);
     while (RUN_ALWAYS)
     {
         // This will run and wait for the lock when there is an available connection:

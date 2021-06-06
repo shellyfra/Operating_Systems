@@ -3,7 +3,7 @@
         "args": [
             "8008",
             "5",
-            "1",
+            "5",
             "dt"
         ]
     },
@@ -13,6 +13,7 @@
         "list": "c",
         "vector": "c",
         "string_view": "c",
-        "time.h": "c"
+        "time.h": "c",
+        "algorithm": "c"
     }
 }

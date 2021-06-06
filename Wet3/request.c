@@ -30,22 +30,32 @@ void requestError(int fd, char *cause, char *errnum, char *shortmsg, char *longm
    Rio_writen(fd, buf, strlen(buf));
    printf("%s", buf);
 
-   double elapsedTime = (con.start_req_arrival.tv_sec) * 1000.0; // sec to ms
-   elapsedTime += (con.start_req_arrival.tv_usec) / 1000.0;     // us to ms
-
-   sprintf(buf,  "Stat-req-arrival: %f\r\n", elapsedTime);
+   const time_t sec_diff = con.start_req_dispatch.tv_sec-con.start_req_arrival.tv_sec;
+   const time_t usec_diff = con.start_req_dispatch.tv_usec-con.start_req_arrival.tv_usec;
+      
+   sprintf(buf,  "sStat-req-arrival:: %lu.%06lu\r\n", con.start_req_arrival.tv_sec, con.start_req_arrival.tv_usec);
    Rio_writen(fd, buf, strlen(buf));
    printf("%s", buf);
 
-   sprintf(buf,  "Stat-req-dispatch: %f\r\n", con.start_req_dispatch);
+   sprintf(buf,  "Stat-req-dispatch:: %lu.%06lu\r\n", sec_diff,usec_diff);
    Rio_writen(fd, buf, strlen(buf));
    printf("%s", buf);
 
-   sprintf(buf,  "Stat-thread-id: %d\r\n\r\n", thread_statistics_p->thread_id);
+   sprintf(buf,  "Stat-thread-id: %d\r\n", thread_statistics_p->thread_id);
    Rio_writen(fd, buf, strlen(buf));
    printf("%s", buf);
 
-   
+    sprintf(buf,  "Stat-thread-count: %d\r\n", thread_statistics_p->thread_count);
+    Rio_writen(fd, buf, strlen(buf));
+    printf("%s", buf);
+
+    sprintf(buf,  "Stat-thread-static: %d\r\n", thread_statistics_p->thread_static);
+    Rio_writen(fd, buf, strlen(buf));
+    printf("%s", buf);
+
+    sprintf(buf,  "Stat-thread-dynamic: %d\r\n\r\n", thread_statistics_p->thread_dynamic);
+    Rio_writen(fd, buf, strlen(buf));
+    printf("%s", buf);
 
    // Write out the content
    Rio_writen(fd, body, strlen(body));
@@ -127,12 +137,14 @@ void requestServeDynamic(int fd, char *filename, char *cgiargs,Connection con,th
    sprintf(buf, "HTTP/1.0 200 OK\r\n");
    sprintf(buf, "%sServer: OS-HW3 Web Server\r\n", buf);
 
-double elapsedTime = (con.start_req_arrival.tv_sec) * 1000.0; // sec to ms
-        elapsedTime += (con.start_req_arrival.tv_usec) / 1000.0;     // us to ms
-
-   sprintf(buf, "%sStat-req-arrival: %f\r\n",buf, elapsedTime);
-   sprintf(buf, "%sStat-req-dispatch: %f\r\n",buf, con.start_req_dispatch);
-   sprintf(buf, "%sStat-thread-id: %d\r\n",buf, thread_statistics_p->thread_id);
+   const time_t sec_diff = con.start_req_dispatch.tv_sec-con.start_req_arrival.tv_sec;
+   const time_t usec_diff = con.start_req_dispatch.tv_usec-con.start_req_arrival.tv_usec;
+   sprintf(buf, "%sStat-req-arrival:: %lu.%06lu\r\n", buf, con.start_req_arrival.tv_sec, con.start_req_arrival.tv_usec);
+   sprintf(buf, "%sStat-req-dispatch:: %lu.%06lu\r\n",buf, sec_diff , usec_diff);
+   sprintf(buf, "%sStat-thread-id:: %d\r\n",buf, thread_statistics_p->thread_id);
+   sprintf(buf, "%sStat-thread-count:: %d\r\n",buf, thread_statistics_p->thread_count);
+   sprintf(buf, "%sStat-thread-static:: %d\r\n",buf, thread_statistics_p->thread_static);
+   sprintf(buf, "%sStat-thread-dynamic:: %d\r\n",buf, thread_statistics_p->thread_dynamic);
    Rio_writen(fd, buf, strlen(buf));
 
    if (Fork() == 0) {
@@ -165,14 +177,14 @@ void requestServeStatic(int fd, char *filename, int filesize,Connection con,thre
    sprintf(buf, "%sServer: OS-HW3 Web Server\r\n", buf);
    sprintf(buf, "%sContent-Length: %d\r\n", buf, filesize);
    sprintf(buf, "%sContent-Type: %s\r\n", buf, filetype);
-
-double elapsedTime = (con.start_req_arrival.tv_sec) * 1000.0; // sec to ms
-        elapsedTime += (con.start_req_arrival.tv_usec) / 1000.0;     // us to ms
-
-   sprintf(buf, "%sStat-req-arrival: %f\r\n",buf, elapsedTime);
-   sprintf(buf, "%sStat-req-dispatch: %f\r\n",buf, con.start_req_dispatch);
-   sprintf(buf, "%sStat-thread-id: %d\r\n\r\n",buf, thread_statistics_p->thread_id);
-
+   const time_t sec_diff = con.start_req_dispatch.tv_sec-con.start_req_arrival.tv_sec;
+   const time_t usec_diff = con.start_req_dispatch.tv_usec-con.start_req_arrival.tv_usec;
+   sprintf(buf, "%sStat-req-arrival:: %lu.%06lu\r\n", buf, con.start_req_arrival.tv_sec, con.start_req_arrival.tv_usec);
+   sprintf(buf, "%sStat-req-dispatch:: %lu.%06lu\r\n",buf, sec_diff , usec_diff);
+   sprintf(buf, "%sStat-thread-id:: %d\r\n",buf, thread_statistics_p->thread_id);
+   sprintf(buf, "%sStat-thread-count:: %d\r\n",buf, thread_statistics_p->thread_count);
+   sprintf(buf, "%sStat-thread-static:: %d\r\n",buf, thread_statistics_p->thread_static);
+   sprintf(buf, "%sStat-thread-dynamic:: %d\r\n\r\n",buf, thread_statistics_p->thread_dynamic);
    Rio_writen(fd, buf, strlen(buf));
 
    //  Writes out to the client socket the memory-mapped file 
@@ -213,12 +225,14 @@ void requestHandle(int fd,thread_statistics* thread_statistics_p,Connection con)
    }
 
    if (is_static) {
+       thread_statistics_p->thread_static++;
       if (!(S_ISREG(sbuf.st_mode)) || !(S_IRUSR & sbuf.st_mode)) {
          requestError(fd, filename, "403", "Forbidden", "OS-HW3 Server could not read this file",con,thread_statistics_p);;
          return;
       }
       requestServeStatic(fd, filename, sbuf.st_size,con,thread_statistics_p);
    } else {
+      thread_statistics_p->thread_dynamic++;
       if (!(S_ISREG(sbuf.st_mode)) || !(S_IXUSR & sbuf.st_mode)) {
          requestError(fd, filename, "403", "Forbidden", "OS-HW3 Server could not run this CGI program",con,thread_statistics_p);;
          return;

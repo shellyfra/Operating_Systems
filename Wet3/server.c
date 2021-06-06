@@ -81,16 +81,15 @@ enum SCHED_ALGS sched_alg; // Setup once in the master thread. Will never change
 void *threadWrapper(void *ts)
 {
     thread_statistics* thread_statistics_p = (thread_statistics*)ts;
-    fprintf(stdout, "Creating thread number %d", thread_statistics_p->thread_id);
+    //fprintf(stdout, "Creating thread number %d", thread_statistics_p->thread_id);
     while (RUN_ALWAYS)
     {
         // This will run and wait for the lock when there is an available connection:
         Connection con = dequeue(waiting_queue, &waiting_queue_cond_t, &waiting_queue_mutex);
-        struct timeval current_time;
-        gettimeofday(&current_time, NULL);
-        double elapsedTime = (current_time.tv_sec - con.start_req_arrival.tv_sec) * 1000.0; // sec to ms
-        elapsedTime += (current_time.tv_usec - con.start_req_arrival.tv_usec) / 1000.0;     // us to ms
-        con.start_req_dispatch = elapsedTime;
+        
+        gettimeofday(&con.start_req_dispatch, NULL);
+        
+         
 
         // Add the connection to the running queue
         enqueue(running_queue, con, &running_queue_cond_t, &running_queue_mutex);

@@ -49,7 +49,7 @@ void enqueue_drop_head(Queue* queue, Connection item , pthread_cond_t* condition
     pthread_mutex_lock(mutex);
     // This is the critical part modyifing queue properties
     queue->elements[queue->start].connfd = -1; // invalid connfd in order to check for errors if we accidentally try to run this element
-    queue->start = (queue->start + 1) % queue->size; // drop the dirst element
+    queue->start = (queue->start + 1) % queue->size; // drop the first element
 
     queue->end = (queue->end + 1) % queue->size; // add the new request to the end - should be same place where connfd = -1
     queue->elements[queue->end] = item;
@@ -67,13 +67,42 @@ void enqueue_drop_random(Queue* queue, Connection item , pthread_cond_t* conditi
     double num_to_ceil = (double)queue->size/(double)4;
     double drop_num = ceil(num_to_ceil); // delete at least 1 element
 
-    while (drop_count < drop_num) { // choose 1/4 of the elements in the arrays
-        int rand_index = rand() % queue->size; // random int between 0 and queue size
-        if (queue->elements[rand_index].connfd != -1) { // id item wasn't already chosen
-            queue->elements[rand_index].connfd = -1 ; // change to invalid value
-            drop_count++;
-        }
+    // Create indexes array:  [0,1,2...,q_size-1]
+    // This array will be used to generate different indices without repeating them.
+    // We will always randomize in a decrementing range and swap selected indices with end of array.
+    // E.G the index number 2 was slected, with a 5 element array:
+    //          <-  range  ->
+    //          [0,1,2,3,4,5]
+    //               ^
+    // We swap it with the end of the array and decrement range size such that:
+    //
+    //          <- range->
+    //          [0,1,5,3,4,2]
+    //
+    // Now 2 will never be generated again, as we made sure to make it out of bounds.
+    int * indexes_array = (int*) malloc(sizeof(int)*(queue->size));
+    for (unsigned int i = 0; i < queue->size; i++)
+    {
+        indexes_array[i]=i;
     }
+    
+
+    while (drop_count < drop_num) { // choose 1/4 of the elements in the arrays
+        int rand_index_in_array = rand() % (queue->size-drop_count); // random int between 0 and queue size
+        int rand_index = indexes_array[rand_index_in_array]; // Guaranteed to be an index that wasn't selected
+        //if (queue->elements[rand_index].connfd != -1) { // id item wasn't already chosen
+        queue->elements[rand_index].connfd = -1 ; // change to invalid value
+
+        // Swap indexes in array:
+        int temp = indexes_array[queue->size-drop_count];
+        indexes_array[queue->size-drop_count] = rand_index;
+        indexes_array[rand_index_in_array] = temp;
+
+        drop_count++;
+        //}
+    }
+    free(indexes_array);
+
     int new_elements_index = 0;
     int old_queue_index = queue->start;
     for (int i = 0; i < queue->size; i++) { // add all un-chosen elements to the new array
@@ -85,7 +114,7 @@ void enqueue_drop_random(Queue* queue, Connection item , pthread_cond_t* conditi
         }
         old_queue_index = (old_queue_index + 1) % queue->size;
     }
-
+    
     free(queue->elements); // delete old array
     queue->elements = new_elements_array;
 
@@ -124,20 +153,3 @@ int getTotalElements(Queue* queue ,pthread_mutex_t* mutex )
     pthread_mutex_unlock(mutex);
     return elements_count;
 }
- /*
-// Function to get front of queue
-int front(struct Queue* queue)
-{
-    if (isEmpty(queue))
-        return INT_MIN;
-    return queue->array[queue->front];
-}
- 
-// Function to get rear of queue
-int rear(struct Queue* queue)
-{
-    if (isEmpty(queue))
-        return INT_MIN;
-    return queue->array[queue->rear];
-}
-*/

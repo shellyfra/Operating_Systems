@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
 
     for (int i = 0; i < threads_count; ++i)
     {
-        thread_statistics *ts = malloc (sizeof (thread_statistics));
+        thread_statistics *ts =(thread_statistics*) malloc (sizeof (thread_statistics));
         
         ts->thread_id = i;        
         int rc = pthread_create(&threads[i], NULL, threadWrapper, (void *)ts);

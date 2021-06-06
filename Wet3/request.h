@@ -2,10 +2,10 @@
 #include "queue.h"
 typedef struct thread_statistics_t
 {
-    unsigned int thread_id;
-    unsigned int thread_count;
-    unsigned int thread_static;
-    unsigned int thread_dynamic;
+    int thread_id;
+    int thread_count;
+    int thread_static;
+    int thread_dynamic;
 
 } thread_statistics;
 

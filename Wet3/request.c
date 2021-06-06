@@ -143,9 +143,9 @@ double elapsedTime = (con.start_req_arrival.tv_sec) * 1000.0; // sec to ms
    sprintf(buf, "%sStat-req-arrival: %f\r\n",buf, elapsedTime);
    sprintf(buf, "%sStat-req-dispatch: %f\r\n",buf, con.start_req_dispatch);
    sprintf(buf, "%sStat-thread-id: %d\r\n",buf, thread_statistics_p->thread_id);
-   sprintf(buf, "%sStat-thread-count: %u\r\n",buf, thread_statistics_p->thread_count);
-   sprintf(buf, "%sStat-thread-static: %u\r\n",buf, thread_statistics_p->thread_static);
-   sprintf(buf, "%sStat-thread-dynamic: %u\r\n\r\n",buf, thread_statistics_p->thread_dynamic);
+   sprintf(buf, "%sStat-thread-count: %d\r\n",buf, thread_statistics_p->thread_count);
+   sprintf(buf, "%sStat-thread-static: %d\r\n",buf, thread_statistics_p->thread_static);
+   sprintf(buf, "%sStat-thread-dynamic: %d\r\n\r\n",buf, thread_statistics_p->thread_dynamic);
    Rio_writen(fd, buf, strlen(buf));
 
    if (Fork() == 0) {
@@ -185,9 +185,9 @@ double elapsedTime = (con.start_req_arrival.tv_sec) * 1000.0; // sec to ms
    sprintf(buf, "%sStat-req-arrival: %f\r\n",buf, elapsedTime);
    sprintf(buf, "%sStat-req-dispatch: %f\r\n",buf, con.start_req_dispatch);
    sprintf(buf, "%sStat-thread-id: %d\r\n",buf, thread_statistics_p->thread_id);
-   sprintf(buf, "%sStat-thread-count: %u\r\n",buf, thread_statistics_p->thread_count);
-   sprintf(buf, "%sStat-thread-static: %u\r\n",buf, thread_statistics_p->thread_static);
-   sprintf(buf, "%sStat-thread-dynamic: %u\r\n\r\n",buf, thread_statistics_p->thread_dynamic);
+   sprintf(buf, "%sStat-thread-count: %d\r\n",buf, thread_statistics_p->thread_count);
+   sprintf(buf, "%sStat-thread-static: %d\r\n",buf, thread_statistics_p->thread_static);
+   sprintf(buf, "%sStat-thread-dynamic: %d\r\n\r\n",buf, thread_statistics_p->thread_dynamic);
    Rio_writen(fd, buf, strlen(buf));
 
    //  Writes out to the client socket the memory-mapped file 

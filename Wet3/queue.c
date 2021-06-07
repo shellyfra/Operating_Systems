@@ -73,7 +73,6 @@ void enqueue_drop_head(Queue* queue, Connection item , pthread_cond_t* condition
     pthread_mutex_lock(mutex);
     empty = isEmpty(queue);
     pthread_mutex_unlock(mutex);
-    //printf("empty = %d \n", empty);
     if (!empty) dequeue(queue,condition,mutex);
     enqueue(queue,item, condition,mutex);
 
@@ -130,6 +129,15 @@ void enqueue_drop_random(Queue* queue, Connection item , pthread_cond_t* conditi
 {
     pthread_mutex_lock(mutex);
     // This is the critical part modyifing queue properties
+    int empty; // if by the time the thread reached here the queue got empty that it waited in dequeue forever
+    empty = isEmpty(queue);
+    if (empty) {
+        //pthread_cond_signal(condition);
+        pthread_mutex_unlock(mutex);
+        enqueue(queue,item, condition,mutex);
+        return;
+    }
+
     //Connection * new_elements_array= (Connection*)malloc(sizeof(Connection)* queue->size);
     int drop_count = 0;
     double num_to_ceil = (double)queue->size/(double)4;
@@ -226,7 +234,6 @@ void enqueue_drop_random(Queue* queue, Connection item , pthread_cond_t* conditi
     pthread_cond_signal(condition);
     pthread_mutex_unlock(mutex);
 
-    
 }
 
 // Function to remove an item from queue.

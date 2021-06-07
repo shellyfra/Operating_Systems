@@ -88,8 +88,6 @@ void *threadWrapper(void *ts)
         Connection con = dequeue(waiting_queue, &waiting_queue_cond_t, &waiting_queue_mutex);
         
         gettimeofday(&con.start_req_dispatch, NULL);
-        
-         
 
         // Add the connection to the running queue
         enqueue(running_queue, con, &running_queue_cond_t, &running_queue_mutex);
@@ -101,6 +99,7 @@ void *threadWrapper(void *ts)
         Close(con.connfd);
         // Dequeuing is not in order. Only used for evaluating how many requests are running,
         // So we don't care if this thread deque's another thread's request
+
         dequeue(running_queue, &running_queue_cond_t, &running_queue_mutex);
         // Signal the block algorithm that it can insert a new request if it was blocked:
         if (sched_alg == BLOCK)
@@ -160,7 +159,7 @@ int main(int argc, char *argv[])
         con.connfd = connfd;
         gettimeofday(&con.start_req_arrival, NULL);
         int num_of_requests = getTotalElements(waiting_queue, &waiting_queue_mutex) + getTotalElements(running_queue, &running_queue_mutex);
-        //printf("num of requests : %d \n", num_of_requests);
+        //printf("waiting queue : %d, running queue : %d \n",  getTotalElements(waiting_queue, &waiting_queue_mutex), getTotalElements(running_queue, &running_queue_mutex));
         if (num_of_requests >= queue_size)
         {
             switch (sched_alg)

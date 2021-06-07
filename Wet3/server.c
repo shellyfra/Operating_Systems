@@ -160,6 +160,7 @@ int main(int argc, char *argv[])
         con.connfd = connfd;
         gettimeofday(&con.start_req_arrival, NULL);
         int num_of_requests = getTotalElements(waiting_queue, &waiting_queue_mutex) + getTotalElements(running_queue, &running_queue_mutex);
+        //printf("num of requests : %d \n", num_of_requests);
         if (num_of_requests >= queue_size)
         {
             switch (sched_alg)

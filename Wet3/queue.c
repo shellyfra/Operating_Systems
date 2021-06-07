@@ -69,8 +69,13 @@ void enqueue(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_
 void enqueue_drop_head(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_mutex_t* mutex)
 {
     //TODO: Shai comment: Shouldn't this be just dequeue() and followed by enqueue(item) ?
-    //dequeue(queue,condition,mutex);
-    //enqueue(queue,item, condition,mutex);
+    int empty; // if by the time the thread reached here the queue got empty that it waited in dequeue forever
+    pthread_mutex_lock(mutex);
+    empty = isEmpty(queue);
+    pthread_mutex_unlock(mutex);
+    //printf("empty = %d \n", empty);
+    if (!empty) dequeue(queue,condition,mutex);
+    enqueue(queue,item, condition,mutex);
 
     // TODO: Shelly's code :
     /*
@@ -123,8 +128,6 @@ void deleteNode(Queue* queue, node* to_delete)
 
 void enqueue_drop_random(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_mutex_t* mutex)
 {
-     
-
     pthread_mutex_lock(mutex);
     // This is the critical part modyifing queue properties
     //Connection * new_elements_array= (Connection*)malloc(sizeof(Connection)* queue->size);

@@ -5,33 +5,41 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-typedef struct connection_t {
+typedef struct connection_t
+{
     int connfd;
-    struct timeval  start_req_arrival;
-    struct timeval  start_req_dispatch;
+    struct timeval start_req_arrival;
+    struct timeval start_req_dispatch;
 } Connection;
 
-typedef struct Queue_t {
-    int start, end;
+typedef struct node_t
+{
+    Connection con;
+    struct node_t *next;
+    struct node_t *prev;
+} node;
+typedef struct Queue_t
+{
+    node *head, *tail;
     unsigned int element_count;
     unsigned int size;
-    Connection* elements;
+    node *elements;
 } Queue;
 
 Queue *newQueue(unsigned int size);
-int isFull(Queue* queue);
- 
-int isEmpty(Queue* queue);
- 
-void enqueue(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_mutex_t* mutex);
-void enqueue_drop_head(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_mutex_t* mutex);
-void enqueue_drop_random(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_mutex_t* mutex);
+int isFull(Queue *queue);
+
+int isEmpty(Queue *queue);
+
+void enqueue(Queue *queue, Connection item, pthread_cond_t *condition, pthread_mutex_t *mutex);
+void enqueue_drop_head(Queue *queue, Connection item, pthread_cond_t *condition, pthread_mutex_t *mutex);
+void enqueue_drop_random(Queue *queue, Connection item, pthread_cond_t *condition, pthread_mutex_t *mutex);
 // Function to remove an item from queue.
 // It changes front and size
-Connection dequeue(Queue* queue, pthread_cond_t* condition ,pthread_mutex_t* mutex );
-int getTotalElements(Queue* queue ,pthread_mutex_t* mutex );
+Connection dequeue(Queue *queue, pthread_cond_t *condition, pthread_mutex_t *mutex);
+int getTotalElements(Queue *queue, pthread_mutex_t *mutex);
 // Function to get front of queue
-int front(Queue* queue);
+int front(Queue *queue);
 // Function to get rear of queue
-int rear(Queue* queue);
+int rear(Queue *queue);
 #endif

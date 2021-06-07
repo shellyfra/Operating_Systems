@@ -3,15 +3,23 @@
 #include <math.h>
 #include <stdio.h>
 
+node* newNode(Connection con)
+{
+    node* temp = (node*)malloc(sizeof(node));
+    temp->con = con;
+    temp->next = NULL;
+    temp->prev = NULL;
+    return temp;
+}
+
 Queue *newQueue(unsigned int size)
 {
     Queue *queue = (Queue *)malloc(sizeof(Queue));
     queue->size = size;
     queue->element_count = 0;
-    queue->start = 0;
-
-    queue->end =  - 1; // So that the first element will be added at 0 index
-    queue->elements = (Connection*)malloc(sizeof(Connection)* queue->size);
+    queue->head = NULL;
+    queue->tail =  NULL; 
+   // queue->elements = (Connection*)malloc(sizeof(Connection)* queue->size);
 
     srand(time(NULL));   // Initialization of rand function, should only be called once.
 
@@ -32,20 +40,35 @@ void enqueue(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_
 {
     pthread_mutex_lock(mutex);
     // This is the critical part modyifing queue properties
-    if (isFull(queue)){ // TODO add in overloading handling PT2
-        pthread_mutex_unlock(mutex);
-        return;
+    // Create a new node
+    node* temp = newNode(item);
+  
+    // If queue is empty, then new node is head and tail both
+    if (queue->tail == NULL) {
+        queue->head = temp;
+        queue->tail = temp;       
+    }    
+    else
+    {
+      // Add the new node at the head of the queue
+        node* old_head = queue->head;
+        queue->head = temp;
+        queue->head->next = old_head;
+        old_head->prev = queue->head;
+        
     }
-
-    queue->end = (queue->end + 1) % queue->size;
-    queue->elements[queue->end] = item;
     queue->element_count++;
+
+    //queue->end = (queue->end + 1) % queue->size;
+    //queue->elements[queue->end] = item;
+    //queue->element_count++;
     pthread_cond_signal(condition);
     pthread_mutex_unlock(mutex);
 }
 
 void enqueue_drop_head(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_mutex_t* mutex)
 {
+    
     pthread_mutex_lock(mutex);
     // This is the critical part modyifing queue properties
     queue->elements[queue->start].connfd = -1; // invalid connfd in order to check for errors if we accidentally try to run this element
@@ -56,10 +79,13 @@ void enqueue_drop_head(Queue* queue, Connection item , pthread_cond_t* condition
     //queue->element_count++; added and removed so number is the same
     pthread_cond_signal(condition);
     pthread_mutex_unlock(mutex);
+    
 }
 
 void enqueue_drop_random(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_mutex_t* mutex)
 {
+     
+
     pthread_mutex_lock(mutex);
     // This is the critical part modyifing queue properties
     Connection * new_elements_array= (Connection*)malloc(sizeof(Connection)* queue->size);
@@ -70,7 +96,7 @@ void enqueue_drop_random(Queue* queue, Connection item , pthread_cond_t* conditi
     // Create indexes array:  [0,1,2...,q_size-1]
     // This array will be used to generate different indices without repeating them.
     // We will always randomize in a decrementing range and swap selected indices with end of array.
-    // E.G the index number 2 was slected, with a 5 element array:
+    // E.G the index number 2 was selected, with a 5 element array:
     //          <-  range  ->
     //          [0,1,2,3,4,5]
     //               ^
@@ -126,6 +152,8 @@ void enqueue_drop_random(Queue* queue, Connection item , pthread_cond_t* conditi
 
     pthread_cond_signal(condition);
     pthread_mutex_unlock(mutex);
+
+    
 }
 
 // Function to remove an item from queue.
@@ -136,12 +164,30 @@ Connection dequeue(Queue* queue, pthread_cond_t* condition ,pthread_mutex_t* mut
     // This is the critical part modyifing queue properties
     while (isEmpty(queue))
     {
+        // Give up processor until not empty
         pthread_cond_wait(condition,mutex);
     }
         
-    Connection item = queue->elements[queue->start];
+    // Store previous tail and move front one node ahead
+    node* temp = queue->tail;
+  
+    queue->tail = queue->tail->prev;
+  
+    
+    if (queue->tail == NULL)
+    {
+        // If we dequeued last element
+        queue->head = NULL;
+    }
+        
+    Connection item = temp->con;
+    free(temp);
+    queue->element_count--;
+
+    /*
     queue->start = (queue->start + 1) % queue->size;
     queue->element_count--;
+    */
     pthread_mutex_unlock(mutex);
     return item;
 }

@@ -2,9 +2,9 @@
     "cmake.debugConfig": {
         "args": [
             "8008",
-            "5",
             "1",
-            "block"
+            "5",
+            "random"
         ]
     },
     "files.associations": {

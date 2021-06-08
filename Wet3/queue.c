@@ -36,9 +36,9 @@ int isEmpty(Queue* queue)
     return (queue->element_count == 0);
 }
  
-void enqueue(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_mutex_t* mutex )
+void enqueue(Queue* queue, Connection item )
 {
-    pthread_mutex_lock(mutex);
+    
     // This is the critical part modyifing queue properties
     // Create a new node
     node* temp = newNode(item);
@@ -62,19 +62,20 @@ void enqueue(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_
     //queue->end = (queue->end + 1) % queue->size;
     //queue->elements[queue->end] = item;
     //queue->element_count++;
-    pthread_cond_signal(condition);
-    pthread_mutex_unlock(mutex);
+
 }
 
-void enqueue_drop_head(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_mutex_t* mutex)
+void enqueue_drop_head(Queue* queue, Connection item)
 {
-    //TODO: Shai comment: Shouldn't this be just dequeue() and followed by enqueue(item) ?
-    int empty; // if by the time the thread reached here the queue got empty that it waited in dequeue forever
-    pthread_mutex_lock(mutex);
-    empty = isEmpty(queue);
-    pthread_mutex_unlock(mutex);
-    if (!empty) dequeue(queue,condition,mutex);
-    enqueue(queue,item, condition,mutex);
+    // We reach this function when a lock is in effect!
+
+    //int empty; // if by the time the thread reached here the queue got empty that it waited in dequeue forever
+    //pthread_mutex_lock(mutex);
+    //empty = isEmpty(queue);
+    //pthread_mutex_unlock(mutex);
+    //if (!empty) dequeue(queue,condition,mutex);
+    dequeue_non_block(queue);
+    enqueue(queue,item);
 
     // TODO: Shelly's code :
     /*
@@ -125,18 +126,20 @@ void deleteNode(Queue* queue, node* to_delete)
 }
  
 
-void enqueue_drop_random(Queue* queue, Connection item , pthread_cond_t* condition ,pthread_mutex_t* mutex)
+void enqueue_drop_random(Queue* queue, Connection item)
 {
-    pthread_mutex_lock(mutex);
+    // We reach this function when a lock is in effect!
+
+    //pthread_mutex_lock(mutex);
     // This is the critical part modyifing queue properties
-    int empty; // if by the time the thread reached here the queue got empty that it waited in dequeue forever
-    empty = isEmpty(queue);
-    if (empty) {
+    //int empty; // if by the time the thread reached here the queue got empty that it waited in dequeue forever
+    //empty = isEmpty(queue);
+    //if (empty) {
         //pthread_cond_signal(condition);
-        pthread_mutex_unlock(mutex);
-        enqueue(queue,item, condition,mutex);
-        return;
-    }
+    //    pthread_mutex_unlock(mutex);
+    //    enqueue(queue,item, condition,mutex);
+    //    return;
+    //}
 
     //Connection * new_elements_array= (Connection*)malloc(sizeof(Connection)* queue->size);
     int drop_count = 0;
@@ -163,11 +166,11 @@ void enqueue_drop_random(Queue* queue, Connection item , pthread_cond_t* conditi
         indices_array[i]=i;
     }
     while (drop_count < drop_num) { // choose 1/4 of the elements in the arrays
-        int rand_index_in_array = rand() % (queue->size-drop_count); // random int between 0 and queue size
+        int rand_index_in_array = rand() % (queue->element_count-drop_count); // random int between 0 and random range
         int rand_index = indices_array[rand_index_in_array]; // Guaranteed to be an index that wasn't selected
         indices_to_remove[rand_index]=1;
         // Swap indexes in array:
-        int temp = indices_array[queue->size-drop_count];
+        int temp = indices_array[queue->size-1-drop_count];
         indices_array[queue->size-drop_count] = rand_index;
         indices_array[rand_index_in_array] = temp;
 
@@ -231,9 +234,37 @@ void enqueue_drop_random(Queue* queue, Connection item , pthread_cond_t* conditi
     queue->elements[queue->end] = item;
     queue->element_count = new_elements_index +1; // how many added to the new list + the new element ( = 1 )
 */
-    pthread_cond_signal(condition);
-    pthread_mutex_unlock(mutex);
+   // pthread_cond_signal(condition);
+   // pthread_mutex_unlock(mutex);
 
+}
+
+Connection dequeue_non_block(Queue* queue)
+{
+    // This is a "Force" dequeue - should only be used when a lock is in effect, and teh queue is not empty
+        
+    // Store previous tail and move front one node ahead
+    node* temp = queue->tail;
+  
+    queue->tail = queue->tail->prev;
+  
+    
+    if (queue->tail == NULL)
+    {
+        // If we dequeued last element
+        queue->head = NULL;
+    }
+        
+    Connection item = temp->con;
+    free(temp);
+    queue->element_count--;
+
+    /*
+    queue->start = (queue->start + 1) % queue->size;
+    queue->element_count--;
+    */
+    
+    return item;
 }
 
 // Function to remove an item from queue.
@@ -271,11 +302,11 @@ Connection dequeue(Queue* queue, pthread_cond_t* condition ,pthread_mutex_t* mut
     pthread_mutex_unlock(mutex);
     return item;
 }
-int getTotalElements(Queue* queue ,pthread_mutex_t* mutex )
+int getTotalElements(Queue* queue  )
 {
-    pthread_mutex_lock(mutex);
+
 
     int elements_count = queue->element_count;
-    pthread_mutex_unlock(mutex);
+
     return elements_count;
 }

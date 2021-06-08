@@ -71,7 +71,7 @@ pthread_cond_t waiting_queue_cond_t;
 pthread_mutex_t waiting_queue_mutex;
 
 pthread_cond_t waiting_queue_cond_block;
-pthread_mutex_t waiting_queue_mutex_block;
+//pthread_mutex_t waiting_queue_mutex_block;
 
 Queue *running_queue;
 pthread_mutex_t running_queue_mutex;
@@ -80,20 +80,27 @@ pthread_cond_t running_queue_cond_t;
 enum SCHED_ALGS sched_alg; // Setup once in the master thread. Will never change
 void *threadWrapper(void *ts)
 {
-    thread_statistics* thread_statistics_p = (thread_statistics*)ts;
+    thread_statistics *thread_statistics_p = (thread_statistics *)ts;
     //fprintf(stdout, "Creating thread number %d", thread_statistics_p->thread_id);
     while (RUN_ALWAYS)
     {
         // This will run and wait for the lock when there is an available connection:
         Connection con = dequeue(waiting_queue, &waiting_queue_cond_t, &waiting_queue_mutex);
-        
+
         gettimeofday(&con.start_req_dispatch, NULL);
 
         // Add the connection to the running queue
-        enqueue(running_queue, con, &running_queue_cond_t, &running_queue_mutex);
+        pthread_mutex_lock(&running_queue_mutex);
+
+        enqueue(running_queue, con);
+
+        pthread_cond_signal(&running_queue_cond_t);
+        // Release lock on waiting queue
+        pthread_mutex_unlock(&running_queue_mutex);
+
 
         // Handle the request. Will block the thread
-        requestHandle(con.connfd,thread_statistics_p,con);
+        requestHandle(con.connfd, thread_statistics_p, con);
 
         // Close the connection
         Close(con.connfd);
@@ -133,16 +140,16 @@ int main(int argc, char *argv[])
     pthread_mutex_init(&waiting_queue_mutex, NULL);
 
     pthread_cond_init(&waiting_queue_cond_block, NULL);
-    pthread_mutex_init(&waiting_queue_mutex_block, NULL);
+    //pthread_mutex_init(&waiting_queue_mutex_block, NULL);
 
     pthread_cond_init(&running_queue_cond_t, NULL);
     pthread_mutex_init(&running_queue_mutex, NULL);
 
     for (int i = 0; i < threads_count; ++i)
     {
-        thread_statistics *ts =(thread_statistics*) malloc (sizeof (thread_statistics));
-        
-        ts->thread_id = i;        
+        thread_statistics *ts = (thread_statistics *)malloc(sizeof(thread_statistics));
+
+        ts->thread_id = i;
         int rc = pthread_create(&threads[i], NULL, threadWrapper, (void *)ts);
         if (rc)
         {
@@ -158,35 +165,57 @@ int main(int argc, char *argv[])
         Connection con;
         con.connfd = connfd;
         gettimeofday(&con.start_req_arrival, NULL);
-        int num_of_requests = getTotalElements(waiting_queue, &waiting_queue_mutex) + getTotalElements(running_queue, &running_queue_mutex);
+
+        // Start of critical region:
+
+        pthread_mutex_lock(&waiting_queue_mutex);
+        int num_of_requests = getTotalElements(waiting_queue) + getTotalElements(running_queue);
         //printf("waiting queue : %d, running queue : %d \n",  getTotalElements(waiting_queue, &waiting_queue_mutex), getTotalElements(running_queue, &running_queue_mutex));
         if (num_of_requests >= queue_size)
         {
+            // num_of_requests in waiting queue is gurantedd not to change here! since we locked the waiting queue!
             switch (sched_alg)
             {
             case BLOCK:
-                // Use a lock, although there is only one server thread
-                pthread_mutex_lock(&waiting_queue_mutex_block);
+                // Use another lock, although there is only one server thread
+                //pthread_mutex_lock(&waiting_queue_mutex_block);
 
                 // Give up proccessor until signaled by the dequeing from running_queue
-                pthread_cond_wait(&waiting_queue_cond_block, &waiting_queue_mutex_block);
+
+                while (getTotalElements(waiting_queue) + getTotalElements(running_queue) >= queue_size)
+                {
+                    // Give up processor there's apce for the new request.
+                    // This will block any incoming requests, but will not block threads from dequeueing the waiting queue
+                    pthread_cond_wait(&waiting_queue_cond_block,&waiting_queue_mutex);
+                }
+                //pthread_cond_wait(&waiting_queue_cond_block, &waiting_queue_mutex_block);
+
                 // No need for a while to check the number of requests again,
                 // Since we only have dequeing once the server gave up the proccessor
 
-                pthread_mutex_unlock(&waiting_queue_mutex_block);
+                //pthread_mutex_unlock(&waiting_queue_mutex_block);
 
-                // Guaranteed to have space for more requests:
-                enqueue(waiting_queue, con, &waiting_queue_cond_t, &waiting_queue_mutex);
+                // Guaranteed to have space for more requests now:
+                enqueue(waiting_queue, con);
                 break;
             case DROP_TAIL:
                 // Do not handle, drop immediately:
                 Close(con.connfd);
                 break;
             case DROP_HEAD:
-                enqueue_drop_head(waiting_queue, con, &waiting_queue_cond_t, &waiting_queue_mutex);
+                if(getTotalElements(waiting_queue) == 0)
+                {
+                    // If all requests are being handled and the queue is full, drop the request
+                    Close(con.connfd);
+                }
+                else
+                {
+                    enqueue_drop_head(waiting_queue, con);
+                }
+                
                 break;
             case RANDOM:
-                enqueue_drop_random(waiting_queue, con, &waiting_queue_cond_t, &waiting_queue_mutex);
+                enqueue_drop_random(waiting_queue, con);
                 break;
             default:
                 break;
@@ -194,8 +223,14 @@ int main(int argc, char *argv[])
         }
         else
         {
-            enqueue(waiting_queue, con, &waiting_queue_cond_t, &waiting_queue_mutex);
+            enqueue(waiting_queue, con);
         }
+
+        // Signal all threads to keep processing from wating queue
+        pthread_cond_signal(&waiting_queue_cond_t);
+        // Release lock on waiting queue
+        pthread_mutex_unlock(&waiting_queue_mutex);
+        // End of critical region
     }
     free(threads);
     free(waiting_queue);

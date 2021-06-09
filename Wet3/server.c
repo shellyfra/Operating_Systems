@@ -215,7 +215,16 @@ int main(int argc, char *argv[])
                 
                 break;
             case RANDOM:
-                enqueue_drop_random(waiting_queue, con);
+                if(getTotalElements(waiting_queue) == 0)
+                {
+                    // If all requests are being handled and the queue is full, drop the request
+                    Close(con.connfd);
+                }
+                else
+                {
+                    enqueue_drop_random(waiting_queue, con);
+                }
+
                 break;
             default:
                 break;

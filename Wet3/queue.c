@@ -159,9 +159,9 @@ void enqueue_drop_random(Queue* queue, Connection item)
     //          [0,1,5,3,4,2]
     //
     // Now 2 will never be generated again, as we made sure to make it out of bounds.
-    int * indices_array = (int*) malloc(sizeof(int)*(queue->size));
-    int * indices_to_remove = (int*) malloc(sizeof(int)*(queue->size));
-    for (unsigned int i = 0; i < queue->size; i++)
+    int * indices_array = (int*) malloc(sizeof(int)*(queue->element_count));
+    int * indices_to_remove = (int*) malloc(sizeof(int)*(queue->element_count));
+    for (unsigned int i = 0; i < queue->element_count; i++)
     {
         indices_array[i]=i;
     }
@@ -170,8 +170,8 @@ void enqueue_drop_random(Queue* queue, Connection item)
         int rand_index = indices_array[rand_index_in_array]; // Guaranteed to be an index that wasn't selected
         indices_to_remove[rand_index]=1;
         // Swap indexes in array:
-        int temp = indices_array[queue->size-1-drop_count];
-        indices_array[queue->size-drop_count] = rand_index;
+        int temp = indices_array[queue->element_count-1-drop_count];
+        indices_array[queue->element_count-1-drop_count] = rand_index;
         indices_array[rand_index_in_array] = temp;
 
         drop_count++;

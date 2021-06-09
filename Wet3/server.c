@@ -65,7 +65,9 @@ void getargs(enum SCHED_ALGS *sched_alg, int *threads_count, int *queue_size, in
         exit(1);
     }
 }
-
+thread_and_stat *threads = NULL;
+int threads_count;
+sig_t orig_handler;
 Queue *waiting_queue;
 pthread_cond_t waiting_queue_cond_t;
 pthread_mutex_t waiting_queue_mutex;
@@ -98,7 +100,6 @@ void *threadWrapper(void *ts)
         // Release lock on waiting queue
         pthread_mutex_unlock(&running_queue_mutex);
 
-
         // Handle the request. Will block the thread
         requestHandle(con.connfd, thread_statistics_p, con);
 
@@ -120,16 +121,55 @@ void *threadWrapper(void *ts)
     pthread_exit(NULL);
 }
 
+void intHandler(int sig)
+{
+  
+    if (threads)
+    {
+        for (int i = 0; i < threads_count; i++)
+        {
+            // Kill all threads for tidyness (although it is done with the default behaviour of SIGINT)
+            
+            thread_and_stat thread_to_cancel = (threads[i]);
+            pthread_cancel(*thread_to_cancel.thread);
+            // Unlock mutexes lock for enabling cancelation
+            pthread_mutex_unlock(&waiting_queue_mutex);
+            pthread_mutex_unlock(&running_queue_mutex);  
+              pthread_join(*(threads[i].thread), NULL);
+            free(threads[i].thread);
+            free(threads[i].stat);
+        }    
+         free(threads);    
+    }
+    
+
+   if(waiting_queue)
+   {
+       free(waiting_queue);
+   }
+    if(running_queue)
+    {
+        free(running_queue);    
+    }
+    
+    // Restore original SIGINT handler:
+    signal(sig, orig_handler);
+
+    // Raise SIGINT to terminate program!
+    raise(sig);
+}
+
 int main(int argc, char *argv[])
 {
-    pthread_t *threads;
-    int listenfd, connfd, port, clientlen, threads_count, queue_size;
+
+    int listenfd, connfd, port, clientlen, queue_size;
 
     struct sockaddr_in clientaddr;
 
     getargs(&sched_alg, &threads_count, &queue_size, &port, argc, argv);
 
-    threads = (pthread_t *)malloc(sizeof(pthread_t) * threads_count);
+    orig_handler = signal(SIGINT, intHandler);
+    threads = (thread_and_stat *)malloc(sizeof(thread_and_stat) * threads_count);
     memset(threads, 0, threads_count * sizeof(threads[0]));
     // TODO check return values for errors
 
@@ -148,13 +188,17 @@ int main(int argc, char *argv[])
     for (int i = 0; i < threads_count; ++i)
     {
         thread_statistics *ts = (thread_statistics *)malloc(sizeof(thread_statistics));
-
+        ts->thread_count = 0;
+        ts->thread_dynamic = 0;
+        ts->thread_static = 0;
         ts->thread_id = i;
-        int rc = pthread_create(&threads[i], NULL, threadWrapper, (void *)ts);
+        threads[i].thread = (pthread_t  *) malloc(sizeof(pthread_t ));
+        int rc = pthread_create((threads[i].thread), NULL, threadWrapper, (void *)ts);
         if (rc)
         {
             fprintf(stderr, "pthread_create failure for thread %d", i);
         }
+        threads[i].stat = ts;
     }
 
     listenfd = Open_listenfd(port);
@@ -177,25 +221,19 @@ int main(int argc, char *argv[])
             switch (sched_alg)
             {
             case BLOCK:
-                // Use another lock, although there is only one server thread
-                //pthread_mutex_lock(&waiting_queue_mutex_block);
-
                 // Give up proccessor until signaled by the dequeing from running_queue
+                // This utilizes a different condition variable "waiting_queue_cond_block"
 
                 while (getTotalElements(waiting_queue) + getTotalElements(running_queue) >= queue_size)
                 {
-                    // Give up processor there's apce for the new request.
+                    // Give up processor until there is space for the new request.
                     // This will block any incoming requests, but will not block threads from dequeueing the waiting queue
-                    pthread_cond_wait(&waiting_queue_cond_block,&waiting_queue_mutex);
+
+                    pthread_cond_wait(&waiting_queue_cond_block, &waiting_queue_mutex);
+                    // We'll wake up once signaled from dequeuing in threadWrapper
                 }
-                //pthread_cond_wait(&waiting_queue_cond_block, &waiting_queue_mutex_block);
 
-                // No need for a while to check the number of requests again,
-                // Since we only have dequeing once the server gave up the proccessor
-
-                //pthread_mutex_unlock(&waiting_queue_mutex_block);
-
-                // Guaranteed to have space for more requests now:
+                // Guaranteed to have space for more requests now, and we are locked:
                 enqueue(waiting_queue, con);
                 break;
             case DROP_TAIL:
@@ -203,7 +241,7 @@ int main(int argc, char *argv[])
                 Close(con.connfd);
                 break;
             case DROP_HEAD:
-                if(getTotalElements(waiting_queue) == 0)
+                if (getTotalElements(waiting_queue) == 0)
                 {
                     // If all requests are being handled and the queue is full, drop the request
                     Close(con.connfd);
@@ -212,10 +250,10 @@ int main(int argc, char *argv[])
                 {
                     enqueue_drop_head(waiting_queue, con);
                 }
-                
+
                 break;
             case RANDOM:
-                if(getTotalElements(waiting_queue) == 0)
+                if (getTotalElements(waiting_queue) == 0)
                 {
                     // If all requests are being handled and the queue is full, drop the request
                     Close(con.connfd);

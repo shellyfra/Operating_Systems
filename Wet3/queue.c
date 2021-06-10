@@ -144,7 +144,7 @@ void enqueue_drop_random(Queue* queue, Connection item)
 
     //Connection * new_elements_array= (Connection*)malloc(sizeof(Connection)* queue->size);
     int drop_count = 0;
-    double num_to_ceil = (double)queue->size/(double)4;
+    double num_to_ceil = (double)queue->element_count/(double)4;
     double drop_num = ceil(num_to_ceil); // delete at least 1 element
 
     // Create indexes array:  [0,1,2...,q_size-1]
@@ -197,7 +197,7 @@ void enqueue_drop_random(Queue* queue, Connection item)
         count++;
     }
     free(indices_to_remove);
-
+    enqueue(queue,item);
     /*
     while (drop_count < drop_num) { // choose 1/4 of the elements in the arrays
         int rand_index_in_array = rand() % (queue->size-drop_count); // random int between 0 and queue size

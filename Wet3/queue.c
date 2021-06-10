@@ -74,7 +74,8 @@ void enqueue_drop_head(Queue* queue, Connection item)
     //empty = isEmpty(queue);
     //pthread_mutex_unlock(mutex);
     //if (!empty) dequeue(queue,condition,mutex);
-    dequeue_non_block(queue);
+    Connection dropped_con = dequeue_non_block(queue);
+    Close(dropped_con.connfd);
     enqueue(queue,item);
 
     // TODO: Shelly's code :
@@ -185,6 +186,7 @@ void enqueue_drop_random(Queue* queue, Connection item)
         if(indices_to_remove[count])
         {
             node* temp =it->next;
+            Close(it->con.connfd);
             deleteNode(queue,it);
             it=temp;
         }

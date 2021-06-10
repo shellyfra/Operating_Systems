@@ -10,7 +10,7 @@
 // handling http requests.
 // 
 
-double spinfor = 10.0;
+double spinfor = 5.0;
 
 void getargs()
 {
@@ -40,14 +40,14 @@ int main(int argc, char *argv[])
 
   getargs();
 
-  double t1 = Time_GetSeconds();
+  //double t1 = Time_GetSeconds();
   usleep(spinfor * 1e6);
-  double t2 = Time_GetSeconds();
+  //double t2 = Time_GetSeconds();
 
   /* Make the response body */
   sprintf(content, "<p>Welcome to the CGI program</p>\r\n");
   sprintf(content, "%s<p>My only purpose is to waste time on the server!</p>\r\n", content);
-  sprintf(content, "%s<p>I spun for %.2f seconds</p>\r\n", content, t2 - t1);
+  sprintf(content, "%s<p>I spun for %.2f seconds</p>\r\n", content, spinfor);
   
   /* Generate the HTTP response */
   printf("Content-length: %lu\r\n", strlen(content));

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-
+#include "segel.h"
 typedef struct connection_t
 {
     int connfd;

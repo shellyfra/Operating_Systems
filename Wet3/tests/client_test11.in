@@ -1,0 +1,14 @@
+./client localhost 8008 output10.cgi &
+sleep 1
+./client localhost 8008 output10.cgi &
+sleep 1
+./client localhost 8008 output10.cgi &
+sleep 1
+./client localhost 8008 output10.cgi &
+sleep 11
+./client localhost 8008 output10.cgi &
+./client localhost 8008 home.html &
+./client localhost 8008 home.html &
+./client localhost 8008 home.html &
+./client localhost 8008 home.html 
+./client localhost 8008 home.html

@@ -11,6 +11,8 @@
 // Repeatedly handles HTTP requests sent to this port number.
 // Most of the work is done within routines written in request.c
 //
+
+// Defines used in server:
 #define SCHED_ALG_BLOCK "block"
 #define SCHED_ALG_DT "dt"
 #define SCHED_ALG_DH "dh"
@@ -24,7 +26,25 @@ enum SCHED_ALGS
     DROP_HEAD,
     RANDOM
 };
-// HW3: Parse the new arguments too
+
+// Global variables:
+
+thread_and_stat *threads = NULL;     // Threads struct
+int threads_count;                   // Thread Count
+sig_t orig_handler;                  // Original SIGINT handler
+Queue *waiting_queue;                // Waiting queue struct
+pthread_cond_t waiting_queue_cond_t; // Waiting queue condition variable
+pthread_mutex_t waiting_queue_mutex; // Waiting queue mutex
+
+pthread_cond_t waiting_queue_cond_block; // Additional condition variable for blocking server in overload
+
+Queue *running_queue;                // Running queue struct
+pthread_mutex_t running_queue_mutex; // Running queue condition variable
+pthread_cond_t running_queue_cond_t; // Running queue mutex
+
+enum SCHED_ALGS sched_alg; // Setup once in the master thread. Will never change
+
+// getargs: parse arguements for server
 void getargs(enum SCHED_ALGS *sched_alg, int *threads_count, int *queue_size, int *port, int argc, char *argv[])
 {
 
@@ -61,25 +81,11 @@ void getargs(enum SCHED_ALGS *sched_alg, int *threads_count, int *queue_size, in
     valid_args = valid_args && (*port) >= 0 && (*threads_count) > 0 && (*queue_size) > 0;
     if (!valid_args)
     {
-        fprintf(stderr, "Usage: %s <portnum> <threads> <queue_size> <schedalg>\n", argv[0]); // TODO make clearer
+        fprintf(stderr, "Usage: %s <portnum> <threads> <queue_size> <schedalg>\n", argv[0]);
         exit(1);
     }
 }
-thread_and_stat *threads = NULL;
-int threads_count;
-sig_t orig_handler;
-Queue *waiting_queue;
-pthread_cond_t waiting_queue_cond_t;
-pthread_mutex_t waiting_queue_mutex;
 
-pthread_cond_t waiting_queue_cond_block;
-//pthread_mutex_t waiting_queue_mutex_block;
-
-Queue *running_queue;
-pthread_mutex_t running_queue_mutex;
-pthread_cond_t running_queue_cond_t;
-
-enum SCHED_ALGS sched_alg; // Setup once in the master thread. Will never change
 void *threadWrapper(void *ts)
 {
     thread_statistics *thread_statistics_p = (thread_statistics *)ts;
@@ -121,37 +127,36 @@ void *threadWrapper(void *ts)
     pthread_exit(NULL);
 }
 
-void intHandler(int sig)
+void sigintHandler(int sig)
 {
-  
+
     if (threads)
     {
         for (int i = 0; i < threads_count; i++)
         {
             // Kill all threads for tidyness (although it is done with the default behaviour of SIGINT)
-            
+
             thread_and_stat thread_to_cancel = (threads[i]);
             pthread_cancel(*thread_to_cancel.thread);
             // Unlock mutexes lock for enabling cancelation
             pthread_mutex_unlock(&waiting_queue_mutex);
-            pthread_mutex_unlock(&running_queue_mutex);  
-              pthread_join(*(threads[i].thread), NULL);
+            pthread_mutex_unlock(&running_queue_mutex);
+            pthread_join(*(threads[i].thread), NULL);
             free(threads[i].thread);
             free(threads[i].stat);
-        }    
-         free(threads);    
+        }
+        free(threads);
     }
-    
 
-   if(waiting_queue)
-   {
-       free(waiting_queue);
-   }
-    if(running_queue)
+    if (waiting_queue)
     {
-        free(running_queue);    
+        free(waiting_queue);
     }
-    
+    if (running_queue)
+    {
+        free(running_queue);
+    }
+
     // Restore original SIGINT handler:
     signal(sig, orig_handler);
 
@@ -168,7 +173,7 @@ int main(int argc, char *argv[])
 
     getargs(&sched_alg, &threads_count, &queue_size, &port, argc, argv);
 
-    orig_handler = signal(SIGINT, intHandler);
+    orig_handler = signal(SIGINT, sigintHandler);
     threads = (thread_and_stat *)malloc(sizeof(thread_and_stat) * threads_count);
     memset(threads, 0, threads_count * sizeof(threads[0]));
     // TODO check return values for errors
@@ -192,7 +197,7 @@ int main(int argc, char *argv[])
         ts->thread_dynamic = 0;
         ts->thread_static = 0;
         ts->thread_id = i;
-        threads[i].thread = (pthread_t  *) malloc(sizeof(pthread_t ));
+        threads[i].thread = (pthread_t *)malloc(sizeof(pthread_t));
         int rc = pthread_create((threads[i].thread), NULL, threadWrapper, (void *)ts);
         if (rc)
         {

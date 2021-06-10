@@ -144,8 +144,7 @@ void enqueue_drop_random(Queue* queue, Connection item)
 
     //Connection * new_elements_array= (Connection*)malloc(sizeof(Connection)* queue->size);
     int drop_count = 0;
-    double num_to_ceil = (double)queue->element_count/(double)4;
-    double drop_num = ceil(num_to_ceil); // delete at least 1 element
+    int drop_num = (queue->element_count / 4) + ((queue->element_count % 4) != 0); // delete at least 1 element
 
     // Create indexes array:  [0,1,2...,q_size-1]
     // This array will be used to generate different indices without repeating them.

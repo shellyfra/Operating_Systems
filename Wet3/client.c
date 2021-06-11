@@ -39,6 +39,18 @@ void clientSend(int fd, char *filename)
   sprintf(buf, "%shost: %s\n\r\n", buf, hostname);
   Rio_writen(fd, buf, strlen(buf));
 }
+void clientSendPost(int fd, char *filename)
+{
+  char buf[MAXLINE];
+  char hostname[MAXLINE];
+
+  Gethostname(hostname, MAXLINE);
+
+  /* Form and send the HTTP request */
+  sprintf(buf, "POST %s HTTP/1.1\n", filename);
+  sprintf(buf, "%shost: %s\n\r\n", buf, hostname);
+  Rio_writen(fd, buf, strlen(buf));
+}
   
 /*
  * Read the HTTP response and print it out
@@ -74,23 +86,33 @@ void clientPrint(int fd)
 
 int main(int argc, char *argv[])
 {
-  char *host, *filename;
+  char *host, *filename,*method;
   int port;
   int clientfd;
 
-  if (argc != 4) {
-    fprintf(stderr, "Usage: %s <host> <port> <filename>\n", argv[0]);
+  if (argc > 5) {
+    fprintf(stderr, "Usage: %s <host> <port> <filename> <GET/POST>\n", argv[0]);
     exit(1);
   }
 
   host = argv[1];
   port = atoi(argv[2]);
   filename = argv[3];
-
+  if(argc>=5)
+    method = argv[4];
   /* Open a single connection to the specified host and port */
   clientfd = Open_clientfd(host, port);
   
-  clientSend(clientfd, filename);
+  if(argc>=5 && !strcmp(method,"POST"))
+  {
+    clientSendPost(clientfd, filename);
+    
+  }
+  else
+  {
+    clientSend(clientfd, filename);  
+  }
+  
   clientPrint(clientfd);
   
   

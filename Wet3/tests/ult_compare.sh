@@ -4,15 +4,12 @@
 # C Shai Yehezkel
 #
 # Script      :  ult_compare.sh
-# Version     :  2.3
+# Version     :  3
 # Arguements  :  prog1,prog2 [2]
 # Description :  Compares two programs with given test in the directory this script is executed.
-#				 Also checks for memory leakage in each test, and informs the user whic program
-#                Was more consuming memory-wise.
-#
-# Sub-scripts :  Valgrind
 #
 # NOTE this version is for OS Wet assignment 3
+#
 ####################################################################################################
 
 #Check arguements existence
@@ -30,8 +27,9 @@ LOG_NAME="ult_compare.log"
 SEARCH_WORD="bytes allocated"
 VALGRIND_LOG="valgrind.log"
 VALGRIND="valgrind --log-file=$VALGRIND_LOG --error-exitcode=1 --leak-check=yes --track-origins=yes "
-SERVER_FILES=./server_test12.in
-DISPATCH_DELTA_T=0.5
+SERVER_FILES=./server_test*.in
+DISPATCH_DELTA_T=1.5
+ARRIVAL_ERROR=0.1
 prog1_mem_favor=0
 prog2_mem_favor=0
   base_prog_1=`basename $1`
@@ -54,7 +52,9 @@ if [ "$process_num" != "" ]; then
 		sleep 1
 fi
 
-for f in $SERVER_FILES # Loop over all test files
+
+readarray -d '' entries < <(printf '%s\0' $SERVER_FILES | sort -zV)
+for f in "${entries[@]}" # Loop over all test files
 do
   echo "Processing $f file..."
   #test_num=`(echo ${f} | cut -d'.' -f 2 | cut -d't' -f 3)`
@@ -63,6 +63,7 @@ do
   log_prog_1=`basename $1_test$test_num.out`
   log_prog_2=`basename $2_test$test_num.out`
   cmd_line_args=$(head -n 1 $f)
+  alg=`echo "${cmd_line_args}" | awk '{print $4}'`
   echo "Running ${1}"
   $1 $cmd_line_args & &>server_$log_prog_1
 		num=1
@@ -106,10 +107,10 @@ do
 		kill -15 $process_num
 		wait $process_num
 		sleep 1
-		grep -E "Line N.|Stat-req-arrival|Stat-req-dispatch|Stat-thread-id|Stat-thread-count|Stat-thread-static|Stat-thread-dynamic" client_${log_prog_1} > client_var_${log_prog_1}
-		grep -E "Line N.|Stat-req-arrival|Stat-req-dispatch|Stat-thread-id|Stat-thread-count|Stat-thread-static|Stat-thread-dynamic" client_${log_prog_2} > client_var_${log_prog_2}
-		grep -v -E "Stat-req-arrival|Stat-req-dispatch|Stat-thread-id|Stat-thread-count|Stat-thread-static|Stat-thread-dynamic" client_${log_prog_1} > client_const_${log_prog_1}
-		grep -v -E "Stat-req-arrival|Stat-req-dispatch|Stat-thread-id|Stat-thread-count|Stat-thread-static|Stat-thread-dynamic" client_${log_prog_2} > client_const_${log_prog_2}
+		grep -E "Line N.|Stat-Req-Arrival|Stat-Req-Dispatch|Stat-Thread-Id|Stat-Thread-Count|Stat-Thread-Static|Stat-Thread-Dynamic" client_${log_prog_1} > client_var_${log_prog_1}
+		grep -E "Line N.|Stat-Req-Arrival|Stat-Req-Dispatch|Stat-Thread-Id|Stat-Thread-Count|Stat-Thread-Static|Stat-Thread-Dynamic" client_${log_prog_2} > client_var_${log_prog_2}
+		grep -v -E "Stat-Req-Arrival|Stat-Req-Dispatch|Stat-Thread-Id|Stat-Thread-Count|Stat-Thread-Static|Stat-Thread-Dynamic|Rio_readlineb error:" client_${log_prog_1} > client_const_${log_prog_1}
+		grep -v -E "Stat-Req-Arrival|Stat-Req-Dispatch|Stat-Thread-Id|Stat-Thread-Count|Stat-Thread-Static|Stat-Thread-Dynamic|Rio_readlineb error:" client_${log_prog_2} > client_const_${log_prog_2}
 		
 		DIFF=""
 		DIFF_CLIENT=`diff client_const_${log_prog_1} client_const_${log_prog_2}`
@@ -128,31 +129,45 @@ do
 				while read compareFile1 <&3 && read compareFile2 <&4; do     
 					Val2=`echo "${compareFile2}" | cut -d" " -f3`
 					Val1=`echo "${compareFile1}" | cut -d" " -f3`
+
 					Header2=`echo "${compareFile2}" | cut -d" " -f2`
 					Header1=`echo "${compareFile1}" | cut -d" " -f2`
 					if  [ "${Header1}" != "${Header2}" ]; then
-						echo "Headers mismatch!"
+						echo "Headers mismatch! $Header1 VS $Header2"
 						DIFF="diff"
 						break
 					fi
-
-					if [ "$Header1" == "Stat-req-arrival::" ]; then
+					#if  [ "${#Val1}" != "${#Val2}" ]; then
+					#	echo "Different num of characters! $Val1 VS $Val2"
+					#	DIFF="diff"
+					#	break
+					#fi
+					if [ "$Header1" == "Stat-Req-Arrival::" ] && [ "$alg" != "random" ] ; then
 						if (( $(echo "$DELTA_T == 0" |bc -l) )); then					
-							DELTA_T=$(echo "$Val2-$Val1+0.5" | tr -d $'\r' | bc | awk '{printf "%f", $0}')
+							DELTA_T=$(echo "$Val2-$Val1" | tr -d $'\r' | bc | awk '{printf "%f", $0}')
 						fi
 						TIME_DIFF=$(echo "$Val2-$Val1" | tr -d $'\r' | bc | awk '{printf "%f", $0}')
-						if (( $(echo "$TIME_DIFF >= $DELTA_T" |bc -l) )); then						
-							echo "Difference in Stat-req-arrival:: more than ${DELTA_T} seconds"
+						ERROR=`bc -l <<< "$TIME_DIFF/$DELTA_T"`
+						if (( $(echo "$ERROR > 1" |bc -l) )); then
+							ERROR=$(echo "$ERROR-1" | tr -d $'\r' | bc | awk '{printf "%f", $0}')
+						else
+							ERROR=$(echo "1-$ERROR" | tr -d $'\r' | bc | awk '{printf "%f", $0}')
+						fi
+						if (( $(echo "$ERROR > $ARRIVAL_ERROR" |bc -l) )); then						
+							echo "Difference in Stat-Req-Arrival:: error is more than ${ARRIVAL_ERROR} percent"
+							echo "$compareFile1 VS $compareFile2"
 							DIFF="diff"
 							break
-						fi						
-					elif [ "$Header1"  == "Stat-req-dispatch::" ]; then
+						fi
+						DELTA_T=$TIME_DIFF
+					elif [ "$Header1"  == "Stat-Req-Dispatch::" ] && [ "$alg" != "random" ]; then
 						TIME_DIFF=$(echo "$Val2-$Val1" | tr -d $'\r' | bc | awk '{printf "%f", $0}')
 						if (( $(echo "$TIME_DIFF < 0" |bc -l) )); then		
 							TIME_DIFF=$(echo "$Val1-$Val2" | tr -d $'\r' | bc | awk '{printf "%f", $0}')
 						fi
 						if (( $(echo "$TIME_DIFF >= $DISPATCH_DELTA_T" |bc -l) )); then												
 							echo "Difference in Stat-req-dispath:: more than ${DISPATCH_DELTA_T} seconds"
+							echo "$compareFile1 VS $compareFile2"
 							DIFF="diff"
 							break
 						fi
@@ -184,7 +199,8 @@ do
 		rm $log_prog_1
 	fi
 done
-if [ -f $LOG_NAME ]; then
+
+if [ -f "$LOG_NAME" ]; then
 	echo ""
     echo "Errors starts here!"
     echo ""

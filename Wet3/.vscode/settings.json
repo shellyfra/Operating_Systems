@@ -2,8 +2,8 @@
     "cmake.debugConfig": {
         "args": [
             "8008",
-            "1",
             "2",
+            "1",
             "random"
         ]
     },

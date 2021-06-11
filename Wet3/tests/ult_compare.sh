@@ -137,6 +137,15 @@ do
 						DIFF="diff"
 						break
 					fi
+					if [ "$test_num" == "0" ]; then
+						if [ "$Header1" == "Stat-Thread-Count::" ] || [ "$Header1" == "Stat-Thread-Static::" ] || [ "$Header1" == "Stat-Thread-Dynamic::" ] ; then
+							if [ "$compareFile1" != "$compareFile2" ]; then
+								echo "Counts mismatch!"
+								DIFF="diff"
+								break;
+							fi
+						fi			
+					fi
 					#if  [ "${#Val1}" != "${#Val2}" ]; then
 					#	echo "Different num of characters! $Val1 VS $Val2"
 					#	DIFF="diff"

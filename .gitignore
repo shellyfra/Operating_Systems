@@ -33,6 +33,10 @@
 .vscode/*
 build/*
 Wet3/build/*
+Wet3/tests/*
+Wet3/tests
+Wet4/tests/*
+Wet4/tests
 Wet1/tests_final/*
 Wet1/test_final/*
 Wet1/build/*

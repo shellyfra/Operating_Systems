@@ -1,21 +1,16 @@
-./client localhost 8008 output10p5.cgi &
-./client localhost 8008 home.html
+./client localhost 18073 output20p5.cgi &
 sleep 1
-./client localhost 8008 home.html
-sleep 11
-./client localhost 8008 home.html
-./client localhost 8008 output10p5.cgi &
-./client localhost 8008 home.html
+./client localhost 18073 output20p5.cgi &
 sleep 1
-./client localhost 8008 home.html
+./client localhost 18073 output20p5.cgi &
 sleep 1
-./client localhost 8008 home.html
-sleep 11
-./client localhost 8008 output10p5.cgi &
+./client localhost 18073 output20p5.cgi &
 sleep 1
-./client localhost 8008 output10p5.cgi &
+./client localhost 18073 output20p5.cgi &
 sleep 1
-./client localhost 8008 output10p5.cgi &
-./client localhost 8008 output10p5.cgi &
-sleep 11
-./client localhost 8008 home.html
+./client localhost 18073 output20p5.cgi &
+sleep 1
+./client localhost 18073 output20p5.cgi &
+sleep 1
+./client localhost 18073 output20p5.cgi
+sleep 22

@@ -64,6 +64,7 @@ do
   log_prog_2=`basename $2_test$test_num.out`
   cmd_line_args=$(head -n 1 $f)
   alg=`echo "${cmd_line_args}" | awk '{print $4}'`
+  port=`echo "${cmd_line_args}" | awk '{print $1}'`
   echo "Running ${1}"
   $1 $cmd_line_args & &>server_$log_prog_1
 		num=1
@@ -83,6 +84,7 @@ do
 	process_num=`ps | grep ${base_prog_1} | awk '{print $1}'`
 	kill -15 $process_num
 	wait $process_num
+	fuser -k $port/tcp
 	sleep 1
 	if [ ! -z "$2" ]; then
 		echo "Running ${2}"
@@ -106,6 +108,7 @@ do
 		process_num=`ps | grep ${base_prog_2} | awk '{print $1}'`
 		kill -15 $process_num
 		wait $process_num
+		fuser -k $port/tcp
 		sleep 1
 		grep -E "Line N.|Stat-Req-Arrival|Stat-Req-Dispatch|Stat-Thread-Id|Stat-Thread-Count|Stat-Thread-Static|Stat-Thread-Dynamic" client_${log_prog_1} > client_var_${log_prog_1}
 		grep -E "Line N.|Stat-Req-Arrival|Stat-Req-Dispatch|Stat-Thread-Id|Stat-Thread-Count|Stat-Thread-Static|Stat-Thread-Dynamic" client_${log_prog_2} > client_var_${log_prog_2}
@@ -151,7 +154,7 @@ do
 					#	DIFF="diff"
 					#	break
 					#fi
-					if [ "$Header1" == "Stat-Req-Arrival::" ] && [ "$alg" != "random" ] ; then
+					if [ "$Header1" == "Stat-Req-Arrival::" ] && [ "$alg" != "random" ] && [ "$alg" != "block" ] ; then
 						if (( $(echo "$DELTA_T == 0" |bc -l) )); then					
 							DELTA_T=$(echo "$Val2-$Val1" | tr -d $'\r' | bc | awk '{printf "%f", $0}')
 						fi
@@ -169,7 +172,7 @@ do
 							break
 						fi
 						DELTA_T=$TIME_DIFF
-					elif [ "$Header1"  == "Stat-Req-Dispatch::" ] && [ "$alg" != "random" ]; then
+					elif [ "$Header1"  == "Stat-Req-Dispatch::" ] && [ "$alg" != "random" ] && [ "$alg" != "block" ] ; then
 						TIME_DIFF=$(echo "$Val2-$Val1" | tr -d $'\r' | bc | awk '{printf "%f", $0}')
 						if (( $(echo "$TIME_DIFF < 0" |bc -l) )); then		
 							TIME_DIFF=$(echo "$Val1-$Val2" | tr -d $'\r' | bc | awk '{printf "%f", $0}')

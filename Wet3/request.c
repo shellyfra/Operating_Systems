@@ -29,16 +29,12 @@ void requestError(int fd, char *cause, char *errnum, char *shortmsg, char *longm
    sprintf(buf, "Content-Length: %lu\r\n", strlen(body));
    Rio_writen(fd, buf, strlen(buf));
    printf("%s", buf);
-
-   
-   const time_t sec_diff = con.start_req_dispatch.tv_sec-con.start_req_arrival.tv_sec;
-   const time_t usec_diff = con.start_req_dispatch.tv_usec-con.start_req_arrival.tv_usec;
       
    sprintf(buf,  "Stat-Req-Arrival:: %lu.%06lu\r\n", con.start_req_arrival.tv_sec, con.start_req_arrival.tv_usec);
    Rio_writen(fd, buf, strlen(buf));
    printf("%s", buf);
 
-   sprintf(buf,  "Stat-Req-Dispatch:: %lu.%06lu\r\n", sec_diff,usec_diff);
+   sprintf(buf,  "Stat-Req-Dispatch:: %lu.%06lu\r\n", con.dispatch_interval.tv_sec,con.dispatch_interval.tv_usec);
    Rio_writen(fd, buf, strlen(buf));
    printf("%s", buf);
 
@@ -46,7 +42,7 @@ void requestError(int fd, char *cause, char *errnum, char *shortmsg, char *longm
    Rio_writen(fd, buf, strlen(buf));
    printf("%s", buf);
 
-    sprintf(buf,  "Stat-Thread-Count:: %d\r\n", thread_statistics_p->thread_count + 1 );
+    sprintf(buf,  "Stat-Thread-Count:: %d\r\n", thread_statistics_p->thread_count );
     Rio_writen(fd, buf, strlen(buf));
     printf("%s", buf);
 
@@ -137,15 +133,12 @@ void requestServeDynamic(int fd, char *filename, char *cgiargs,Connection con,th
    // The CGI script has to finish writing out the header.
    sprintf(buf, "HTTP/1.0 200 OK\r\n");
    sprintf(buf, "%sServer: OS-HW3 Web Server\r\n", buf);
-
-   const time_t sec_diff = con.start_req_dispatch.tv_sec-con.start_req_arrival.tv_sec;
-   const time_t usec_diff = con.start_req_dispatch.tv_usec-con.start_req_arrival.tv_usec;
    sprintf(buf, "%sStat-Req-Arrival:: %lu.%06lu\r\n", buf, con.start_req_arrival.tv_sec, con.start_req_arrival.tv_usec);
-   sprintf(buf, "%sStat-Req-Dispatch:: %lu.%06lu\r\n",buf, sec_diff , usec_diff);
+   sprintf(buf, "%sStat-Req-Dispatch:: %lu.%06lu\r\n",buf, con.dispatch_interval.tv_sec,con.dispatch_interval.tv_usec);
    sprintf(buf, "%sStat-Thread-Id:: %d\r\n",buf, thread_statistics_p->thread_id);
-   sprintf(buf, "%sStat-Thread-Count:: %d\r\n",buf, thread_statistics_p->thread_count +1);
+   sprintf(buf, "%sStat-Thread-Count:: %d\r\n",buf, thread_statistics_p->thread_count );
    sprintf(buf, "%sStat-Thread-Static:: %d\r\n",buf, thread_statistics_p->thread_static);
-   sprintf(buf, "%sStat-Thread-Dynamic:: %d\r\n",buf, thread_statistics_p->thread_dynamic +1);
+   sprintf(buf, "%sStat-Thread-Dynamic:: %d\r\n",buf, thread_statistics_p->thread_dynamic );
    Rio_writen(fd, buf, strlen(buf));
 
    pid_t child_pid;
@@ -185,16 +178,11 @@ void requestServeStatic(int fd, char *filename, int filesize,Connection con,thre
    sprintf(buf, "%sServer: OS-HW3 Web Server\r\n", buf);
    sprintf(buf, "%sContent-Length: %d\r\n", buf, filesize);
    sprintf(buf, "%sContent-Type: %s\r\n", buf, filetype);
-
-   const time_t diff =  (( con.start_req_dispatch.tv_sec * 1000000 + con.start_req_dispatch.tv_usec) 
-         - (con.start_req_arrival.tv_sec * 1000000 + con.start_req_arrival.tv_usec));
-   const time_t sec_diff = con.start_req_dispatch.tv_sec-con.start_req_arrival.tv_sec;
-   const time_t usec_diff = con.start_req_dispatch.tv_usec-con.start_req_arrival.tv_usec;
    sprintf(buf, "%sStat-Req-Arrival:: %lu.%06lu\r\n", buf, con.start_req_arrival.tv_sec, con.start_req_arrival.tv_usec);
-   sprintf(buf, "%sStat-Req-Dispatch:: %lu.%06lu\r\n",buf, sec_diff , usec_diff);
+   sprintf(buf, "%sStat-Req-Dispatch:: %lu.%06lu\r\n",buf, con.dispatch_interval.tv_sec,con.dispatch_interval.tv_usec);
    sprintf(buf, "%sStat-Thread-Id:: %d\r\n",buf, thread_statistics_p->thread_id);
-   sprintf(buf, "%sStat-Thread-Count:: %d\r\n",buf, thread_statistics_p->thread_count +1);
-   sprintf(buf, "%sStat-Thread-Static:: %d\r\n",buf, thread_statistics_p->thread_static +1);
+   sprintf(buf, "%sStat-Thread-Count:: %d\r\n",buf, thread_statistics_p->thread_count );
+   sprintf(buf, "%sStat-Thread-Static:: %d\r\n",buf, thread_statistics_p->thread_static );
    sprintf(buf, "%sStat-Thread-Dynamic:: %d\r\n\r\n",buf, thread_statistics_p->thread_dynamic);
    Rio_writen(fd, buf, strlen(buf));
 
@@ -215,7 +203,7 @@ void requestHandle(int fd,thread_statistics* thread_statistics_p,Connection con)
    rio_t rio;
 
    
-   
+   thread_statistics_p->thread_count++;
 
    Rio_readinitb(&rio, fd);
    Rio_readlineb(&rio, buf, MAXLINE);
@@ -224,8 +212,7 @@ void requestHandle(int fd,thread_statistics* thread_statistics_p,Connection con)
    printf("%s %s %s\n", method, uri, version);
 
    if (strcasecmp(method, "GET")) {
-      requestError(fd, method, "501", "Not Implemented", "OS-HW3 Server does not implement this method",con,thread_statistics_p);
-      thread_statistics_p->thread_count++;
+      requestError(fd, method, "501", "Not Implemented", "OS-HW3 Server does not implement this method",con,thread_statistics_p);      
       return;
    }
    requestReadhdrs(&rio);
@@ -233,7 +220,6 @@ void requestHandle(int fd,thread_statistics* thread_statistics_p,Connection con)
    is_static = requestParseURI(uri, filename, cgiargs);
    if (stat(filename, &sbuf) < 0) {
       requestError(fd, filename, "404", "Not found", "OS-HW3 Server could not find this file",con,thread_statistics_p);;
-      thread_statistics_p->thread_count++;
       return;
    }
 
@@ -241,22 +227,20 @@ void requestHandle(int fd,thread_statistics* thread_statistics_p,Connection con)
        
       if (!(S_ISREG(sbuf.st_mode)) || !(S_IRUSR & sbuf.st_mode)) {
          requestError(fd, filename, "403", "Forbidden", "OS-HW3 Server could not read this file",con,thread_statistics_p);;         
-         thread_statistics_p->thread_count++;
          return;
       }
-      requestServeStatic(fd, filename, sbuf.st_size,con,thread_statistics_p);
-      thread_statistics_p->thread_count++;
       thread_statistics_p->thread_static++;
+      requestServeStatic(fd, filename, sbuf.st_size,con,thread_statistics_p);
+      
    } else {
       
       if (!(S_ISREG(sbuf.st_mode)) || !(S_IXUSR & sbuf.st_mode)) {
          requestError(fd, filename, "403", "Forbidden", "OS-HW3 Server could not run this CGI program",con,thread_statistics_p);;         
-         thread_statistics_p->thread_count++;
          return;
       }
-      requestServeDynamic(fd, filename, cgiargs,con,thread_statistics_p);
-      thread_statistics_p->thread_count++;
       thread_statistics_p->thread_dynamic++;
+      requestServeDynamic(fd, filename, cgiargs,con,thread_statistics_p);
+      
    }
    
 

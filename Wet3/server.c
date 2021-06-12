@@ -97,6 +97,14 @@ void *threadWrapper(void *ts)
 
         gettimeofday(&con.start_req_dispatch, NULL);
 
+        // calculate diffs
+//        const time_t sec_diff = con.start_req_dispatch.tv_sec-con.start_req_arrival.tv_sec;
+//        const time_t usec_diff = con.start_req_dispatch.tv_usec-con.start_req_arrival.tv_usec;
+        con.dispatch_interval.tv_usec = (con.start_req_arrival.tv_usec > con.start_req_dispatch.tv_usec)*1000000 +
+                                        con.start_req_dispatch.tv_usec-con.start_req_arrival.tv_usec; // if arrival > dispatch -> need to add a second
+        con.dispatch_interval.tv_sec =   con.start_req_dispatch.tv_sec-con.start_req_arrival.tv_sec -
+                                        (con.start_req_arrival.tv_usec > con.start_req_dispatch.tv_usec); // if added to  tv)usec -> need to remove a se from here
+
         // Add the connection to the running queue
         pthread_mutex_lock(&running_queue_mutex);
 

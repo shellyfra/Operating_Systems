@@ -10,7 +10,11 @@ typedef struct connection_t
     int connfd;
     struct timeval start_req_arrival;
     struct timeval start_req_dispatch;
+<<<<<<< HEAD
     struct timeval start_req_interval;
+=======
+    struct timeval dispatch_interval;
+>>>>>>> 57396f5cddedabc47b4f61336686a3972d3c8e41
 } Connection;
 
 typedef struct node_t

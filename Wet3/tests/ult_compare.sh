@@ -5,7 +5,7 @@
 #
 # Script      :  ult_compare.sh
 # Version     :  3
-# Arguements  :  prog1,prog2 [2]
+# Arguements  :  prog1,prog2,test_start_num [3]
 # Description :  Compares two programs with given test in the directory this script is executed.
 #
 # NOTE this version is for OS Wet assignment 3
@@ -13,7 +13,7 @@
 ####################################################################################################
 
 #Check arguements existence
-
+TEST_START="*"
 if [ -z "$1" ]; then
     echo "$1 doesn't exist!"
     exit -1
@@ -22,14 +22,20 @@ if [ -z "$2" ]; then
     echo "Running on single file $1"
 fi
 
+echo $3
+if [ $# -ge 3 ] ; then
+    echo "Performing test N $3"
+	TEST_START=$3
+fi
+
 #Variables defenitions
 LOG_NAME="ult_compare.log"
 SEARCH_WORD="bytes allocated"
 VALGRIND_LOG="valgrind.log"
 VALGRIND="valgrind --log-file=$VALGRIND_LOG --error-exitcode=1 --leak-check=yes --track-origins=yes "
-SERVER_FILES=./server_test*.in
+SERVER_FILES="./server_test${TEST_START}.in"
 DISPATCH_DELTA_T=1.5
-ARRIVAL_ERROR=0.1
+ARRIVAL_ERROR=1.0
 prog1_mem_favor=0
 prog2_mem_favor=0
   base_prog_1=`basename $1`
@@ -57,7 +63,6 @@ readarray -d '' entries < <(printf '%s\0' $SERVER_FILES | sort -zV)
 for f in "${entries[@]}" # Loop over all test files
 do
   echo "Processing $f file..."
-  #test_num=`(echo ${f} | cut -d'.' -f 2 | cut -d't' -f 3)`
   test_num=`(echo ${f} | cut -d'.' -f 2 | cut -d't' -f 3)`
   client_test="client_test${test_num}.in"
   log_prog_1=`basename $1_test$test_num.out`
@@ -66,6 +71,7 @@ do
   alg=`echo "${cmd_line_args}" | awk '{print $4}'`
   port=`echo "${cmd_line_args}" | awk '{print $1}'`
   echo "Running ${1}"
+  fuser -k $port/tcp
   $1 $cmd_line_args & &>server_$log_prog_1
 		num=1
 		echo "" > client_$log_prog_1
@@ -88,6 +94,7 @@ do
 	sleep 1
 	if [ ! -z "$2" ]; then
 		echo "Running ${2}"
+		fuser -k $port/tcp
 		$2 $cmd_line_args & &>server_$log_prog_2
 		# Both servers run here
 		num=1		

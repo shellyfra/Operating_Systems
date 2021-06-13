@@ -18,7 +18,7 @@
 #define SCHED_ALG_DH "dh"
 #define SCHED_ALG_RANDOM "random"
 #define RUN_ALWAYS (1)
-
+#define MICRO_SEC_FACOTR (1000000)
 enum SCHED_ALGS
 {
     BLOCK = 0,
@@ -88,25 +88,25 @@ void getargs(enum SCHED_ALGS *sched_alg, int *threads_count, int *queue_size, in
 
 
 // Usage of time_val substraction
-static int timeval_subtract(struct timeval *result, struct timeval *x, struct timeval *y)
+static int timeval_diff(struct timeval *start, struct timeval *end , struct timeval *interval)
 {
     
-    if (x->tv_usec < y->tv_usec)
+    if (start->tv_usec < end->tv_usec)
     {
-        int nsec = (y->tv_usec - x->tv_usec) / 1000000 + 1;
-        y->tv_usec -= 1000000 * nsec;
-        y->tv_sec += nsec;
+        int nsec = (end->tv_usec - start->tv_usec) / MICRO_SEC_FACOTR + 1;
+        end->tv_usec -= MICRO_SEC_FACOTR * nsec;
+        end->tv_sec += nsec;
     }
-    if (x->tv_usec - y->tv_usec > 1000000)
+    if (start->tv_usec - end->tv_usec > MICRO_SEC_FACOTR)
     {
-        int nsec = (x->tv_usec - y->tv_usec) / 1000000;
-        y->tv_usec += 1000000 * nsec;
-        y->tv_sec -= nsec;
+        int nsec = (start->tv_usec - end->tv_usec) / MICRO_SEC_FACOTR;
+        end->tv_usec += MICRO_SEC_FACOTR * nsec;
+        end->tv_sec -= nsec;
     }
-    result->tv_sec = x->tv_sec - y->tv_sec;
-    result->tv_usec = x->tv_usec - y->tv_usec;
+    interval->tv_sec = start->tv_sec - end->tv_sec;
+    interval->tv_usec = start->tv_usec - end->tv_usec;
 
-    return x->tv_sec < y->tv_sec;
+    return start->tv_sec < end->tv_sec;
 }
 
 void *threadWrapper(void *ts)
@@ -122,7 +122,7 @@ void *threadWrapper(void *ts)
 
         // calculate diffs
 
-        timeval_subtract(& con.dispatch_interval,&con.start_req_dispatch,&con.start_req_arrival );      
+        timeval_diff(&con.start_req_dispatch,&con.start_req_arrival, & con.dispatch_interval);      
         // Add the connection to the running queue
         pthread_mutex_lock(&running_queue_mutex);
 
@@ -202,7 +202,6 @@ int main(int argc, char *argv[])
     orig_handler = signal(SIGINT, sigintHandler);
     threads = (thread_and_stat *)malloc(sizeof(thread_and_stat) * threads_count);
     memset(threads, 0, threads_count * sizeof(threads[0]));
-    // TODO check return values for errors
 
     waiting_queue = newQueue(queue_size);
     running_queue = newQueue(queue_size);
@@ -211,7 +210,6 @@ int main(int argc, char *argv[])
     pthread_mutex_init(&waiting_queue_mutex, NULL);
 
     pthread_cond_init(&waiting_queue_cond_block, NULL);
-    //pthread_mutex_init(&waiting_queue_mutex_block, NULL);
 
     pthread_cond_init(&running_queue_cond_t, NULL);
     pthread_mutex_init(&running_queue_mutex, NULL);

@@ -32,16 +32,20 @@ int isFull(Queue *queue);
 
 int isEmpty(Queue *queue);
 
+// Enqueue new item
 void enqueue(Queue *queue, Connection item);
+
+// Enqueue with drop head policy
 void enqueue_drop_head(Queue *queue, Connection item);
+
+// Enqueue with drop random policy
 void enqueue_drop_random(Queue *queue, Connection item);
-// Function to remove an item from queue.
-// It changes front and size
+
+// Dequeue without locking or blocking. to be used only when a lock is in effect
 Connection dequeue_non_block(Queue* queue);
+
+// Dequeue with locking capabilities
 Connection dequeue(Queue *queue, pthread_cond_t *condition, pthread_mutex_t *mutex);
 int getTotalElements(Queue *queue);
-// Function to get front of queue
-int front(Queue *queue);
-// Function to get rear of queue
-int rear(Queue *queue);
+
 #endif

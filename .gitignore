@@ -33,6 +33,7 @@
 .vscode/*
 build/*
 Wet3/build/*
+Wet3/public/*
 Wet3/tests/*
 Wet3/tests
 Wet4/tests/*

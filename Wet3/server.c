@@ -88,25 +88,25 @@ void getargs(enum SCHED_ALGS *sched_alg, int *threads_count, int *queue_size, in
 
 
 // Usage of time_val substraction
-static int timeval_diff(struct timeval *start, struct timeval *end , struct timeval *interval)
+static int timeval_diff(struct timeval start, struct timeval end , struct timeval *interval)
 {
     
-    if (start->tv_usec < end->tv_usec)
+    if (start.tv_usec < end.tv_usec)
     {
-        int nsec = (end->tv_usec - start->tv_usec) / MICRO_SEC_FACOTR + 1;
-        end->tv_usec -= MICRO_SEC_FACOTR * nsec;
-        end->tv_sec += nsec;
+        int nsec = (end.tv_usec - start.tv_usec) / MICRO_SEC_FACOTR + 1;
+        end.tv_usec -= MICRO_SEC_FACOTR * nsec;
+        end.tv_sec += nsec;
     }
-    if (start->tv_usec - end->tv_usec > MICRO_SEC_FACOTR)
+    if (start.tv_usec - end.tv_usec > MICRO_SEC_FACOTR)
     {
-        int nsec = (start->tv_usec - end->tv_usec) / MICRO_SEC_FACOTR;
-        end->tv_usec += MICRO_SEC_FACOTR * nsec;
-        end->tv_sec -= nsec;
+        int nsec = (start.tv_usec - end.tv_usec) / MICRO_SEC_FACOTR;
+        end.tv_usec += MICRO_SEC_FACOTR * nsec;
+        end.tv_sec -= nsec;
     }
-    interval->tv_sec = start->tv_sec - end->tv_sec;
-    interval->tv_usec = start->tv_usec - end->tv_usec;
+    interval->tv_sec = start.tv_sec - end.tv_sec;
+    interval->tv_usec = start.tv_usec - end.tv_usec;
 
-    return start->tv_sec < end->tv_sec;
+    return start.tv_sec < end.tv_sec;
 }
 
 void *threadWrapper(void *ts)
@@ -122,7 +122,7 @@ void *threadWrapper(void *ts)
 
         // calculate diffs
 
-        timeval_diff(&con.start_req_dispatch,&con.start_req_arrival, & con.dispatch_interval);      
+        timeval_diff(con.start_req_dispatch,con.start_req_arrival, & con.dispatch_interval);      
         // Add the connection to the running queue
         pthread_mutex_lock(&running_queue_mutex);
 

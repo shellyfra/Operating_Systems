@@ -15,7 +15,8 @@ found.
 void* smalloc(size_t size)
 {
     // TODO implement
-    return;
+    size++;
+    return NULL;
 }
 /*
 ● Searches for a free block of up to ‘num’ elements, each ‘size’ bytes that are all set to 0
@@ -31,7 +32,9 @@ bytes to 0.
 void* scalloc(size_t num, size_t size)
 {
     // TODO implement
-    return;
+    num++;
+    size++;
+    return NULL;
 }
 
 /*
@@ -42,6 +45,7 @@ void* scalloc(size_t num, size_t size)
 void sfree(void* p)
 {
     // TODO implement
+    p=NULL;
     return;
 }
 /*
@@ -62,7 +66,9 @@ allocated space and frees the oldp.
 void* srealloc(void* oldp, size_t size)
 {
     // TODO implement
-    return;
+    oldp=NULL;
+    size++;
+    return NULL;
 }
 /*
 ● Returns the number of allocated blocks in the heap that are currently free.
@@ -70,7 +76,7 @@ void* srealloc(void* oldp, size_t size)
 size_t _num_free_blocks()
 {
     // TODO implement
-    return;
+    return 0;
 }
 
 /*
@@ -80,14 +86,15 @@ excluding the bytes used by the meta-data structs.
 size_t _num_free_bytes()
 {
     // TODO implement
-    return;
+    return 0;
 }
 /*
 ● Returns the overall (free and used) number of allocated blocks in the heap.
 */
 size_t _num_allocated_blocks()
 {
-
+  // TODO implement
+    return 0;
 }
 
 /*
@@ -96,18 +103,22 @@ the bytes used by the meta-data structs.
 */
 size_t _num_allocated_bytes()
 {
+      // TODO implement
+    return 0;
 }
 /*
 ● Returns the overall number of meta-data bytes currently in the heap.
 */
 size_t _num_meta_data_bytes()
 {
-
+  // TODO implement
+    return 0;
 }
 /*
 ● Returns the number of bytes of a single meta-data structure in your system.
 */
 size_t _size_meta_data()
 {
-
+  // TODO implement
+    return 0;
 }

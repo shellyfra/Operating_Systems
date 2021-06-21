@@ -4,6 +4,7 @@
 struct MallocMetadata
 {
     size_t block_size;
+    size_t real_size;
     bool is_free;
     MallocMetadata* next;
     MallocMetadata* prev;
@@ -58,6 +59,7 @@ void *smalloc(size_t size)
         
         MallocMetadata* new_block_metadata_ptr = (MallocMetadata*)block_ptr;        
         new_block_metadata_ptr->block_size =size;
+        new_block_metadata_ptr->real_size =size;
         new_block_metadata_ptr->is_free=false;
         new_block_metadata_ptr->prev=prev_block;        
         if(prev_block)
@@ -155,6 +157,7 @@ void* srealloc(void* oldp, size_t size)
     */
     if (size <= block_metadata_ptr->block_size)
     {
+        block_metadata_ptr->real_size = size;
         return oldp;
     }
     // We need to find a new block
@@ -199,6 +202,8 @@ size_t _num_free_bytes()
         if(block_it->is_free)
         {
             count+=block_it->block_size;
+        } else {
+            count+= (block_it->block_size - block_it->real_size);
         }
         block_it=block_it->next;
     }

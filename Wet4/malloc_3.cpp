@@ -21,6 +21,7 @@
 
 struct MallocMetadata
 {
+    bool is_mmaped;
     size_t block_size;
     size_t real_size;
     bool is_free;
@@ -38,10 +39,32 @@ const int SBRK_FAILURE = -1;
 MallocMetadata *bins_free[HISTOGRAM_BIN_COUNT];
 MallocMetadata *bins[HISTOGRAM_BIN_COUNT];
 MallocMetadata * block_head=NULL;
+MallocMetadata * wilderness_chunk=NULL;
 
 size_t _size_meta_data();
 
 //size_t num_free_blocks=0;
+static void _splitBlocks(MallocMetadata* free_block,size_t size)
+{
+     size_t secondary_size = free_block->block_size-size -_size_meta_data();
+    _deleteFromHistogram(free_block, false);
+    // Need to split blocks
+    // Calc new pointer to second block
+    MallocMetadata *secondary_block_metadata_ptr = (MallocMetadata *)((char *)free_block + size);
+    secondary_block_metadata_ptr->block_size = secondary_size;
+    secondary_block_metadata_ptr->real_size = 0;
+    secondary_block_metadata_ptr->is_free = true;
+    _insertToHistrogram(secondary_size, secondary_block_metadata_ptr);
+    
+    if(free_block == wilderness_chunk)
+    {
+        // Free block was wilderness, and now secondary is wilderness
+        wilderness_chunk = secondary_block_metadata_ptr;
+    }
+    free_block->block_size = size;
+    _insertToHistrogram(size, free_block);
+}
+
 static MallocMetadata *_getFreeBlock(const size_t &size, MallocMetadata **prev_block)
 {
     unsigned short bin_index = size / HISTOGRAM_BIN_SIZE;
@@ -64,10 +87,42 @@ static MallocMetadata *_getFreeBlock(const size_t &size, MallocMetadata **prev_b
     }
     return block_it;
 }
-
-static void _deleteFromHistogram(MallocMetadata * block_metadata, MallocMetadata *histogram[HISTOGRAM_BIN_COUNT])
+static void _mergeAdjacentBlocks(MallocMetadata * block_metadata)
+{
+    if(block_metadata->next_free && block_metadata->next_free == block_metadata->next)
+    {
+        
+        // Should merge right block
+        MallocMetadata* temp_next =block_metadata->next_free;
+        if(temp_next == wilderness_chunk)
+        {
+            block_metadata = wilderness_chunk;
+        }
+        _deleteFromHistogram(temp_next);
+        _deleteFromHistogram(temp_next,false);
+        block_metadata->block_size+=temp_next->block_size;
+        
+    }
+    // new block_metadata
+    if(block_metadata->prev_free && block_metadata->prev_free == block_metadata->prev)
+    {
+        // Should merge left block
+        block_metadata = block_metadata->prev_free;        
+        MallocMetadata* temp_next =block_metadata->next_free;
+        if(temp_next == wilderness_chunk)
+        {
+            block_metadata = wilderness_chunk;
+        }
+        _deleteFromHistogram(temp_next);
+        _deleteFromHistogram(temp_next,false);
+        block_metadata->block_size+=temp_next->block_size;
+        
+    }
+}
+static void _deleteFromHistogram(MallocMetadata * block_metadata,bool free_hist=true)
 {
     // Need maybe to update the free histogram
+        MallocMetadata **histogram = free_hist ? bins_free : bins;
         unsigned short bin_index = block_metadata->block_size / HISTOGRAM_BIN_SIZE;
         MallocMetadata *bin_head = histogram[bin_index];
         if(bin_head == block_metadata )
@@ -82,15 +137,18 @@ static void _deleteFromHistogram(MallocMetadata * block_metadata, MallocMetadata
             histogram[bin_index] = new_head;
         }
         // Need to update free lists and next/prev free list pointer
-        MallocMetadata * prev_free = block_metadata->prev_free;
-        MallocMetadata * next_free = block_metadata->next_free;
-        if(prev_free)
+        MallocMetadata * prev_ptr = free_hist ? block_metadata->prev_free : block_metadata->prev;
+        MallocMetadata * next_ptr = free_hist ? block_metadata->next_free : block_metadata->next;
+ 
+        if(prev_ptr)
         {
-            prev_free->next_free = next_free;
+            MallocMetadata * to_change = free_hist ?  prev_ptr->next_free :  prev_ptr->next;
+            to_change = next_ptr;
         }
-        if(next_free)
+        if(next_ptr)
         {
-            next_free->prev_free = prev_free;
+            MallocMetadata * to_change = free_hist ?  next_ptr->prev_free :  next_ptr->prev;
+            to_change = prev_ptr;
         }
 
 }
@@ -177,13 +235,28 @@ void *smalloc(size_t size)
 
     if (!free_block)
     { // Call sbrk to allocate a new block
-        void *block_ptr = sbrk(size + _size_meta_data());
+
+        if(size>=MIN_BLOCK_SIZE)
+        {
+            //mmap ( NULL, si,
+ //PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0 );
+        }
+        size_t size_for_sbrk=size + _size_meta_data();
+        const bool wilderness_is_free = wilderness_chunk->is_free;
+        if(wilderness_is_free)
+        {
+            size_for_sbrk = size - wilderness_chunk->block_size;
+            _deleteFromHistogram(wilderness_chunk);
+            _deleteFromHistogram(wilderness_chunk,false);
+        }
+        void *block_ptr = sbrk(size_for_sbrk);
         if (*((int *)block_ptr) == SBRK_FAILURE)
         {
             return NULL;
         }
 
-        MallocMetadata *new_block_metadata_ptr = (MallocMetadata *)block_ptr;
+        MallocMetadata *new_block_metadata_ptr = wilderness_is_free ? wilderness_chunk : (MallocMetadata *)block_ptr;
+        wilderness_chunk = new_block_metadata_ptr;
         new_block_metadata_ptr->block_size = size;
         new_block_metadata_ptr->real_size = size;
         new_block_metadata_ptr->is_free = false;        
@@ -193,25 +266,14 @@ void *smalloc(size_t size)
     else
     {
         // Found a free block with sufficient size     
-        _deleteFromHistogram(free_block,bins_free);    
-
+        _deleteFromHistogram(free_block);    
+        free_block->real_size = size;   
+        free_block->is_free = false;
 
         size_t secondary_size = free_block->block_size-size -_size_meta_data();
         if(secondary_size >= MIN_BLOCK_SIZE)
         {
-            _deleteFromHistogram(free_block,);
-            // Need to split blocks
-            // Calc new pointer to second block
-            MallocMetadata *secondary_block_metadata_ptr = (MallocMetadata *)((char*)free_block+size);
-            secondary_block_metadata_ptr->block_size = secondary_size;
-            secondary_block_metadata_ptr->real_size = 0;
-            secondary_block_metadata_ptr->is_free = true; 
-             _insertToHistrogram(secondary_size,secondary_block_metadata_ptr);
-
-            free_block->block_size - secondary_size +_size_meta_data();
-            free_block->real_size = size;
-            free_block->is_free = false;     
-            _insertToHistrogram(size, free_block);
+            _splitBlocks(free_block,size);
         }  
         //num_free_blocks--;
         
@@ -247,7 +309,6 @@ void *scalloc(size_t num, size_t size)
 */
 void sfree(void *p)
 {
-    // TODO add challenge 2
     if (!p)
     {
         return;
@@ -257,9 +318,45 @@ void sfree(void *p)
     {
         return;
     }
-    //num_free_blocks++;
+
     block_metadata_ptr->real_size = 0;
     block_metadata_ptr->is_free = true;
+
+    // Add to free list and change pointers in histogram accordingly
+    size_t freed_block_size = block_metadata_ptr->block_size;
+    unsigned short bin_index =  freed_block_size / HISTOGRAM_BIN_SIZE;
+    if (bins_free[bin_index] == NULL || bins_free[bin_index]->block_size > freed_block_size)
+    {
+        bins_free[bin_index] = block_metadata_ptr;
+    }
+
+    // Update next free pointer
+    MallocMetadata *block_it =block_metadata_ptr->next;
+    while (block_it && !block_it->is_free)
+    {
+        block_it= block_it->next;
+    }
+    block_metadata_ptr->next_free = block_it;
+    if (block_it)
+    {
+        block_it->prev_free = block_metadata_ptr;
+    }
+
+    // Update prev free pointer
+    block_it = block_metadata_ptr->prev;
+    while (block_it && !block_it->is_free)
+    {
+        block_it = block_it->prev;
+    }
+    block_metadata_ptr->prev_free = block_it;
+    if (block_it)
+    {
+        block_it->next_free = block_metadata_ptr;
+    }
+    // Challenge 2
+    _mergeAdjacentBlocks(block_metadata_ptr);
+
+    //num_free_blocks++;
 }
 /*
 ● If ‘size’ is smaller than the current block’s size, reuses the same block. Otherwise,

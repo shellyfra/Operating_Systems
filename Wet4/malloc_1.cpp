@@ -1,5 +1,25 @@
 #include <unistd.h>
 
+#include <stdio.h>
+
+#ifdef DEBUG
+#define DO_IF_DEBUG(command) \
+    do                       \
+    {                        \
+        printf("Executing ");    \
+        printf(#command);    \
+        printf("\n");        \
+        command              \
+    } while (0)
+#else
+#define DO_IF_DEBUG(command)      \
+    do                            \
+    {                             \
+        /* empty intentionally */ \
+    } while (0)
+#endif
+
+
 /* smalloc
 ● Tries to allocate ‘size’ bytes.
 ● Return value:
@@ -18,9 +38,11 @@ void* smalloc(size_t size)
         return NULL;
     }
     void *block_ptr =sbrk(size);
+    
     if(*((int*)block_ptr)==SBRK_FAILURE)
     {
         return NULL;
     }
+    //DO_IF_DEBUG(printf("smalloc : Allocated pointer: %p\n",block_ptr););
     return block_ptr;
 }

@@ -1,5 +1,109 @@
 #include <unistd.h>
+#include <string.h>
 
+#ifdef DEBUG
+#define DO_IF_DEBUG(command) \
+    do                       \
+    {                        \
+        printf("Executing ");    \
+        printf(#command);    \
+        printf("\n");        \
+        command              \
+    } while (0)
+#else
+#define DO_IF_DEBUG(command)      \
+    do                            \
+    {                             \
+        /* empty intentionally */ \
+    } while (0)
+#endif
+
+
+struct MallocMetadata
+{
+    size_t block_size;
+    size_t real_size;
+    bool is_free;
+    MallocMetadata *next;
+    MallocMetadata *prev;
+};
+const unsigned short HISTOGRAM_BIN_COUNT = 128;
+const unsigned short MIN_BLOCK_SIZE = 128;
+const unsigned short HISTOGRAM_BIN_SIZE = 1024;
+const size_t SMALLOC_MAX_SIZE = 100000000;
+const int SBRK_FAILURE = -1;
+MallocMetadata *bins[HISTOGRAM_BIN_COUNT];
+
+size_t _size_meta_data();
+
+//size_t num_free_blocks=0;
+static MallocMetadata *_getFreeBlock(const size_t &size, MallocMetadata **prev_block)
+{
+    unsigned short bin_index = size / HISTOGRAM_BIN_SIZE;
+    MallocMetadata *block_it = NULL;
+    for (unsigned short i = bin_index; i < HISTOGRAM_BIN_COUNT; i++)
+    {
+        block_it = bins[i];
+        *prev_block = NULL;
+        while (block_it)
+        {
+            if (block_it->is_free && block_it->block_size >= size)
+            {
+                break;
+            }
+            *prev_block = block_it;
+            block_it = block_it->next;
+        }
+    }
+
+    return block_it;
+}
+
+static void _insertToHistrogram(const size_t &size, MallocMetadata **new_block_metadata_ptr)
+{
+    unsigned short bin_index = size / HISTOGRAM_BIN_SIZE;
+    MallocMetadata *block_it = NULL;
+
+    block_it = bins[bin_index];
+    /*
+    if(!block_it)
+    {
+        // If bin is empty and this is the first isnerted node
+        bins[bin_index] = *new_block_metadata_ptr;
+        (*new_block_metadata_ptr)->next=NULL;
+        (*new_block_metadata_ptr)->prev=NULL;
+        return;
+    }
+    */
+    // We need insert to a non empty list
+
+    MallocMetadata *prev_block = NULL;
+    while (block_it && block_it->block_size <= size)
+    {
+        prev_block = block_it;
+        block_it = block_it->next;
+    }
+    if (!prev_block)
+    {
+        // We need to insert to the head of the list
+        MallocMetadata *temp_first = bins[bin_index];
+        bins[bin_index] = *new_block_metadata_ptr;
+        (*new_block_metadata_ptr)->next = temp_first;
+        (*new_block_metadata_ptr)->prev = NULL;
+    }
+    else
+    {
+        // Inserting the node in the middle or the tail
+        prev_block->next = *new_block_metadata_ptr;
+        (*new_block_metadata_ptr)->prev = prev_block;
+
+        (*new_block_metadata_ptr)->next = block_it;
+        if (block_it)
+        {
+            block_it->prev = (*new_block_metadata_ptr);
+        }
+    }
+}
 /* smalloc
 ● Searches for a free block with up to ‘size’ bytes or allocates (sbrk()) one if none are
 found.
@@ -12,11 +116,44 @@ found.
         c. If sbrk fails in allocating the needed space, return NULL.
 
 */
-void* smalloc(size_t size)
+
+void *smalloc(size_t size)
 {
-    // TODO implement
-    size++;
-    return NULL;
+    if (size == 0 || size > SMALLOC_MAX_SIZE)
+    {
+        return NULL;
+    }
+    MallocMetadata *prev_block;
+    MallocMetadata *free_block = _getFreeBlock(size, &prev_block);
+
+    if (!free_block)
+    { // Call sbrk to allocate a new block
+        void *block_ptr = sbrk(size + _size_meta_data());
+        if (*((int *)block_ptr) == SBRK_FAILURE)
+        {
+            return NULL;
+        }
+
+        MallocMetadata *new_block_metadata_ptr = (MallocMetadata *)block_ptr;
+        new_block_metadata_ptr->block_size = size;
+        new_block_metadata_ptr->real_size = size;
+        new_block_metadata_ptr->is_free = false;
+
+        _insertToHistrogram(size, &new_block_metadata_ptr);
+        return (void *)((char *)block_ptr + _size_meta_data());
+    }
+    else
+    {
+        // Found a free block with sufficient size
+        // We need to remove it from the free list
+
+        // TODO add challenge 1
+
+
+        //num_free_blocks--;
+        free_block->is_free = false;
+        return (void *)((char *)free_block + _size_meta_data());
+    }
 }
 /*
 ● Searches for a free block of up to ‘num’ elements, each ‘size’ bytes that are all set to 0
@@ -29,12 +166,15 @@ bytes to 0.
         b. If ‘size * num’ is more than 10^8 , return NULL.
         c. If sbrk fails in allocating the needed space, return NULL
 */
-void* scalloc(size_t num, size_t size)
+void *scalloc(size_t num, size_t size)
 {
-    // TODO implement
-    num++;
-    size++;
-    return NULL;
+    void *block_ptr = smalloc(num * size);
+    if (!block_ptr)
+    {
+        return NULL;
+    }
+    memset(block_ptr, 0, num * size);
+    return block_ptr;
 }
 
 /*
@@ -42,11 +182,21 @@ void* scalloc(size_t num, size_t size)
 ● If ‘p’ is NULL or already released, simply returns.
 ● Presume that all pointers ‘p’ truly points to the beginning of an allocated block.
 */
-void sfree(void* p)
+void sfree(void *p)
 {
-    // TODO implement
-    p=NULL;
-    return;
+    // TODO add challenge 2
+    if (!p)
+    {
+        return;
+    }
+    MallocMetadata *block_metadata_ptr = (MallocMetadata *)((char *)p - _size_meta_data());
+    if (block_metadata_ptr->is_free)
+    {
+        return;
+    }
+    //num_free_blocks++;
+    block_metadata_ptr->real_size = 0;
+    block_metadata_ptr->is_free = true;
 }
 /*
 ● If ‘size’ is smaller than the current block’s size, reuses the same block. Otherwise,
@@ -63,20 +213,54 @@ allocated space and frees the oldp.
         d. Do not free ‘oldp’ if srealloc() fails.
 
 */
-void* srealloc(void* oldp, size_t size)
+void *srealloc(void *oldp, size_t size)
 {
-    // TODO implement
-    oldp=NULL;
-    size++;
-    return NULL;
+    if (size == 0 || size > SMALLOC_MAX_SIZE)
+    {
+        return NULL;
+    }
+    if (!oldp)
+    {
+        //b. If ‘oldp’ is NULL, allocates space for ‘size’ bytes and returns a pointer to it.
+        return smalloc(size);
+    }
+    MallocMetadata *block_metadata_ptr = (MallocMetadata *)((char *)oldp - _size_meta_data());
+    if (size <= block_metadata_ptr->block_size)
+    {
+        // Old block is large enough to contain new size
+        // NUm of free blocks doess not change
+        block_metadata_ptr->real_size = size;
+        return oldp;
+    }
+    // We need to find a new block
+    void *new_block_ptr = smalloc(size);
+    if (!new_block_ptr)
+    {
+        return NULL;
+    }
+    // Found new block, copy content
+    memcpy(new_block_ptr, oldp, block_metadata_ptr->block_size);
+    sfree(oldp);
+    //num_free_blocks--;
+
+    return new_block_ptr;
 }
 /*
 ● Returns the number of allocated blocks in the heap that are currently free.
 */
 size_t _num_free_blocks()
 {
-    // TODO implement
-    return 0;
+    size_t count = 0;
+    MallocMetadata *block_it = block_head;
+    while (block_it)
+    {
+        if (block_it->is_free)
+        {
+            count++;
+        }
+        block_it = block_it->next;
+    }
+    return count;
 }
 
 /*
@@ -85,16 +269,35 @@ excluding the bytes used by the meta-data structs.
 */
 size_t _num_free_bytes()
 {
-    // TODO implement
-    return 0;
+    size_t count = 0;
+    MallocMetadata *block_it = block_head;
+    while (block_it)
+    {
+        if (block_it->is_free)
+        {
+            count += block_it->block_size;
+        }
+        else
+        {
+            count += (block_it->block_size - block_it->real_size);
+        }
+        block_it = block_it->next;
+    }
+    return count;
 }
 /*
 ● Returns the overall (free and used) number of allocated blocks in the heap.
 */
 size_t _num_allocated_blocks()
 {
-  // TODO implement
-    return 0;
+    size_t count = 0;
+    MallocMetadata *block_it = block_head;
+    while (block_it)
+    {
+        count++;
+        block_it = block_it->next;
+    }
+    return count;
 }
 
 /*
@@ -103,22 +306,27 @@ the bytes used by the meta-data structs.
 */
 size_t _num_allocated_bytes()
 {
-      // TODO implement
-    return 0;
+    size_t count = 0;
+    MallocMetadata *block_it = block_head;
+    while (block_it)
+    {
+        count += block_it->block_size;
+        block_it = block_it->next;
+    }
+    return count;
 }
 /*
 ● Returns the overall number of meta-data bytes currently in the heap.
 */
 size_t _num_meta_data_bytes()
 {
-  // TODO implement
-    return 0;
+
+    return _num_allocated_blocks() * _size_meta_data();
 }
 /*
 ● Returns the number of bytes of a single meta-data structure in your system.
 */
 size_t _size_meta_data()
 {
-  // TODO implement
-    return 0;
+    return sizeof(MallocMetadata);
 }

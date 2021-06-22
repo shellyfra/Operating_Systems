@@ -1,5 +1,7 @@
 #include <unistd.h>
 #include <string.h>
+#include <sys/mman.h>
+#include <iostream>
 
 #ifdef DEBUG
 #define DO_IF_DEBUG(command) \
@@ -32,6 +34,7 @@ struct MallocMetadata
 };
 const unsigned short HISTOGRAM_BIN_COUNT = 128;
 const unsigned short MIN_BLOCK_SIZE = 128;
+const unsigned int MIN_MMAPED_SIZE = 128*1024;
 const unsigned short HISTOGRAM_BIN_SIZE = 1024;
 const size_t SMALLOC_MAX_SIZE = 100000000;
 const int SBRK_FAILURE = -1;
@@ -39,9 +42,15 @@ const int SBRK_FAILURE = -1;
 MallocMetadata *bins_free[HISTOGRAM_BIN_COUNT];
 MallocMetadata *bins[HISTOGRAM_BIN_COUNT];
 MallocMetadata * block_head=NULL;
+MallocMetadata * mmaped_head=NULL;
 MallocMetadata * wilderness_chunk=NULL;
 
 size_t _size_meta_data();
+static void _splitBlocks(MallocMetadata* free_block,size_t size);
+static MallocMetadata *_getFreeBlock(const size_t &size, MallocMetadata **prev_block);
+static void _mergeAdjacentBlocks(MallocMetadata * block_metadata);
+static void _deleteFromHistogram(MallocMetadata * block_metadata,bool free_hist=true);
+static void _insertToHistrogram(const size_t &size, MallocMetadata *new_block_metadata);
 
 //size_t num_free_blocks=0;
 static void _splitBlocks(MallocMetadata* free_block,size_t size)
@@ -119,7 +128,7 @@ static void _mergeAdjacentBlocks(MallocMetadata * block_metadata)
         
     }
 }
-static void _deleteFromHistogram(MallocMetadata * block_metadata,bool free_hist=true)
+static void _deleteFromHistogram(MallocMetadata * block_metadata,bool free_hist)
 {
     // Need maybe to update the free histogram
         MallocMetadata **histogram = free_hist ? bins_free : bins;
@@ -236,10 +245,28 @@ void *smalloc(size_t size)
     if (!free_block)
     { // Call sbrk to allocate a new block
 
-        if(size>=MIN_BLOCK_SIZE)
+        if(size>=MIN_MMAPED_SIZE)
         {
-            //mmap ( NULL, si,
- //PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0 );
+            MallocMetadata* mmaped_ptr = (MallocMetadata *)mmap( NULL, size + _size_meta_data(),
+                                                                 PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0 );
+            if ((void*)mmaped_ptr == MAP_FAILED) {
+                return NULL;
+            }
+            mmaped_ptr->next = NULL;
+            mmaped_ptr->prev = NULL;
+            MallocMetadata* temp = mmaped_head;
+            mmaped_head = mmaped_ptr;
+            mmaped_ptr->next = temp;
+            if (temp) {
+                temp->prev = mmaped_ptr;
+            }
+            mmaped_ptr->is_mmaped = true;
+            mmaped_ptr->real_size = size;
+            mmaped_ptr->is_free = false;
+            mmaped_ptr->next_free = NULL;
+            mmaped_ptr->prev_free = NULL;
+
+            return (void *)((char *)mmaped_ptr + _size_meta_data());
         }
         size_t size_for_sbrk=size + _size_meta_data();
         const bool wilderness_is_free = wilderness_chunk->is_free;
@@ -318,7 +345,28 @@ void sfree(void *p)
     {
         return;
     }
-
+    if (block_metadata_ptr->is_mmaped)
+    {
+        if (block_metadata_ptr-> prev)
+        {
+            block_metadata_ptr->prev->next = block_metadata_ptr->next;
+        }
+        if (block_metadata_ptr->next)
+        {
+            block_metadata_ptr->next->prev = block_metadata_ptr->prev;
+        }
+        if (block_metadata_ptr == mmaped_head)
+        {
+            mmaped_head = block_metadata_ptr->next;
+        }
+        int err = munmap(p,block_metadata_ptr->block_size + _size_meta_data());
+        if (err != 0)
+        {
+            // TODO : check this case
+            std::cout << "munmap failed!!" << std::endl;
+            return;
+        }
+    }
     block_metadata_ptr->real_size = 0;
     block_metadata_ptr->is_free = true;
 

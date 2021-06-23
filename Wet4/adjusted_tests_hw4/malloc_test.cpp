@@ -9,7 +9,7 @@
 
 #if (1 == _TEST_NUMBER)
 
-#include "../malloc_2.h"
+#include "../malloc_2.cpp"
 
 #else
 

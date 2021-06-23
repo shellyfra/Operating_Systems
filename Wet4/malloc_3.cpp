@@ -49,8 +49,10 @@ size_t _size_meta_data();
 static void _splitBlocks(MallocMetadata* free_block,size_t size);
 static MallocMetadata *_getFreeBlock(const size_t &size, MallocMetadata **prev_block);
 static void _mergeAdjacentBlocks(MallocMetadata * block_metadata);
+static void _mergeRightBlock(MallocMetadata *block_metadata);
 static void _deleteFromHistogram(MallocMetadata * block_metadata,bool free_hist=true);
 static void _insertToHistrogram(const size_t &size, MallocMetadata *new_block_metadata);
+void * _metadataToPtr(MallocMetadata *metadata_block);
 
 //size_t num_free_blocks=0;
 static void _splitBlocks(MallocMetadata* free_block,size_t size)
@@ -65,7 +67,7 @@ static void _splitBlocks(MallocMetadata* free_block,size_t size)
     secondary_block_metadata_ptr->is_free = true;
     _insertToHistrogram(secondary_size, secondary_block_metadata_ptr);
     
-    if(free_block == wilderness_chunk)
+    if(wilderness_chunk == free_block)
     {
         // Free block was wilderness, and now secondary is wilderness
         wilderness_chunk = secondary_block_metadata_ptr;
@@ -74,7 +76,7 @@ static void _splitBlocks(MallocMetadata* free_block,size_t size)
     _insertToHistrogram(size, free_block);
 }
 
-static MallocMetadata *_getFreeBlock(const size_t &size, MallocMetadata **prev_block)
+static MallocMetadata *_getFreeBlock(const size_t &size)
 {
     unsigned short bin_index = size / HISTOGRAM_BIN_SIZE;
     MallocMetadata *block_it = bins_free[bin_index];
@@ -84,61 +86,57 @@ static MallocMetadata *_getFreeBlock(const size_t &size, MallocMetadata **prev_b
         block_it =bins_free[++bin_index];
     }
     
-    *prev_block = NULL;
-    while (block_it)
-    {
-        if (block_it->block_size >= size)//block_it->is_free && block_it->block_size >= size)
-        {
-            return block_it;
-        }
-        *prev_block = block_it;
+    while (block_it && block_it->block_size < size)
+    {            
         block_it = block_it->next_free;
     }
     return block_it;
+}
+
+static void _mergeRightBlock(MallocMetadata *block_metadata)
+{
+    // Should merge right block
+    MallocMetadata *temp_next = block_metadata->next_free;
+    if (wilderness_chunk == temp_next)
+    {
+        wilderness_chunk = block_metadata;
+    }
+    _deleteFromHistogram(temp_next);
+    _deleteFromHistogram(temp_next, false);
+
+    // Add the next block size and its metadata that was saved
+    block_metadata->block_size += temp_next->block_size +_size_meta_data();
+
 }
 static void _mergeAdjacentBlocks(MallocMetadata * block_metadata)
 {
     if(block_metadata->next_free && block_metadata->next_free == block_metadata->next)
     {
-        
-        // Should merge right block
-        MallocMetadata* temp_next =block_metadata->next_free;
-        if(temp_next == wilderness_chunk)
-        {
-            block_metadata = wilderness_chunk;
-        }
-        _deleteFromHistogram(temp_next);
-        _deleteFromHistogram(temp_next,false);
-        block_metadata->block_size+=temp_next->block_size;
-        
+        _mergeRightBlock(block_metadata);
     }
-    // new block_metadata
     if(block_metadata->prev_free && block_metadata->prev_free == block_metadata->prev)
     {
-        // Should merge left block
-        block_metadata = block_metadata->prev_free;        
-        MallocMetadata* temp_next =block_metadata->next_free;
-        if(temp_next == wilderness_chunk)
-        {
-            block_metadata = wilderness_chunk;
-        }
-        _deleteFromHistogram(temp_next);
-        _deleteFromHistogram(temp_next,false);
-        block_metadata->block_size+=temp_next->block_size;
-        
+        _mergeRightBlock(block_metadata->prev_free);
     }
+    // Now final block is larger, we'll need to re-insert the block:
+    // TODO add to free list again   
 }
+
 static void _deleteFromHistogram(MallocMetadata * block_metadata,bool free_hist)
 {
     // Need maybe to update the free histogram
         MallocMetadata **histogram = free_hist ? bins_free : bins;
         unsigned short bin_index = block_metadata->block_size / HISTOGRAM_BIN_SIZE;
         MallocMetadata *bin_head = histogram[bin_index];
+        MallocMetadata * prev_ptr = free_hist ? block_metadata->prev_free : block_metadata->prev;
+        MallocMetadata * next_ptr = free_hist ? block_metadata->next_free : block_metadata->next;
+
         if(bin_head == block_metadata )
         {
             // Change head of the bin
+            // Initialize head to NULL so that maybe the bin will be empty
             MallocMetadata* new_head=NULL;
-            if(block_metadata->next_free && (block_metadata->next_free->block_size/ HISTOGRAM_BIN_SIZE == bin_index))
+            if(next_ptr && (next_ptr->block_size/ HISTOGRAM_BIN_SIZE == bin_index))
             {
                 // Next free block is in the same bin range, make it the new head
                 new_head = block_metadata->next_free;
@@ -146,25 +144,25 @@ static void _deleteFromHistogram(MallocMetadata * block_metadata,bool free_hist)
             histogram[bin_index] = new_head;
         }
         // Need to update free lists and next/prev free list pointer
-        MallocMetadata * prev_ptr = free_hist ? block_metadata->prev_free : block_metadata->prev;
-        MallocMetadata * next_ptr = free_hist ? block_metadata->next_free : block_metadata->next;
+        
  
         if(prev_ptr)
         {
-            MallocMetadata * to_change = free_hist ?  prev_ptr->next_free :  prev_ptr->next;
-            to_change = next_ptr;
+            MallocMetadata ** to_change = free_hist ?  & prev_ptr->next_free :  & prev_ptr->next;
+            *to_change = next_ptr;
         }
         if(next_ptr)
         {
-            MallocMetadata * to_change = free_hist ?  next_ptr->prev_free :  next_ptr->prev;
-            to_change = prev_ptr;
+            MallocMetadata ** to_change = free_hist ? & next_ptr->prev_free :  & next_ptr->prev;
+            *to_change = prev_ptr;
         }
 
 }
 static void _insertToHistrogram(const size_t &size, MallocMetadata *new_block_metadata)
 {
+    // TODO if bins should be size with the meta data?
     unsigned short bin_index = size / HISTOGRAM_BIN_SIZE;
-    unsigned short temp_bin_index = bin_index;
+    short temp_bin_index = bin_index;
     MallocMetadata *block_it = bins[temp_bin_index];
     while (!block_it && temp_bin_index>=0 )
     {
@@ -173,6 +171,7 @@ static void _insertToHistrogram(const size_t &size, MallocMetadata *new_block_me
     }
     if(!block_it)
     {
+        // if no node was found, take head
         block_it = block_head;
     }
    
@@ -239,8 +238,8 @@ void *smalloc(size_t size)
     {
         return NULL;
     }
-    MallocMetadata *prev_block;
-    MallocMetadata *free_block = _getFreeBlock(size, &prev_block);
+    
+    MallocMetadata *free_block = _getFreeBlock(size);
 
     if (!free_block)
     { // Call sbrk to allocate a new block
@@ -266,16 +265,21 @@ void *smalloc(size_t size)
             mmaped_ptr->next_free = NULL;
             mmaped_ptr->prev_free = NULL;
 
-            return (void *)((char *)mmaped_ptr + _size_meta_data());
+            return _metadataToPtr(mmaped_ptr);
         }
         size_t size_for_sbrk=size + _size_meta_data();
-        const bool wilderness_is_free = wilderness_chunk->is_free;
-        if(wilderness_is_free)
+        bool wilderness_is_free = false;
+        if(wilderness_chunk)
         {
-            size_for_sbrk = size - wilderness_chunk->block_size;
-            _deleteFromHistogram(wilderness_chunk);
-            _deleteFromHistogram(wilderness_chunk,false);
+            wilderness_is_free = wilderness_chunk->is_free;
+            if(wilderness_is_free)
+            {
+                size_for_sbrk = size - wilderness_chunk->block_size;
+                _deleteFromHistogram(wilderness_chunk);
+                _deleteFromHistogram(wilderness_chunk,false);
+            }
         }
+        
         void *block_ptr = sbrk(size_for_sbrk);
         if (*((int *)block_ptr) == SBRK_FAILURE)
         {
@@ -288,7 +292,7 @@ void *smalloc(size_t size)
         new_block_metadata_ptr->real_size = size;
         new_block_metadata_ptr->is_free = false;        
         _insertToHistrogram(size, new_block_metadata_ptr);
-        return (void *)((char *)block_ptr + _size_meta_data());
+        return _metadataToPtr(new_block_metadata_ptr);
     }
     else
     {
@@ -304,7 +308,7 @@ void *smalloc(size_t size)
         }  
         //num_free_blocks--;
         
-        return (void *)((char *)free_block + _size_meta_data());
+        return _metadataToPtr(free_block);
     }
 }
 /*
@@ -329,24 +333,8 @@ void *scalloc(size_t num, size_t size)
     return block_ptr;
 }
 
-/*
-● Releases the usage of the block that starts with the pointer ‘p’.
-● If ‘p’ is NULL or already released, simply returns.
-● Presume that all pointers ‘p’ truly points to the beginning of an allocated block.
-*/
-void sfree(void *p)
+void removeNode(MallocMetadata *block_metadata_ptr)
 {
-    if (!p)
-    {
-        return;
-    }
-    MallocMetadata *block_metadata_ptr = (MallocMetadata *)((char *)p - _size_meta_data());
-    if (block_metadata_ptr->is_free)
-    {
-        return;
-    }
-    if (block_metadata_ptr->is_mmaped)
-    {
         if (block_metadata_ptr-> prev)
         {
             block_metadata_ptr->prev->next = block_metadata_ptr->next;
@@ -355,17 +343,46 @@ void sfree(void *p)
         {
             block_metadata_ptr->next->prev = block_metadata_ptr->prev;
         }
+        
+}
+    MallocMetadata * _voidPtrToMetadata(void *p)
+    {
+        return (MallocMetadata *)((char *)p - _size_meta_data());
+    }
+
+    void * _metadataToPtr(MallocMetadata *metadata_block)
+    {
+        return (void *)((char *)metadata_block + _size_meta_data());
+    }
+
+/*
+● Releases the usage of the block that starts with the pointer ‘p’.
+● If ‘p’ is NULL or already released, simply returns.
+● Presume that all pointers ‘p’ truly points to the beginning of an allocated block.
+*/
+void sfree(void *p)
+{
+    MallocMetadata *block_metadata_ptr;
+    if (!p || (block_metadata_ptr = _voidPtrToMetadata(p))->is_free)
+    {
+        return;
+    }
+    if (block_metadata_ptr->is_mmaped)
+    {
+        removeNode(block_metadata_ptr);
         if (block_metadata_ptr == mmaped_head)
         {
             mmaped_head = block_metadata_ptr->next;
         }
+
         int err = munmap(p,block_metadata_ptr->block_size + _size_meta_data());
         if (err != 0)
         {
             // TODO : check this case
             std::cout << "munmap failed!!" << std::endl;
-            return;
+            
         }
+        return;
     }
     block_metadata_ptr->real_size = 0;
     block_metadata_ptr->is_free = true;
@@ -401,7 +418,6 @@ void sfree(void *p)
     {
         block_it->next_free = block_metadata_ptr;
     }
-    // Challenge 2
     _mergeAdjacentBlocks(block_metadata_ptr);
 
     //num_free_blocks++;
@@ -432,7 +448,7 @@ void *srealloc(void *oldp, size_t size)
         //b. If ‘oldp’ is NULL, allocates space for ‘size’ bytes and returns a pointer to it.
         return smalloc(size);
     }
-    MallocMetadata *block_metadata_ptr = (MallocMetadata *)((char *)oldp - _size_meta_data());
+    MallocMetadata *block_metadata_ptr = _voidPtrToMetadata(oldp);
     if (size <= block_metadata_ptr->block_size)
     {
         // Old block is large enough to contain new size

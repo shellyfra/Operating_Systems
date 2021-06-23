@@ -99,6 +99,7 @@ void *smalloc(size_t size)
         // Found a free block with sufficient size
         num_free_blocks--;
         free_block->is_free = false;
+        free_block->real_size =size;
          return (void*)((char*)free_block+_size_meta_data());    
     }
    
@@ -221,8 +222,6 @@ size_t _num_free_bytes()
         if(block_it->is_free)
         {
             count+=block_it->block_size;
-        } else {
-            count+= (block_it->block_size - block_it->real_size);
         }
         block_it=block_it->next;
     }

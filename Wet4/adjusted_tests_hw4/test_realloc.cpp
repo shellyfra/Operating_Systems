@@ -8,11 +8,11 @@
 
 #if (MALLOC_VERSION == 2)
 
-#include "malloc_2.h"
+#include "malloc_2.cpp"
 
 #else
 
-#include "malloc_2.cpp"
+#include "../malloc_2.cpp"
 #endif
 
 size_t valid_free_blocks = 0;

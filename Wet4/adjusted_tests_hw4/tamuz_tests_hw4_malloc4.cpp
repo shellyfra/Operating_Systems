@@ -11,7 +11,7 @@ export LD_LIBRARY_PATH="/root/hw4/"
 #include <cstdlib>
 #include <sys/wait.h>
 #include <iostream>
-#include "../malloc_2.cpp"
+#include "../malloc_4.cpp"
 
 #define assert_state(_initial, _expected)\
     do {\

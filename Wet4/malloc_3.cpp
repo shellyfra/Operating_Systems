@@ -484,11 +484,7 @@ size_t _num_free_bytes()
         if (block_it->is_free)
         {
             count += block_it->block_size;
-        }
-        else
-        {
-            count += (block_it->block_size - block_it->real_size);
-        }
+        }        
         block_it = block_it->next;
     }
     return count;

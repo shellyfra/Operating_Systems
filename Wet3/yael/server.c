@@ -17,6 +17,7 @@
 Queue* queue;
 pthread_mutex_t active_mutex;
 int count_active_threads = 0;
+pthread_mutex_t second_active_mutex;
 
 int get_count_active_threads() {
     pthread_mutex_lock(&active_mutex);
@@ -99,7 +100,7 @@ int main(int argc, char *argv[])
         //returns non negative file descriptor of the accepted socket in case of success
         //returns -1 in case the function failed
         connfd = Accept(listenfd, (SA*)&clientaddr, (socklen_t*) &clientlen);
-        printf("the new connFD is : %d\n",connfd);
+       // printf("the new connFD is : %d\n",connfd);
         if (connfd<0){
             perror("accept failed");
         }
@@ -135,27 +136,26 @@ int main(int argc, char *argv[])
 
 
 // Usage of time_val substraction
-static void timeval_subtract(struct timeval start, struct timeval end , struct timeval *diff)
+static struct timeval timeval_subtract(struct timeval start, struct timeval end)
 {
-    
-    if (start.tv_usec < end.tv_usec)
-    {
-        int nsec = (end.tv_usec - start.tv_usec) / 1000000 + 1;
-        
-        end.tv_sec += nsec;
-        end.tv_usec -= 1000000 * nsec;
-    }
-    if (start.tv_usec - end.tv_usec > 1000000)
-    {
-        int nsec = (start.tv_usec - end.tv_usec) / 1000000;
-        
-        end.tv_sec -= nsec;
-        end.tv_usec += 1000000 * nsec;
-    }
-    
-    diff->tv_usec = start.tv_usec - end.tv_usec;
-    diff->tv_sec = start.tv_sec - end.tv_sec;
+    struct timeval diff;
 
+    if (start.tv_usec < end.tv_usec){
+        int nsec = (end.tv_usec - start.tv_usec) / 1000000 + 1;
+        end.tv_usec -= 1000000 * nsec;
+        end.tv_sec += nsec;
+    }
+
+    if (start.tv_usec - end.tv_usec > 1000000){
+        int nsec = (start.tv_usec - end.tv_usec) / 1000000;
+        end.tv_usec += 1000000 * nsec;
+        end.tv_sec -= nsec;
+    }
+
+    diff.tv_sec = start.tv_sec - end.tv_sec;
+    diff.tv_usec = start.tv_usec - end.tv_usec;
+
+    return diff;
 }
 
 void* startRoutine(void* id){
@@ -171,8 +171,8 @@ void* startRoutine(void* id){
         
         current = queuePop(queue, &statThreads);
         gettimeofday(&dispatch, NULL);
-        timeval_subtract(statThreads.arrival , dispatch ,& statThreads.dispatch );
-                //(dispatch.tv_sec + (dispatch.tv_usec)/1.0e6) - statThreads.arrival;
+        statThreads.dispatch = timeval_subtract(statThreads.arrival , dispatch);
+        //(dispatch.tv_sec + (dispatch.tv_usec)/1.0e6) - statThreads.arrival;
         set_count_active_threads(count_active_threads + 1);
 
         if(current != NULL){
@@ -182,6 +182,12 @@ void* startRoutine(void* id){
             set_count_active_threads(count_active_threads-1);
         }
     }
+}
+
+
+void block(){
+//todo yael- fix this
+
 }
 
 void dropTail(int client){

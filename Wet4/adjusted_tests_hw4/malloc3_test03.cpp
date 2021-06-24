@@ -13,7 +13,7 @@
 
 #else
 
-#include "../malloc_2.cpp"
+#include "../malloc_3.cpp"
 #endif
 
 void malloc2_test_01() {
@@ -254,6 +254,7 @@ void malloc3_test_03() {
     assert(_num_free_blocks() == 1);
     assert(_num_free_bytes() == 1000);
     assert(_num_allocated_blocks() == 2);
+    int temp = _num_allocated_bytes();
     assert(_num_allocated_bytes() == 1032);
     assert(_num_meta_data_bytes() == _size_meta_data() * 2);
 

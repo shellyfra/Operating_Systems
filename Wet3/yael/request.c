@@ -140,23 +140,28 @@ void requestServeDynamic(int fd, char *filename, char *cgiargs, StatThreads* sta
    // The CGI script has to finish writing out the header.
    sprintf(buf, "HTTP/1.0 200 OK\r\n");
    sprintf(buf, "%sServer: OS-HW3 Web Server\r\n", buf);
-   sprintf(buf, "%s" STAT_REQ_ARRIVAL "%f\r\n", buf, statThreads->arrival);
-   sprintf(buf, "%s" STAT_REQ_DISPATCH "%f\r\n", buf, statThreads->dispatch);
-   sprintf(buf, "%s" STAT_THREAD_ID "%d\r\n", buf, statThreads->thread_id);
-   sprintf(buf, "%s" STAT_THREAD_COUNT "%d\r\n", buf, ++statThreads->count);
-   sprintf(buf, "%s" STAT_THREAD_STATIC "%d\r\n", buf,statThreads->static_count);
-   sprintf(buf, "%s" STAT_THREAD_DYNAMIC "%d\r\n", buf, ++statThreads->dynamic_count);
+   sprintf(buf,  "%sStat-Req-Arrival:: %lu.%06lu\r\n", buf, statThreads->arrival.tv_sec, statThreads->arrival.tv_usec);
+   sprintf(buf,  "%sStat-Req-Dispatch:: %lu.%06lu\r\n", buf, statThreads->dispatch.tv_sec, statThreads->dispatch.tv_usec);
+   sprintf(buf,  "%sStat-Thread-Id:: %d\r\n", buf, statThreads->thread_id);
+   sprintf(buf,  "%sStat-Thread-Count:: %d\r\n", buf, ++(statThreads->count));
+   sprintf(buf,  "%sStat-Thread-Static:: %d\r\n", buf, statThreads->static_count);
+   sprintf(buf,  "%sStat-Thread-Dynamic:: %d\r\n", buf, ++(statThreads->dynamic_count));
 
    Rio_writen(fd, buf, strlen(buf));
 
-   if (Fork() == 0) {
-      /* Child process */
-      Setenv("QUERY_STRING", cgiargs, 1);
-      /* When the CGI process writes to stdout, it will instead go to the socket */
-      Dup2(fd, STDOUT_FILENO);
-      Execve(filename, emptylist, environ);
-   }
-   Wait(NULL);
+    pid_t pid_of_children = Fork();
+    if (!pid_of_children) {
+        /* Child process*/
+        Setenv("QUERY_STRING", cgiargs, 1);
+        /* When the CGI process writes to stdout, it will instead go to the socket */
+        Dup2(fd, STDOUT_FILENO);
+        Execve(filename, emptylist, environ);
+    }
+
+    if ((waitpid(pid_of_children,NULL,0)) < 0){
+        unix_error("Wait error");
+    }
+
 }
 
 
@@ -179,12 +184,12 @@ void requestServeStatic(int fd, char *filename, int filesize, StatThreads* statT
    sprintf(buf, "%sServer: OS-HW3 Web Server\r\n", buf);
    sprintf(buf, "%sContent-Length: %d\r\n", buf, filesize);
    sprintf(buf, "%sContent-Type: %s\r\n", buf, filetype);
-   printf(buf, "%s" STAT_REQ_ARRIVAL "%f\r\n", buf, statThreads->arrival);
-   sprintf(buf, "%s" STAT_REQ_DISPATCH "%f\r\n", buf, statThreads->dispatch);
-   sprintf(buf, "%s" STAT_THREAD_ID "%d\r\n", buf, statThreads->thread_id);
-   sprintf(buf, "%s" STAT_THREAD_COUNT "%d\r\n", buf, ++statThreads->count);
-   sprintf(buf, "%s" STAT_THREAD_STATIC "%d\r\n", buf,++statThreads->static_count);
-   sprintf(buf, "%s" STAT_THREAD_DYNAMIC "%d\r\n", buf, statThreads->dynamic_count);
+   sprintf(buf,  "%sStat-Req-Arrival:: %lu.%06lu\r\n", buf, statThreads->arrival.tv_sec, statThreads->arrival.tv_usec);
+   sprintf(buf,  "%sStat-Req-Dispatch:: %lu.%06lu\r\n", buf, statThreads->dispatch.tv_sec, statThreads->dispatch.tv_usec);
+   sprintf(buf,  "%sStat-Thread-Id:: %d\r\n", buf, statThreads->thread_id);
+   sprintf(buf,  "%sStat-Thread-Count:: %d\r\n", buf, ++(statThreads->count));
+   sprintf(buf,  "%sStat-Thread-Static:: %d\r\n", buf, ++(statThreads->static_count));
+   sprintf(buf,  "%sStat-Thread-Dynamic:: %d\r\n\r\n", buf, statThreads->dynamic_count);
 
    Rio_writen(fd, buf, strlen(buf));
 

@@ -4,15 +4,15 @@
 #include <cassert>
 
 //TODO: currently passing
-#define MALLOC_VERSION 3
+#define MALLOC_VERSION 2
 
 #if (MALLOC_VERSION == 2)
 
-#include "malloc_2.cpp"
+#include "../malloc_2.cpp"
 
 #else
 
-#include "../malloc_2.cpp"
+#include "../malloc_3.cpp"
 #endif
 
 size_t valid_free_blocks = 0;

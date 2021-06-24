@@ -63,12 +63,13 @@ MallocMetadata* _splitBlocks(MallocMetadata* free_block,size_t size)
     //_deleteFromHistogram(free_block, false);
     // Need to split blocks
     // Calc new pointer to second block
-    MallocMetadata *secondary_block_metadata_ptr = (MallocMetadata *)((char *)free_block + size);
+    MallocMetadata *secondary_block_metadata_ptr = (MallocMetadata *)((char *)_metadataToPtr(free_block) + size);
     secondary_block_metadata_ptr->block_size = secondary_size;
     secondary_block_metadata_ptr->real_size = 0;
     secondary_block_metadata_ptr->is_free = true;
-    
-    // The secondary block is free
+    secondary_block_metadata_ptr->is_mmaped = false;
+    secondary_block_metadata_ptr->next_free = NULL;
+    secondary_block_metadata_ptr->prev_free = NULL;
     secondary_block_metadata_ptr->prev = free_block;
     secondary_block_metadata_ptr->next = free_block->next;
     _addToFreelist(secondary_block_metadata_ptr);    
@@ -346,7 +347,7 @@ void *smalloc(size_t size)
     if (!free_block)
     { // Call sbrk to allocate a new block
 
-        if(size>=MIN_MMAPED_SIZE)
+        if(size>MIN_MMAPED_SIZE)
         {
             MallocMetadata* mmaped_ptr = (MallocMetadata *)mmap( NULL, size + _size_meta_data(),
                                                                  PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0 );
@@ -362,6 +363,7 @@ void *smalloc(size_t size)
                 temp->prev = mmaped_ptr;
             }
             mmaped_ptr->is_mmaped = true;
+            mmaped_ptr->block_size = size;
             mmaped_ptr->real_size = size;
             mmaped_ptr->is_free = false;
             mmaped_ptr->next_free = NULL;
@@ -478,7 +480,10 @@ void _addToFreelist(MallocMetadata *freed_block)
     if(!block_it)
     {
         // First block in bin
+        freed_block->prev_free=NULL;
+        freed_block->next_free=NULL;
         bins_free[bin_index] = freed_block;
+        
         return;
     }
     while (block_it  && block_it->block_size <= freed_block_size)
@@ -543,7 +548,8 @@ void sfree(void *p)
             mmaped_head = freed_block->next;
         }
 
-        int err = munmap(p,freed_block->block_size + _size_meta_data());
+
+        int err = munmap((void*)_voidPtrToMetadata(p),freed_block->block_size + _size_meta_data());
         if (err != 0)
         {
             // TODO : check this case
@@ -586,6 +592,8 @@ void *srealloc(void *oldp, size_t size)
         //b. If ‘oldp’ is NULL, allocates space for ‘size’ bytes and returns a pointer to it.
         return smalloc(size);
     }
+
+
     MallocMetadata *block_metadata_ptr = _voidPtrToMetadata(oldp);
     if (size <= block_metadata_ptr->block_size)
     {
@@ -709,6 +717,12 @@ size_t _num_allocated_blocks()
         count++;
         block_it = block_it->next;
     }
+    block_it = mmaped_head;
+    while (block_it)
+    {
+        count++;
+        block_it = block_it->next;
+    }
     return count;
 }
 
@@ -720,6 +734,12 @@ size_t _num_allocated_bytes()
 {
     size_t count = 0;
     MallocMetadata *block_it = block_head;
+    while (block_it)
+    {
+        count += block_it->block_size;
+        block_it = block_it->next;
+    }
+        block_it = mmaped_head;
     while (block_it)
     {
         count += block_it->block_size;

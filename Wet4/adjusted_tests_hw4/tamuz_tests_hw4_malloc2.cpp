@@ -42,7 +42,7 @@ size_t _num_meta_data_bytes();
 
 size_t _size_meta_data();
 
-void *sbrk(intptr_t);
+
 
 /*******************************************************************************
  *  AUXILIARY FUNCTIONS

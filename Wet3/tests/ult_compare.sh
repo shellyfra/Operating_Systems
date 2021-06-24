@@ -29,7 +29,7 @@ if [ $# -ge 3 ] ; then
 fi
 
 #Variables defenitions
-MAX_RETRY="5"
+MAX_RETRY="1"
 LOG_NAME="ult_compare.log"
 SEARCH_WORD="bytes allocated"
 VALGRIND_LOG="valgrind.log"

@@ -362,7 +362,7 @@ static void _insertToHistrogram(const size_t &size, MallocMetadata *new_block_me
         // if no node was found, take head
         block_it = block_head;
     }
-   
+
     new_block_metadata->prev=NULL;
     new_block_metadata->prev_free=NULL;
     new_block_metadata->next=NULL;
@@ -370,7 +370,7 @@ static void _insertToHistrogram(const size_t &size, MallocMetadata *new_block_me
 
     MallocMetadata *prev_block = NULL;
     while (block_it && block_it->block_size <= size)
-    {  
+    {
         prev_block = block_it;
         block_it = block_it->next;
     }
@@ -381,7 +381,7 @@ static void _insertToHistrogram(const size_t &size, MallocMetadata *new_block_me
         // The previous block of block_it
         prev_block =  block_it? block_it->prev : NULL;
     }
-    
+
     // block_it will be the first block that is larger than the current
     if (!prev_block)
     {
@@ -592,6 +592,9 @@ void _addToFreelist(MallocMetadata *freed_block)
     if (block_it)
     {
         block_it->prev_free = freed_block;
+        if (block_it == bins_free[bin_index]) {
+            bins_free[bin_index] = freed_block;
+        }
     }
     if (prev)
     {

@@ -3,6 +3,8 @@
 #include <sys/mman.h>
 #include <iostream>
 
+#include <iomanip>
+
 #ifdef DEBUG
 #define DO_IF_DEBUG(command)  \
     do                        \
@@ -64,7 +66,7 @@ static void _printNodesList(const char* func, size_t size) {
     while (block_it)
     {
         //unsigned short bin_index = block_it->block_size / HISTOGRAM_BIN_SIZE;
-        std:: cout << "\t***** Node  " << count << " *********** " << "\t-> ";
+        std:: cout << "\t******* Node " << std::setw(5)<< count << " ********" << "\t-> ";
 //        std:: cout << "\t block size = " << block_it->block_size << std::endl;
 //        std:: cout << "\t block free = " << block_it->is_free << std::endl;
 //        std:: cout << "\t block mmaped = " << block_it->is_mmaped << std::endl;
@@ -78,21 +80,21 @@ static void _printNodesList(const char* func, size_t size) {
     block_it = block_head;
     while (block_it)
     {
-        std:: cout << "\t* block size = " << block_it->block_size  << " \t*\t ";
+        std:: cout << "\t* block size = " <<std::setw(10)<< block_it->block_size  << " *\t   ";
         block_it = block_it->next;
     }
     std:: cout << std::endl;
     block_it = block_head;
     while (block_it)
     {
-        std:: cout << "\t* block free = " << block_it->is_free << " \t*\t " ;
+        std:: cout << "\t* block free = " <<std::setw(10) << block_it->is_free<< " *\t   ";
         block_it = block_it->next;
     }
     std:: cout << std::endl;
     block_it = block_head;
     while (block_it)
     {
-        std:: cout << "\t* block mmaped = " << block_it->is_mmaped << "\t*\t " ;
+        std:: cout << "\t* block mmaped = " <<std::setw(8) << block_it->is_mmaped << " *\t   ";
         block_it = block_it->next;
     }
     std:: cout << std::endl;
@@ -101,10 +103,10 @@ static void _printNodesList(const char* func, size_t size) {
     {
         unsigned short bin_index = block_it->block_size / HISTOGRAM_BIN_SIZE;
         if (bins_free[bin_index] == block_it) {
-            std:: cout << "\t* free_HEAD [" << bin_index << "]  \t*\t";
+            std:: cout << "\t* free_HEAD [" << std::setw(3)<<bin_index << "]"<< std::setw(14)<<" *\t   ";
         }
         else {
-            std:: cout << "\t*             " <<  "   \t*\t";
+            std:: cout << "\t* "<<std::setw(29)<<" *\t   ";
         }
         block_it = block_it->next;
     }
@@ -114,11 +116,11 @@ static void _printNodesList(const char* func, size_t size) {
     {
         if(block_it == wilderness_chunk)
         {
-            std:: cout << "\t* WILDERNESS  \t\t*\t";
+            std:: cout << "\t* WILDERNESS" <<std::setw(19) << " *\t   ";
         }
         else
         {
-            std:: cout << "\t*             " <<  "   \t*\t";
+             std::cout << "\t* "<<std::setw(29)<<" *\t   ";
         }
         
          block_it = block_it->next;
@@ -127,7 +129,7 @@ static void _printNodesList(const char* func, size_t size) {
      block_it = block_head;
     while (block_it)
     {
-        std:: cout << "\t************************* " << "\t ";
+        std:: cout << "\t***************************" << "\t   ";
          block_it = block_it->next;
     }
     

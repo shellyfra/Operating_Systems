@@ -25,12 +25,12 @@ add_executable(tamuz_tests_hw4_malloc2 adjusted_tests_hw4/tamuz_tests_hw4_malloc
 #add_executable(MMU_4 tests/test4.cpp)
 add_compile_options(-Wall -Wextra -pedantic -Werror -pedantic-errors)
 
-list(APPEND debug_flags "-std=c++11" "-Wall" "-Wextra" "-pedantic" "-Werror" "-pedantic-errors" "-DDEBUG")
+list(APPEND debug_flags "-std=c++11"  "-pedantic" "-Werror" "-pedantic-errors" "-DDEBUG")
 target_compile_options(mainTest3
   PRIVATE
     ${debug_flags}
   )
-  target_compile_options(MMU_2
+  target_compile_options(malloc_3_tests
   PRIVATE
     ${debug_flags}
   )

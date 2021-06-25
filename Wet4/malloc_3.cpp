@@ -66,7 +66,7 @@ static void _printNodesList(const char* func, size_t size) {
     while (block_it)
     {
         //unsigned short bin_index = block_it->block_size / HISTOGRAM_BIN_SIZE;
-        std:: cout << "\t******* Node " << std::setw(5)<< count << " ********" << "\t-> ";
+        std:: cout << "\t******* Node " << std::setw(4)<< count << " *********" << "\t-> ";
 //        std:: cout << "\t block size = " << block_it->block_size << std::endl;
 //        std:: cout << "\t block free = " << block_it->is_free << std::endl;
 //        std:: cout << "\t block mmaped = " << block_it->is_mmaped << std::endl;
@@ -638,7 +638,6 @@ void sfree(void *p)
         DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, 0););
         return;
     }
-    _voidPtrToMetadata(p)->block_size;
     if (freed_block->is_mmaped)
     {
         //removeNode(freed_block);

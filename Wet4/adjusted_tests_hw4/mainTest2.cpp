@@ -4,7 +4,7 @@
 //TODO: currently passing
 #include <iostream>
 #include <assert.h>
-#include "../../malloc_2.cpp"
+#include "../malloc_2.cpp"
 
 void assertAll(size_t e1, size_t e2, size_t e3, size_t e4, size_t e5, size_t e6) {
     assert(_num_free_blocks() == e1);

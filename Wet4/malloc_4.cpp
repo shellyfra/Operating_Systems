@@ -39,6 +39,7 @@ const unsigned int MIN_MMAPED_SIZE = 128 * 1024;
 const unsigned short HISTOGRAM_BIN_SIZE = 1024;
 const size_t SMALLOC_MAX_SIZE = 100000000;
 const int SBRK_FAILURE = -1;
+const unsigned short ALIGN_BYTES = 8;
 
 MallocMetadata *bins_free[HISTOGRAM_BIN_COUNT];
 //MallocMetadata *bins[HISTOGRAM_BIN_COUNT];
@@ -59,6 +60,15 @@ static void _printNodesFreeList();
 void *_metadataToPtr(MallocMetadata *metadata_block);
 void _addToFreelist(MallocMetadata *freed_block);
 
+static size_t _alignSize(size_t size)
+{
+    const unsigned short remainder = size % ALIGN_BYTES;
+    if(remainder == 0)
+    {
+        return size;
+    }
+    return size+(ALIGN_BYTES - remainder);
+}
 static void _printNodesList(const char* func, size_t size) {
     size_t count = 0;
     MallocMetadata *block_it = block_head;
@@ -471,6 +481,7 @@ found.
 */
 void *smalloc(size_t size)
 {
+    size = _alignSize(size);
     if (size == 0 || size > SMALLOC_MAX_SIZE)
     {
         DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, size););
@@ -555,15 +566,16 @@ bytes to 0.
 */
 void *scalloc(size_t num, size_t size)
 {
-    void *block_ptr = smalloc(num * size);
+    size_t effective_size = _alignSize(num*size);
+    void *block_ptr = smalloc(effective_size);
     if (!block_ptr)
     {
         return NULL;
     }
     
-    memset(block_ptr, 0, num * size);
+    memset(block_ptr, 0, effective_size);
     // If it fails, block_ptr will be NULL
-    DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, size););
+    DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, effective_size););
     return block_ptr;
 }
 
@@ -684,6 +696,7 @@ allocated space and frees the oldp.
 */
 void *srealloc(void *oldp, size_t size)
 {
+    size = _alignSize(size);
     if (size == 0 || size > SMALLOC_MAX_SIZE)
     {
         DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, size););

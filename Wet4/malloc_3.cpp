@@ -54,6 +54,7 @@ static void _mergeRightBlock(MallocMetadata *block_metadata);
 static void _deleteFromHistogram(MallocMetadata *block_metadata);
 static void _insertToHistrogram(const size_t &size, MallocMetadata *new_block_metadata);
 static void _printNodesList(const char* func, size_t size);
+static void _printNodesFreeList(const char* func, size_t size);
 void *_metadataToPtr(MallocMetadata *metadata_block);
 void _addToFreelist(MallocMetadata *freed_block);
 
@@ -112,6 +113,21 @@ static void _printNodesList(const char* func, size_t size) {
     std::cout <<std::endl;
 }
 
+static void _printNodesFreeList() {
+    for (int i = 0; i < HISTOGRAM_BIN_COUNT ; ++i) {
+        MallocMetadata *block_it = bins_free[i];
+        if (bins_free[i]) {
+            std::cout << "bins_free[" << i << "]" << std::endl;
+            while (block_it)
+            {
+                std:: cout << "block size = " << block_it->block_size  << "\t -->   ";
+                block_it = block_it->next_free;
+            }
+            std::cout <<std::endl;
+        }
+    }
+    std::cout <<std::endl;
+}
 
 //size_t num_free_blocks=0;
 MallocMetadata *_voidPtrToMetadata(void *p)
@@ -592,6 +608,7 @@ void sfree(void *p)
     {
         return;
     }
+    size_t size = _voidPtrToMetadata(p)->block_size;
     if (freed_block->is_mmaped)
     {
         //removeNode(freed_block);
@@ -609,7 +626,8 @@ void sfree(void *p)
         }
         mmaped_size -= size_of_block;
         mmaped_blocks--;
-        _printNodesList(__FUNCTION__, 0);
+        _printNodesList(__FUNCTION__, size);
+        _printNodesFreeList();
         return;
     }
     //freed_block->real_size = 0;
@@ -617,7 +635,8 @@ void sfree(void *p)
 
     _addToFreelist(freed_block);
     _mergeAdjacentBlocks(freed_block);
-    _printNodesList(__FUNCTION__, 0);
+    _printNodesList(__FUNCTION__, size);
+    _printNodesFreeList();
     //num_free_blocks++;
 }
 /*
@@ -645,6 +664,7 @@ void *srealloc(void *oldp, size_t size)
     {
         //b. If ‘oldp’ is NULL, allocates space for ‘size’ bytes and returns a pointer to it.
         _printNodesList(__FUNCTION__, size);
+        _printNodesFreeList();
         return smalloc(size);
     }
 
@@ -664,6 +684,7 @@ void *srealloc(void *oldp, size_t size)
         //block_metadata_ptr->real_size = size;
         _trySplitBlock(block_metadata_ptr, size);
         _printNodesList(__FUNCTION__, size);
+        _printNodesFreeList();
         return oldp;
     }
     else
@@ -737,6 +758,7 @@ void *srealloc(void *oldp, size_t size)
 
     //num_free_blocks--;
     _printNodesList(__FUNCTION__, size);
+    _printNodesFreeList();
     return new_block_ptr;
 }
 /*

@@ -78,8 +78,8 @@ Executing _printDebugInfo(__FUNCTION__, size);
 	*                         *	   	*                         *	   	*                         *	   	*                         *	   	*                         *	   	* WILDERNESS              *	   
 	***************************	   	***************************	   	***************************	   	***************************	   	***************************	   	***************************	   
 
-Executing _printDebugInfo(__FUNCTION__, 0);
-[sfree with size 0] 
+Executing _printDebugInfo(__FUNCTION__, size);
+[sfree with size 3000] 
 	******* Node    0 *********	-> 	******* Node    1 *********	-> 	******* Node    2 *********	-> 	******* Node    3 *********	-> 	******* Node    4 *********	-> 	******* Node    5 *********	-> 
 	* block size =       1000 *	   	* block size =       2000 *	   	* block size =       3000 *	   	* block size =       4000 *	   	* block size =       5000 *	   	* block size =       6000 *	   
 	* block free =          0 *	   	* block free =          0 *	   	* block free =          1 *	   	* block free =          0 *	   	* block free =          0 *	   	* block free =          0 *	   
@@ -102,8 +102,8 @@ Executing _printDebugInfo(__FUNCTION__, size);
 bins_free[1]
 block size = 1952	 -->   
 
-Executing _printDebugInfo(__FUNCTION__, 0);
-[sfree with size 0] 
+Executing _printDebugInfo(__FUNCTION__, size);
+[sfree with size 1000] 
 	******* Node    0 *********	-> 	******* Node    1 *********	-> 	******* Node    2 *********	-> 	******* Node    3 *********	-> 	******* Node    4 *********	-> 	******* Node    5 *********	-> 
 	* block size =       1000 *	   	* block size =       2000 *	   	* block size =       3000 *	   	* block size =       4000 *	   	* block size =       5000 *	   	* block size =       6000 *	   
 	* block free =          0 *	   	* block free =          0 *	   	* block free =          1 *	   	* block free =          0 *	   	* block free =          0 *	   	* block free =          0 *	   
@@ -114,8 +114,8 @@ Executing _printDebugInfo(__FUNCTION__, 0);
 bins_free[2]
 block size = 3000	 -->   
 
-Executing _printDebugInfo(__FUNCTION__, 0);
-[sfree with size 0] 
+Executing _printDebugInfo(__FUNCTION__, size);
+[sfree with size 4000] 
 	******* Node    0 *********	-> 	******* Node    1 *********	-> 	******* Node    2 *********	-> 	******* Node    3 *********	-> 	******* Node    4 *********	-> 
 	* block size =       1000 *	   	* block size =       2000 *	   	* block size =       7048 *	   	* block size =       5000 *	   	* block size =       6000 *	   
 	* block free =          0 *	   	* block free =          0 *	   	* block free =          1 *	   	* block free =          0 *	   	* block free =          0 *	   
@@ -136,8 +136,8 @@ Executing _printDebugInfo(__FUNCTION__, size);
 	*                         *	   	*                         *	   	*                         *	   	*                         *	   	* WILDERNESS              *	   
 	***************************	   	***************************	   	***************************	   	***************************	   	***************************	   
 
-Executing _printDebugInfo(__FUNCTION__, 0);
-[sfree with size 0] 
+Executing _printDebugInfo(__FUNCTION__, size);
+[sfree with size 7048] 
 	******* Node    0 *********	-> 	******* Node    1 *********	-> 	******* Node    2 *********	-> 	******* Node    3 *********	-> 	******* Node    4 *********	-> 
 	* block size =       1000 *	   	* block size =       2000 *	   	* block size =       7048 *	   	* block size =       5000 *	   	* block size =       6000 *	   
 	* block free =          0 *	   	* block free =          0 *	   	* block free =          1 *	   	* block free =          0 *	   	* block free =          0 *	   
@@ -160,8 +160,8 @@ Executing _printDebugInfo(__FUNCTION__, size);
 bins_free[0]
 block size = 128	 -->   
 
-Executing _printDebugInfo(__FUNCTION__, 0);
-[sfree with size 0] 
+Executing _printDebugInfo(__FUNCTION__, size);
+[sfree with size 6000] 
 	******* Node    0 *********	-> 	******* Node    1 *********	-> 	******* Node    2 *********	-> 	******* Node    3 *********	-> 	******* Node    4 *********	-> 	******* Node    5 *********	-> 
 	* block size =       1000 *	   	* block size =       2000 *	   	* block size =       6872 *	   	* block size =        128 *	   	* block size =       5000 *	   	* block size =       6000 *	   
 	* block free =          0 *	   	* block free =          0 *	   	* block free =          0 *	   	* block free =          1 *	   	* block free =          0 *	   	* block free =          1 *	   
@@ -218,8 +218,8 @@ Executing _printDebugInfo(__FUNCTION__, size);
 	*                         *	   	*                         *	   	*                         *	   	*                         *	   	*                         *	   	*                         *	   	*                         *	   	* WILDERNESS              *	   
 	***************************	   	***************************	   	***************************	   	***************************	   	***************************	   	***************************	   	***************************	   	***************************	   
 
-Executing _printDebugInfo(__FUNCTION__, 0);
-[sfree with size 0] 
+Executing _printDebugInfo(__FUNCTION__, size);
+[sfree with size 12] 
 	******* Node    0 *********	-> 	******* Node    1 *********	-> 	******* Node    2 *********	-> 	******* Node    3 *********	-> 	******* Node    4 *********	-> 	******* Node    5 *********	-> 	******* Node    6 *********	-> 	******* Node    7 *********	-> 
 	* block size =       1000 *	   	* block size =       2000 *	   	* block size =       6872 *	   	* block size =        128 *	   	* block size =       5000 *	   	* block size =       5000 *	   	* block size =       1000 *	   	* block size =         12 *	   
 	* block free =          0 *	   	* block free =          0 *	   	* block free =          0 *	   	* block free =          0 *	   	* block free =          0 *	   	* block free =          0 *	   	* block free =          0 *	   	* block free =          1 *	   

@@ -629,10 +629,11 @@ void _addToFreelist(MallocMetadata *freed_block)
 void sfree(void *p)
 {
     MallocMetadata *freed_block;
-    size_t size = _voidPtrToMetadata(p)->block_size;
+    //size_t size = _voidPtrToMetadata(p)->block_size; This will cause SEG fault if P is NULL
     if (!p || (freed_block = _voidPtrToMetadata(p))->is_free)
     {
-        DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, size););
+        // Here we print size 0 since !p does not exist, therfore no size can be extracted
+        DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, 0););
         return;
     }
     if (freed_block->is_mmaped)
@@ -652,7 +653,7 @@ void sfree(void *p)
         }
         mmaped_size -= size_of_block;
         mmaped_blocks--;
-        DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, size););
+        DO_IF_DEBUG(_printDebugInfo(__FUNCTION__,  _voidPtrToMetadata(p)->block_size););
         return;
     }
     //freed_block->real_size = 0;
@@ -660,7 +661,7 @@ void sfree(void *p)
 
     _addToFreelist(freed_block);
     _mergeAdjacentBlocks(freed_block);
-    DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, size););
+    DO_IF_DEBUG(_printDebugInfo(__FUNCTION__,  _voidPtrToMetadata(p)->block_size););
     //num_free_blocks++;
 }
 /*

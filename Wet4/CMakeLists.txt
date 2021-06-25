@@ -8,7 +8,10 @@ enable_testing()
 add_executable(MMU_1 tests/test1.cpp)
 add_executable(MMU_2 tests/test2.cpp)
 add_executable(MMU_3 tests/test3.cpp)
+add_executable(MMU_5 tests/test5.cpp)
+add_executable(MMU_6 tests/test6.cpp)
 add_executable(tamuz adjusted_tests_hw4/tamuz_modified_tests_for_malloc_2.cpp)
+add_executable(tamuz_tests_hw4_malloc4 adjusted_tests_hw4/tamuz_tests_hw4_malloc4.cpp)
 add_executable(malloc2_test01 adjusted_tests_hw4/malloc2_test01.cpp)
 add_executable(malloc3_test01 adjusted_tests_hw4/malloc3_test01.cpp)
 add_executable(malloc3_test02 adjusted_tests_hw4/malloc3_test02.cpp)
@@ -28,6 +31,10 @@ add_compile_options(-Wall -Wextra -pedantic -Werror -pedantic-errors)
 
 list(APPEND debug_flags "-std=c++11"  "-pedantic" "-Werror" "-pedantic-errors" "-DDEBUG")
 target_compile_options(mainTest3
+  PRIVATE
+    ${debug_flags}
+  )
+  target_compile_options(tamuz_tests_hw4_malloc4
   PRIVATE
     ${debug_flags}
   )

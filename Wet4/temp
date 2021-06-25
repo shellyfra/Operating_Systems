@@ -1,0 +1,431 @@
+test_basic_malloc_and_free
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 8] 
+	******* Node    0 *********	-> 
+	* block size =          8 *	   
+	* block free =          0 *	   
+	* block mmaped =        0 *	   
+	*                         *	   
+	* WILDERNESS              *	   
+	***************************	   
+
+Error signal 6
+test_malloc_wilderness
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 8] 
+	******* Node    0 *********	-> 
+	* block size =          8 *	   
+	* block free =          0 *	   
+	* block mmaped =        0 *	   
+	*                         *	   
+	* WILDERNESS              *	   
+	***************************	   
+
+Executing _printDebugInfo(__FUNCTION__, 0);
+[sfree with size 0] 
+	******* Node    0 *********	-> 
+	* block size =          8 *	   
+	* block free =          1 *	   
+	* block mmaped =        0 *	   
+	* free_HEAD [  0]         *	   
+	* WILDERNESS              *	   
+	***************************	   
+bins_free[0]
+block size = 8	 -->   
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 8] 
+	******* Node    0 *********	-> 
+	* block size =          8 *	   
+	* block free =          0 *	   
+	* block mmaped =        0 *	   
+	*                         *	   
+	* WILDERNESS              *	   
+	***************************	   
+
+Executing _printDebugInfo(__FUNCTION__, 0);
+[sfree with size 0] 
+	******* Node    0 *********	-> 
+	* block size =          8 *	   
+	* block free =          1 *	   
+	* block mmaped =        0 *	   
+	* free_HEAD [  0]         *	   
+	* WILDERNESS              *	   
+	***************************	   
+bins_free[0]
+block size = 8	 -->   
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 8] 
+	******* Node    0 *********	-> 
+	* block size =          8 *	   
+	* block free =          0 *	   
+	* block mmaped =        0 *	   
+	*                         *	   
+	* WILDERNESS              *	   
+	***************************	   
+
+Executing _printDebugInfo(__FUNCTION__, 0);
+[sfree with size 0] 
+	******* Node    0 *********	-> 
+	* block size =          8 *	   
+	* block free =          1 *	   
+	* block mmaped =        0 *	   
+	* free_HEAD [  0]         *	   
+	* WILDERNESS              *	   
+	***************************	   
+bins_free[0]
+block size = 8	 -->   
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 16] 
+	******* Node    0 *********	-> 
+	* block size =         16 *	   
+	* block free =          0 *	   
+	* block mmaped =        0 *	   
+	*                         *	   
+	* WILDERNESS              *	   
+	***************************	   
+
+Error signal 6
+test_calloc
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 8] 
+	******* Node    0 *********	-> 
+	* block size =          8 *	   
+	* block free =          0 *	   
+	* block mmaped =        0 *	   
+	*                         *	   
+	* WILDERNESS              *	   
+	***************************	   
+
+Executing _printDebugInfo(__FUNCTION__, effective_size);
+[scalloc with size 8] 
+	******* Node    0 *********	-> 
+	* block size =          8 *	   
+	* block free =          0 *	   
+	* block mmaped =        0 *	   
+	*                         *	   
+	* WILDERNESS              *	   
+	***************************	   
+
+Error signal 6
+test_malloc_split_and_merge
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 232] 
+	******* Node    0 *********	-> 
+	* block size =        232 *	   
+	* block free =          0 *	   
+	* block mmaped =        0 *	   
+	*                         *	   
+	* WILDERNESS              *	   
+	***************************	   
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 8] 
+	******* Node    0 *********	-> 	******* Node    1 *********	-> 
+	* block size =        232 *	   	* block size =          8 *	   
+	* block free =          0 *	   	* block free =          0 *	   
+	* block mmaped =        0 *	   	* block mmaped =        0 *	   
+	*                         *	   	*                         *	   
+	*                         *	   	* WILDERNESS              *	   
+	***************************	   	***************************	   
+
+Error signal 6
+test_realloc_just_contract
+Executing _printDebugInfo(__FUNCTION__, size);
+[srealloc with size 8] 
+
+
+
+
+
+
+
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 8] 
+	******* Node    0 *********	-> 
+	* block size =          8 *	   
+	* block free =          0 *	   
+	* block mmaped =        0 *	   
+	*                         *	   
+	* WILDERNESS              *	   
+	***************************	   
+
+Error signal 6
+test_realloc_split_then_merge
+Executing _printDebugInfo(__FUNCTION__, size);
+[srealloc with size 200] 
+
+
+
+
+
+
+
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 200] 
+	******* Node    0 *********	-> 
+	* block size =        200 *	   
+	* block free =          0 *	   
+	* block mmaped =        0 *	   
+	*                         *	   
+	* WILDERNESS              *	   
+	***************************	   
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[srealloc with size 200] 
+	******* Node    0 *********	-> 
+	* block size =        200 *	   
+	* block free =          0 *	   
+	* block mmaped =        0 *	   
+	*                         *	   
+	* WILDERNESS              *	   
+	***************************	   
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 200] 
+	******* Node    0 *********	-> 	******* Node    1 *********	-> 
+	* block size =        200 *	   	* block size =        200 *	   
+	* block free =          0 *	   	* block free =          0 *	   
+	* block mmaped =        0 *	   	* block mmaped =        0 *	   
+	*                         *	   	*                         *	   
+	*                         *	   	* WILDERNESS              *	   
+	***************************	   	***************************	   
+
+Executing _printDebugInfo(__FUNCTION__, 0);
+[sfree with size 0] 
+	******* Node    0 *********	-> 	******* Node    1 *********	-> 
+	* block size =        200 *	   	* block size =        200 *	   
+	* block free =          0 *	   	* block free =          1 *	   
+	* block mmaped =        0 *	   	* block mmaped =        0 *	   
+	*                         *	   	* free_HEAD [  0]         *	   
+	*                         *	   	* WILDERNESS              *	   
+	***************************	   	***************************	   
+bins_free[0]
+block size = 200	 -->   
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[srealloc with size 8] 
+	******* Node    0 *********	-> 	******* Node    1 *********	-> 	******* Node    2 *********	-> 
+	* block size =          8 *	   	* block size =        144 *	   	* block size =        200 *	   
+	* block free =          0 *	   	* block free =          1 *	   	* block free =          1 *	   
+	* block mmaped =        0 *	   	* block mmaped =        0 *	   	* block mmaped =        0 *	   
+	*                         *	   	*                         *	   	* free_HEAD [  0]         *	   
+	*                         *	   	*                         *	   	* WILDERNESS              *	   
+	***************************	   	***************************	   	***************************	   
+bins_free[0]
+block size = 200	 -->   
+
+Error signal 6
+test_realloc_merge_then_split
+Executing _printDebugInfo(__FUNCTION__, size);
+[srealloc with size 8] 
+
+
+
+
+
+
+
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 8] 
+	******* Node    0 *********	-> 
+	* block size =          8 *	   
+	* block free =          0 *	   
+	* block mmaped =        0 *	   
+	*                         *	   
+	* WILDERNESS              *	   
+	***************************	   
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[srealloc with size 200] 
+	******* Node    0 *********	-> 
+	* block size =          8 *	   
+	* block free =          0 *	   
+	* block mmaped =        0 *	   
+	*                         *	   
+	* WILDERNESS              *	   
+	***************************	   
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 200] 
+	******* Node    0 *********	-> 	******* Node    1 *********	-> 
+	* block size =          8 *	   	* block size =        200 *	   
+	* block free =          0 *	   	* block free =          0 *	   
+	* block mmaped =        0 *	   	* block mmaped =        0 *	   
+	*                         *	   	*                         *	   
+	*                         *	   	* WILDERNESS              *	   
+	***************************	   	***************************	   
+
+Error signal 6
+test_realloc_on_wilderness
+Executing _printDebugInfo(__FUNCTION__, size);
+[srealloc with size 8] 
+
+
+
+
+
+
+
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 8] 
+	******* Node    0 *********	-> 
+	* block size =          8 *	   
+	* block free =          0 *	   
+	* block mmaped =        0 *	   
+	*                         *	   
+	* WILDERNESS              *	   
+	***************************	   
+
+Error signal 6
+test_realloc_copy_to_wilderness
+Executing _printDebugInfo(__FUNCTION__, size);
+[srealloc with size 8] 
+
+
+
+
+
+
+
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 8] 
+	******* Node    0 *********	-> 
+	* block size =          8 *	   
+	* block free =          0 *	   
+	* block mmaped =        0 *	   
+	*                         *	   
+	* WILDERNESS              *	   
+	***************************	   
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[srealloc with size 8] 
+	******* Node    0 *********	-> 
+	* block size =          8 *	   
+	* block free =          0 *	   
+	* block mmaped =        0 *	   
+	*                         *	   
+	* WILDERNESS              *	   
+	***************************	   
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 8] 
+	******* Node    0 *********	-> 	******* Node    1 *********	-> 
+	* block size =          8 *	   	* block size =          8 *	   
+	* block free =          0 *	   	* block free =          0 *	   
+	* block mmaped =        0 *	   	* block mmaped =        0 *	   
+	*                         *	   	*                         *	   
+	*                         *	   	* WILDERNESS              *	   
+	***************************	   	***************************	   
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[srealloc with size 8] 
+	******* Node    0 *********	-> 	******* Node    1 *********	-> 
+	* block size =          8 *	   	* block size =          8 *	   
+	* block free =          0 *	   	* block free =          0 *	   
+	* block mmaped =        0 *	   	* block mmaped =        0 *	   
+	*                         *	   	*                         *	   
+	*                         *	   	* WILDERNESS              *	   
+	***************************	   	***************************	   
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 8] 
+	******* Node    0 *********	-> 	******* Node    1 *********	-> 	******* Node    2 *********	-> 
+	* block size =          8 *	   	* block size =          8 *	   	* block size =          8 *	   
+	* block free =          0 *	   	* block free =          0 *	   	* block free =          0 *	   
+	* block mmaped =        0 *	   	* block mmaped =        0 *	   	* block mmaped =        0 *	   
+	*                         *	   	*                         *	   	*                         *	   
+	*                         *	   	*                         *	   	* WILDERNESS              *	   
+	***************************	   	***************************	   	***************************	   
+
+Error signal 6
+test_failures
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 0] 
+
+
+
+
+
+
+
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 100000016] 
+
+
+
+
+
+
+
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 0] 
+
+
+
+
+
+
+
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 100000016] 
+
+
+
+
+
+
+
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[srealloc with size 0] 
+
+
+
+
+
+
+
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[srealloc with size 100000016] 
+
+
+
+
+
+
+
+
+Executing _printDebugInfo(__FUNCTION__, 0);
+[sfree with size 0] 
+
+
+
+
+
+
+
+
+Executing _printDebugInfo(__FUNCTION__, size);
+[smalloc with size 8] 
+	******* Node    0 *********	-> 
+	* block size =          8 *	   
+	* block free =          0 *	   
+	* block mmaped =        0 *	   
+	*                         *	   
+	* WILDERNESS              *	   
+	***************************	   
+
+Error signal 6
+Done.

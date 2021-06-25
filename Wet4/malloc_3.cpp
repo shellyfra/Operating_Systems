@@ -65,14 +65,7 @@ static void _printNodesList(const char* func, size_t size) {
     std::cout << "[" << func << " with size " << size << "] " <<std::endl;
     while (block_it)
     {
-        //unsigned short bin_index = block_it->block_size / HISTOGRAM_BIN_SIZE;
         std:: cout << "\t******* Node " << std::setw(5)<< count << " ********" << "\t-> ";
-//        std:: cout << "\t block size = " << block_it->block_size << std::endl;
-//        std:: cout << "\t block free = " << block_it->is_free << std::endl;
-//        std:: cout << "\t block mmaped = " << block_it->is_mmaped << std::endl;
-//        if (bins_free[bin_index] == block_it) {
-//            std:: cout << "\t bins_free [" << bin_index << "]" << std::endl;
-//        }
         block_it = block_it->next;
         count++;
     }
@@ -636,12 +629,12 @@ void _addToFreelist(MallocMetadata *freed_block)
 void sfree(void *p)
 {
     MallocMetadata *freed_block;
+    size_t size = _voidPtrToMetadata(p)->block_size;
     if (!p || (freed_block = _voidPtrToMetadata(p))->is_free)
     {
-        DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, 0););
+        DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, size););
         return;
     }
-    _voidPtrToMetadata(p)->block_size;
     if (freed_block->is_mmaped)
     {
         //removeNode(freed_block);
@@ -659,7 +652,7 @@ void sfree(void *p)
         }
         mmaped_size -= size_of_block;
         mmaped_blocks--;
-        DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, 0););
+        DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, size););
         return;
     }
     //freed_block->real_size = 0;
@@ -667,7 +660,7 @@ void sfree(void *p)
 
     _addToFreelist(freed_block);
     _mergeAdjacentBlocks(freed_block);
-    DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, 0););
+    DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, size););
     //num_free_blocks++;
 }
 /*

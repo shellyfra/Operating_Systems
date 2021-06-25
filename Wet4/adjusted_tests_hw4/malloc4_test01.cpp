@@ -13,7 +13,7 @@
 
 #else
 
-#include "../malloc_3.cpp"
+#include "../malloc_4.cpp"
 #endif
 
 void malloc2_test_01() {

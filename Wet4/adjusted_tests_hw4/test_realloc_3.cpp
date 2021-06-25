@@ -164,6 +164,7 @@ void remalloc_3_test() {
     TEST_MALLOC();
 
     //Should split the block
+    /*
     large_malloc = (int *) srealloc(large_malloc, 60 * sizeof(int));
     assert(large_malloc);
     for (int i = 0; i < 40; i++) {
@@ -175,6 +176,7 @@ void remalloc_3_test() {
     valid_allocated_bytes -= _size_meta_data();
     valid_meta_data_bytes += _size_meta_data();
     TEST_MALLOC();
+    */
 }
 
 int main() {

@@ -57,6 +57,16 @@ void *_metadataToPtr(MallocMetadata *metadata_block);
 void _addToFreelist(MallocMetadata *freed_block);
 
 //size_t num_free_blocks=0;
+MallocMetadata *_voidPtrToMetadata(void *p)
+{
+    return (MallocMetadata *)((char *)p - _size_meta_data());
+}
+
+void *_metadataToPtr(MallocMetadata *metadata_block)
+{
+    return (void *)((char *)metadata_block + _size_meta_data());
+}
+
 MallocMetadata *_splitBlocks(MallocMetadata *free_block, size_t size)
 {
     size_t secondary_size = free_block->block_size - size - _size_meta_data();
@@ -298,18 +308,7 @@ static void _insertToHistrogram(const size_t &size, MallocMetadata *new_block_me
     }
 }
 */
-/* smalloc
-● Searches for a free block with up to ‘size’ bytes or allocates (sbrk()) one if none are
-found.
-● Return value:
-    i. Success – returns pointer to the first byte in the allocated block (excluding the
-    meta-data of course)
-    ii. Failure –
-        a. If size is 0 returns NULL.
-        b. If ‘size’ is more than 10^8 , return NULL.
-        c. If sbrk fails in allocating the needed space, return NULL.
 
-*/
 void _trySplitBlock(MallocMetadata *free_block, size_t requested_size)
 {
 
@@ -357,6 +356,18 @@ void *smalloc_mmap(size_t size)
     mmaped_blocks++;
     return _metadataToPtr(mmaped_ptr);
 }
+/* smalloc
+● Searches for a free block with up to ‘size’ bytes or allocates (sbrk()) one if none are
+found.
+● Return value:
+    i. Success – returns pointer to the first byte in the allocated block (excluding the
+    meta-data of course)
+    ii. Failure –
+        a. If size is 0 returns NULL.
+        b. If ‘size’ is more than 10^8 , return NULL.
+        c. If sbrk fails in allocating the needed space, return NULL.
+
+*/
 void *smalloc(size_t size)
 {
     if (size == 0 || size > SMALLOC_MAX_SIZE)
@@ -444,33 +455,12 @@ void *scalloc(size_t num, size_t size)
     {
         return NULL;
     }
+    
     memset(block_ptr, 0, num * size);
+    // If it fails, block_ptr will be NULL
     return block_ptr;
 }
 
-/*
-void removeNode(MallocMetadata *block_metadata_ptr)
-{
-        if (block_metadata_ptr-> prev)
-        {
-            block_metadata_ptr->prev->next = block_metadata_ptr->next;
-        }
-        if (block_metadata_ptr->next)
-        {
-            block_metadata_ptr->next->prev = block_metadata_ptr->prev;
-        }
-        
-}
-*/
-MallocMetadata *_voidPtrToMetadata(void *p)
-{
-    return (MallocMetadata *)((char *)p - _size_meta_data());
-}
-
-void *_metadataToPtr(MallocMetadata *metadata_block)
-{
-    return (void *)((char *)metadata_block + _size_meta_data());
-}
 void _addToFreelist(MallocMetadata *freed_block)
 {
     // Add to free list and change pointers in histogram accordingly
@@ -659,7 +649,6 @@ void *srealloc(void *oldp, size_t size)
         }
         if (!new_block_ptr)
         {
-
             return NULL;
         }
         if (mallocd && !was_wilderness)
@@ -671,6 +660,7 @@ void *srealloc(void *oldp, size_t size)
 
     if (new_block_ptr != oldp)
     {
+        // TODO check memcpy values
         memcpy(new_block_ptr, oldp, size_to_copy);
         if(block_metadata_ptr->is_mmaped)
         {

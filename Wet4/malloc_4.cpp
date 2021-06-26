@@ -55,7 +55,7 @@ static MallocMetadata *_getFreeBlock(const size_t &size);
 static void _mergeAdjacentBlocks(MallocMetadata *block_metadata);
 static void _mergeRightBlock(MallocMetadata *block_metadata);
 static void _deleteFromHistogram(MallocMetadata *block_metadata);
-static void _printNodesList(const char* func, size_t size);
+static void _printNodesList(const char *func, size_t size);
 static void _printNodesFreeList();
 void *_metadataToPtr(MallocMetadata *metadata_block);
 void _addToFreelist(MallocMetadata *freed_block);
@@ -63,107 +63,115 @@ void _addToFreelist(MallocMetadata *freed_block);
 static size_t _alignSize(size_t size)
 {
     const unsigned short remainder = size % ALIGN_BYTES;
-    if(remainder == 0)
+    if (remainder == 0)
     {
         return size;
     }
-    return size+(ALIGN_BYTES - remainder);
+    return size + (ALIGN_BYTES - remainder);
 }
-static void _printNodesList(const char* func, size_t size) {
+static void _printNodesList(const char *func, size_t size)
+{
     size_t count = 0;
     MallocMetadata *block_it = block_head;
-    std::cout << "[" << func << " with size " << size << "] " <<std::endl;
+    std::cout << "[" << func << " with size " << size << "] " << std::endl;
     while (block_it)
     {
         //unsigned short bin_index = block_it->block_size / HISTOGRAM_BIN_SIZE;
-        std:: cout << "\t******* Node " << std::setw(4)<< count << " *********" << "\t-> ";
-//        std:: cout << "\t block size = " << block_it->block_size << std::endl;
-//        std:: cout << "\t block free = " << block_it->is_free << std::endl;
-//        std:: cout << "\t block mmaped = " << block_it->is_mmaped << std::endl;
-//        if (bins_free[bin_index] == block_it) {
-//            std:: cout << "\t bins_free [" << bin_index << "]" << std::endl;
-//        }
+        std::cout << "\t******* Node " << std::setw(4) << count << " *********"
+                  << "\t-> ";
+        //        std:: cout << "\t block size = " << block_it->block_size << std::endl;
+        //        std:: cout << "\t block free = " << block_it->is_free << std::endl;
+        //        std:: cout << "\t block mmaped = " << block_it->is_mmaped << std::endl;
+        //        if (bins_free[bin_index] == block_it) {
+        //            std:: cout << "\t bins_free [" << bin_index << "]" << std::endl;
+        //        }
         block_it = block_it->next;
         count++;
     }
-    std:: cout << std::endl;
+    std::cout << std::endl;
     block_it = block_head;
     while (block_it)
     {
-        std:: cout << "\t* block size = " <<std::setw(10)<< block_it->block_size  << " *\t   ";
+        std::cout << "\t* block size = " << std::setw(10) << block_it->block_size << " *\t   ";
         block_it = block_it->next;
     }
-    std:: cout << std::endl;
+    std::cout << std::endl;
     block_it = block_head;
     while (block_it)
     {
-        std:: cout << "\t* block free = " <<std::setw(10) << block_it->is_free<< " *\t   ";
+        std::cout << "\t* block free = " << std::setw(10) << block_it->is_free << " *\t   ";
         block_it = block_it->next;
     }
-    std:: cout << std::endl;
+    std::cout << std::endl;
     block_it = block_head;
     while (block_it)
     {
-        std:: cout << "\t* block mmaped = " <<std::setw(8) << block_it->is_mmaped << " *\t   ";
+        std::cout << "\t* block mmaped = " << std::setw(8) << block_it->is_mmaped << " *\t   ";
         block_it = block_it->next;
     }
-    std:: cout << std::endl;
+    std::cout << std::endl;
     block_it = block_head;
     while (block_it)
     {
         unsigned short bin_index = block_it->block_size / HISTOGRAM_BIN_SIZE;
-        if (bins_free[bin_index] == block_it) {
-            std:: cout << "\t* free_HEAD [" << std::setw(3)<<bin_index << "]"<< std::setw(14)<<" *\t   ";
-        }
-        else {
-            std:: cout << "\t* "<<std::setw(29)<<" *\t   ";
-        }
-        block_it = block_it->next;
-    }
-     std::cout <<std::endl;
-     block_it = block_head;
-    while (block_it)
-    {
-        if(block_it == wilderness_chunk)
+        if (bins_free[bin_index] == block_it)
         {
-            std:: cout << "\t* WILDERNESS" <<std::setw(19) << " *\t   ";
+            std::cout << "\t* free_HEAD [" << std::setw(3) << bin_index << "]" << std::setw(14) << " *\t   ";
         }
         else
         {
-             std::cout << "\t* "<<std::setw(29)<<" *\t   ";
+            std::cout << "\t* " << std::setw(29) << " *\t   ";
         }
-        
-         block_it = block_it->next;
+        block_it = block_it->next;
     }
-    std::cout <<std::endl;
-     block_it = block_head;
+    std::cout << std::endl;
+    block_it = block_head;
     while (block_it)
     {
-        std:: cout << "\t***************************" << "\t   ";
-         block_it = block_it->next;
+        if (block_it == wilderness_chunk)
+        {
+            std::cout << "\t* WILDERNESS" << std::setw(19) << " *\t   ";
+        }
+        else
+        {
+            std::cout << "\t* " << std::setw(29) << " *\t   ";
+        }
+
+        block_it = block_it->next;
     }
-    
-    std::cout <<std::endl;
+    std::cout << std::endl;
+    block_it = block_head;
+    while (block_it)
+    {
+        std::cout << "\t***************************"
+                  << "\t   ";
+        block_it = block_it->next;
+    }
+
+    std::cout << std::endl;
 }
 
-static void _printNodesFreeList() {
-    for (int i = 0; i < HISTOGRAM_BIN_COUNT ; ++i) {
+static void _printNodesFreeList()
+{
+    for (int i = 0; i < HISTOGRAM_BIN_COUNT; ++i)
+    {
         MallocMetadata *block_it = bins_free[i];
-        if (bins_free[i]) {
+        if (bins_free[i])
+        {
             std::cout << "bins_free[" << i << "]" << std::endl;
             while (block_it)
             {
-                std:: cout << "block size = " << block_it->block_size  << "\t -->   ";
+                std::cout << "block size = " << block_it->block_size << "\t -->   ";
                 block_it = block_it->next_free;
             }
-            std::cout <<std::endl;
+            std::cout << std::endl;
         }
     }
-    std::cout <<std::endl;
+    std::cout << std::endl;
 }
-static void _printDebugInfo(const char* func, size_t size)
+static void _printDebugInfo(const char *func, size_t size)
 {
-    _printNodesList(func,size);
+    _printNodesList(func, size);
     _printNodesFreeList();
 }
 
@@ -194,15 +202,15 @@ MallocMetadata *_splitBlocks(MallocMetadata *free_block, size_t size)
     secondary_block_metadata_ptr->prev_free = NULL;
     secondary_block_metadata_ptr->prev = free_block;
     secondary_block_metadata_ptr->next = free_block->next;
-    if(free_block->next)
+    if (free_block->next)
     {
-        free_block->next->prev=secondary_block_metadata_ptr;
+        free_block->next->prev = secondary_block_metadata_ptr;
     }
     _addToFreelist(secondary_block_metadata_ptr);
     //_insertToHistrogram(secondary_size, secondary_block_metadata_ptr);
 
     free_block->block_size = size;
-    
+
     free_block->next = secondary_block_metadata_ptr;
     free_block->next_free = NULL;
     free_block->prev_free = NULL;
@@ -231,7 +239,7 @@ static MallocMetadata *_getFreeBlock(const size_t &size)
         {
             block_it = block_it->next_free;
         }
-        if(block_it && block_it->block_size >= size)
+        if (block_it && block_it->block_size >= size)
         {
             return block_it;
         }
@@ -510,14 +518,24 @@ void *smalloc(size_t size)
 
         size_t size_for_sbrk = size + _size_meta_data();
         bool wilderness_is_free = false;
-        if (wilderness_chunk && wilderness_chunk->block_size<=HISTOGRAM_BIN_COUNT*HISTOGRAM_BIN_SIZE)
+        if (wilderness_chunk && wilderness_chunk->block_size <= HISTOGRAM_BIN_COUNT * HISTOGRAM_BIN_SIZE)
         {
             wilderness_is_free = wilderness_chunk->is_free;
             if (wilderness_is_free)
             {
-                size_for_sbrk = size - wilderness_chunk->block_size;
-                _deleteFromHistogram(wilderness_chunk);
-                //_deleteFromHistogram(wilderness_chunk,false);
+
+                if (size > wilderness_chunk->block_size)
+                {
+                    size_for_sbrk = size - wilderness_chunk->block_size;
+                    _deleteFromHistogram(wilderness_chunk);
+                }
+                else
+                {                                                           // if wilderness_chunk  > size to allocate
+                    MallocMetadata *temp_old_wilderness = wilderness_chunk; // save the start of the current block because wilderness will change
+                    _trySplitBlock(wilderness_chunk, size);
+                    DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, size););
+                    return _metadataToPtr(temp_old_wilderness);
+                }
             }
         }
 
@@ -577,13 +595,13 @@ bytes to 0.
 */
 void *scalloc(size_t num, size_t size)
 {
-    size_t effective_size = _alignSize(num*size);
+    size_t effective_size = _alignSize(num * size);
     void *block_ptr = smalloc(effective_size);
     if (!block_ptr)
     {
         return NULL;
     }
-    
+
     memset(block_ptr, 0, effective_size);
     // If it fails, block_ptr will be NULL
     DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, effective_size););
@@ -615,7 +633,8 @@ void _addToFreelist(MallocMetadata *freed_block)
     if (block_it)
     {
         block_it->prev_free = freed_block;
-        if (block_it == bins_free[bin_index]) {
+        if (block_it == bins_free[bin_index])
+        {
             bins_free[bin_index] = freed_block;
         }
     }
@@ -633,7 +652,7 @@ void _addToFreelist(MallocMetadata *freed_block)
 */
 void sfree(void *p)
 {
-  MallocMetadata *freed_block;
+    MallocMetadata *freed_block;
     //size_t size = _voidPtrToMetadata(p)->block_size; This will cause SEG fault if P is NULL
     if (!p || (freed_block = _voidPtrToMetadata(p))->is_free)
     {
@@ -658,7 +677,7 @@ void sfree(void *p)
         }
         mmaped_size -= size_of_block;
         mmaped_blocks--;
-        DO_IF_DEBUG(_printDebugInfo(__FUNCTION__,  _voidPtrToMetadata(p)->block_size););
+        DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, _voidPtrToMetadata(p)->block_size););
         return;
     }
     //freed_block->real_size = 0;
@@ -666,7 +685,7 @@ void sfree(void *p)
 
     _addToFreelist(freed_block);
     _mergeAdjacentBlocks(freed_block);
-    DO_IF_DEBUG(_printDebugInfo(__FUNCTION__,  _voidPtrToMetadata(p)->block_size););
+    DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, _voidPtrToMetadata(p)->block_size););
     //num_free_blocks++;
 }
 /*
@@ -699,7 +718,7 @@ void *srealloc(void *oldp, size_t size)
         return smalloc(size);
     }
 
-    MallocMetadata *block_metadata_ptr = _voidPtrToMetadata(oldp);    
+    MallocMetadata *block_metadata_ptr = _voidPtrToMetadata(oldp);
     void *new_block_ptr = oldp;
     bool was_mapped = block_metadata_ptr->is_mmaped;
 
@@ -778,7 +797,7 @@ void *srealloc(void *oldp, size_t size)
     {
         // TODO check memcpy values
         memcpy(new_block_ptr, oldp, size_to_copy);
-         if(was_mapped || _voidPtrToMetadata(new_block_ptr)->is_mmaped)
+        if (was_mapped || _voidPtrToMetadata(new_block_ptr)->is_mmaped)
         {
             sfree(oldp);
         }

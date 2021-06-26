@@ -34,15 +34,11 @@ add_executable(tamuz_tests_hw4_malloc2 adjusted_tests_hw4/tamuz_tests_hw4_malloc
 add_compile_options(-Wall -Wextra -pedantic -Werror -pedantic-errors)
 
 list(APPEND debug_flags "-std=c++11"  "-pedantic" "-Werror" "-pedantic-errors" "-DDEBUG")
-target_compile_options(mainTest3
-  PRIVATE
-    ${debug_flags}
-  )
-  target_compile_options(tamuz_tests_hw4_malloc4
-  PRIVATE
-    ${debug_flags}
-  )
-  target_compile_options(malloc_3_tests
+#target_compile_options(mainTest3
+#  PRIVATE
+#    ${debug_flags}
+#  )
+  target_compile_options(MMU_7
   PRIVATE
     ${debug_flags}
   )

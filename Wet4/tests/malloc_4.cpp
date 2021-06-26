@@ -252,7 +252,7 @@ MallocMetadata * setAndSplit(MallocMetadata *cur_node, size_t size) {
     bool is_cur_free = cur_node->is_free;
     cur_node->is_free = false;
     size_t remaining_bytes = cur_node->size - size;
-    if (remaining_bytes <= Threshold + stats.size_of_metadata) { // todo assuming size of metadata is excluded from the 128
+    if (remaining_bytes < Threshold + stats.size_of_metadata) { // todo assuming size of metadata is excluded from the 128
         if (is_cur_free) {
             stats.num_of_free_blocks--;
             stats.num_free_bytes -= cur_node->size;

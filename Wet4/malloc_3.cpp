@@ -477,7 +477,7 @@ void *smalloc(size_t size)
     MallocMetadata *free_block = _getFreeBlock(size);
 
     if (!free_block)
-    { // Call sbrk to allocate a new block
+    { // Call sbrk to allocate a new block or check wilderness
 
         size_t size_for_sbrk = size + _size_meta_data();
         bool wilderness_is_free = false;
@@ -486,8 +486,18 @@ void *smalloc(size_t size)
             wilderness_is_free = wilderness_chunk->is_free;
             if (wilderness_is_free)
             {
-                size_for_sbrk = size - wilderness_chunk->block_size;
-                _deleteFromHistogram(wilderness_chunk);
+                if (size > wilderness_chunk->block_size)
+                {
+                    size_for_sbrk = size - wilderness_chunk->block_size;
+                    _deleteFromHistogram(wilderness_chunk);
+                }
+                else
+                { // if wilderness_chunk  > size to allocate
+                    MallocMetadata * temp_old_wilderness = wilderness_chunk; // save the start of the current block because wilderness will change
+                    _trySplitBlock(wilderness_chunk, size);
+                    DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, size););
+                    return _metadataToPtr(temp_old_wilderness);
+                }
                 //_deleteFromHistogram(wilderness_chunk,false);
             }
         }

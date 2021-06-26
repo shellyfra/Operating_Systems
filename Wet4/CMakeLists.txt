@@ -10,6 +10,10 @@ add_executable(MMU_2 tests/test2.cpp)
 add_executable(MMU_3 tests/test3.cpp)
 add_executable(MMU_5 tests/test5.cpp)
 add_executable(MMU_6 tests/test6.cpp)
+add_executable(MMU_7 tests/test7.cpp)
+add_executable(MMU_14 tests/test14.cpp)
+
+add_executable(MMU_247 tests/test247.cpp)
 add_executable(tamuz adjusted_tests_hw4/tamuz_modified_tests_for_malloc_2.cpp)
 add_executable(tamuz_tests_hw4_malloc4 adjusted_tests_hw4/tamuz_tests_hw4_malloc4.cpp)
 add_executable(malloc2_test01 adjusted_tests_hw4/malloc2_test01.cpp)
@@ -42,7 +46,14 @@ target_compile_options(mainTest3
   PRIVATE
     ${debug_flags}
   )
-
+  target_compile_options(MMU_6
+  PRIVATE
+    ${debug_flags}
+  )
+  target_compile_options(MMU_7
+  PRIVATE
+    ${debug_flags}
+  )
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)

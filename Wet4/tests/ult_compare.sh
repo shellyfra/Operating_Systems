@@ -4,7 +4,7 @@
 # C Shai Yehezkel
 #
 # Script      :  ult_compare.sh
-# Version     :  2.3
+# Version     :  3
 # Arguements  :  prog1,prog2 [2]
 # Description :  Compares two programs with given test in the directory this script is executed.
 #				 Also checks for memory leakage in each test, and informs the user whic program
@@ -33,32 +33,20 @@ cp aux_macro.h ref_tests/
 cd ref_tests
 for f in $FILES # Loop over all test files
 do
+	
 	base="$(basename -- $f)"	
  	test_num=`(echo ${base} | cut -d'.' -f 1 | cut -d't' -f 3)`
+	 echo "******** Test $test_num **********"
+	echo "Building ref test $base"
 	`g++ -o test${test_num}_ref test${test_num}.cpp`
-done
-cd ../
-echo "Building program tests"
-for f in $FILES # Loop over all test files
-do
-	base="$(basename -- $f)"	
- 	test_num=`(echo ${base} | cut -d'.' -f 1 | cut -d't' -f 3)`
+	cd ../
+	echo "Building program test $base"
 	`g++ -o test${test_num} test${test_num}.cpp`
-done
 
-touch $VALGRIND_LOG	#In order to suppress output of VALGRIND. Will be deleted
-rm $LOG_NAME 2>/dev/null #Initialze log
-
-readarray -d '' entries < <(printf '%s\0' $FILES | sort -zV)
-for f in "${entries[@]}" # Loop over all test files
-do
-  echo "Processing $f file..."
-  #test_num=`(echo ${f} | cut -d'.' -f 2 | cut -d't' -f 3)`
-  	base="$(basename -- $f)"	
-  test_num=`(echo ${base} | cut -d'.' -f 1 | cut -d't' -f 3)`
-  log_prog_1="ref_test$test_num.out"
+	log_prog_1="ref_test$test_num.out"
   log_prog_2="prog_test$test_num.out"
   cmd_line_args=`realpath $f`  
+  	echo "Running test $base"
   ./ref_tests/test${test_num}_ref >$log_prog_1
 
 	./test${test_num} >$log_prog_2		
@@ -76,7 +64,9 @@ do
 			rm $log_prog_1
 			rm $log_prog_2
 	fi
-	
+
+
+	cd ref_tests
 done
 if [ -f $LOG_NAME ]; then
 	echo ""

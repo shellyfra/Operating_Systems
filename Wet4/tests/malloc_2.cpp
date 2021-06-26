@@ -1,269 +1,143 @@
+
+#include <stdlib.h>
 #include <unistd.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
-#ifdef DEBUG
-#define DO_IF_DEBUG(command) \
-    do                       \
-    {                        \
-        printf("Executing ");    \
-        printf(#command);    \
-        printf("\n");        \
-        command              \
-    } while (0)
-#else
-#define DO_IF_DEBUG(command)      \
-    do                            \
-    {                             \
-        /* empty intentionally */ \
-    } while (0)
-#endif
+static const size_t MAX_SIZE = 100000000;
 
-
-
-struct MallocMetadata
-{
-    size_t block_size;
+struct MallocMetadata {
+    size_t size;
     bool is_free;
     MallocMetadata* next;
     MallocMetadata* prev;
 };
-size_t _size_meta_data();
-MallocMetadata * block_head=NULL;
-size_t num_free_blocks=0;
-static MallocMetadata * _getFreeBlock(const size_t &size,MallocMetadata ** prev_block)
-{
-    MallocMetadata* block_it = block_head;
-    *prev_block=NULL;
-    while (block_it)
-    {
-        if(block_it->is_free && block_it->block_size>=size)
-        {
-            break;
-        }
-        *prev_block =block_it;
-        block_it = block_it->next;
-    }
-    return block_it;
-}
-/* smalloc
-● Searches for a free block with up to ‘size’ bytes or allocates (sbrk()) one if none are
-found.
-● Return value:
-    i. Success – returns pointer to the first byte in the allocated block (excluding the
-    meta-data of course)
-    ii. Failure –
-        a. If size is 0 returns NULL.
-        b. If ‘size’ is more than 10^8 , return NULL.
-        c. If sbrk fails in allocating the needed space, return NULL.
 
-*/
-const size_t SMALLOC_MAX_SIZE =100000000;
-const int SBRK_FAILURE = -1;
-void *smalloc(size_t size)
-{
-    if (size == 0 || size > SMALLOC_MAX_SIZE)
-    {
+MallocMetadata * head_of_list;
+
+struct Statistics {
+    size_t num_of_allocated_blocks;
+    size_t num_of_free_blocks;
+    size_t num_free_bytes;
+    size_t num_allocated_bytes;
+    size_t num_metadata_bytes;
+    size_t size_of_metadata;
+};
+
+Statistics stats = {0, 0, 0, 0, 0, (unsigned int) sizeof(MallocMetadata)};
+
+void* allocate(size_t size) {
+    if ((size == 0) || (size > MAX_SIZE + stats.size_of_metadata)) {
         return NULL;
     }
-    MallocMetadata* prev_block;
-    MallocMetadata* free_block = _getFreeBlock(size,&prev_block);
-
-    if (!free_block)
-    {   // Call sbrk to allocate a new block
-        void *block_ptr = sbrk(size+_size_meta_data());
-        if (*((int *)block_ptr) == SBRK_FAILURE)
-        {
-            return NULL;
-        }
-        
-        MallocMetadata* new_block_metadata_ptr = (MallocMetadata*)block_ptr;        
-        new_block_metadata_ptr->block_size =size;
-        new_block_metadata_ptr->is_free=false;
-        new_block_metadata_ptr->prev=prev_block;        
-        if(prev_block)
-        {
-
-            prev_block->next = new_block_metadata_ptr;
-        }
-        else
-        {   // This is the first node of the list
-            block_head =new_block_metadata_ptr;
-        }    
-         return (void*)((char*)block_ptr+_size_meta_data());    
-    }
-    else
-    {
-        // Found a free block with sufficient size
-        num_free_blocks--;
-        free_block->is_free = false;
-         return (void*)((char*)free_block+_size_meta_data());    
-    }
-   
-}
-/*
-● Searches for a free block of up to ‘num’ elements, each ‘size’ bytes that are all set to 0
-or allocates if none are found. In other words, find/allocate size * num bytes and set all
-bytes to 0.
-● Return value:
-    i. Success - returns pointer to the first byte in the allocated block.
-    ii. Failure –
-        a. If size is 0 returns NULL.
-        b. If ‘size * num’ is more than 10^8 , return NULL.
-        c. If sbrk fails in allocating the needed space, return NULL
-*/
-void* scalloc(size_t num, size_t size)
-{
-    void* block_ptr = smalloc(num*size);
-    if(!block_ptr)
-    {
+    void * start_of_mem = sbrk(size);
+    if (start_of_mem == (void *)-1) {
         return NULL;
     }
-    memset(block_ptr,0,num*size);
-    return block_ptr;
+    return start_of_mem;
 }
 
-/*
-● Releases the usage of the block that starts with the pointer ‘p’.
-● If ‘p’ is NULL or already released, simply returns.
-● Presume that all pointers ‘p’ truly points to the beginning of an allocated block.
-*/
-void sfree(void* p)
-{
-    if (!p) 
-    {
+void* smalloc(size_t size) {
+    if ((size == 0) || (size > MAX_SIZE)) {
+        return NULL;
+    }
+    MallocMetadata * cur_node = head_of_list;
+    size_t size_plus_meta = size + stats.size_of_metadata;
+    if (cur_node != nullptr) {
+        while ((!(cur_node->is_free) || (cur_node->size < size)) && (cur_node->next != nullptr)) {
+            cur_node = cur_node->next;
+        }
+        if ((cur_node->is_free) && (cur_node->size >= size)) {
+            cur_node->is_free = false;
+            // Number of free blocks down by one 
+            stats.num_of_free_blocks--;
+            // Number of free bytes down by size of free block found (without metadata)
+            stats.num_free_bytes -= cur_node->size;
+            return (void *) (cur_node + 1);
+        }
+    }
+    MallocMetadata* ptr = (MallocMetadata*)allocate(size_plus_meta);
+    if (ptr == NULL) {
+        return NULL;
+    }
+    ptr->size = size;
+    ptr->is_free = false;
+    ptr->prev = cur_node;
+    ptr->next = nullptr;
+    if (cur_node != nullptr) {
+        cur_node->next = ptr;
+    } else {
+        head_of_list = ptr;
+    }
+    // Number of blocks up by one
+    stats.num_of_allocated_blocks++;
+    // Number of allocated bytes up by (size) 
+    stats.num_allocated_bytes += size;
+    // Number of metadata bytes up by (size of metadata)
+    stats.num_metadata_bytes += stats.size_of_metadata;
+    return (void *) (ptr + 1);
+}
+
+void* scalloc(size_t num, size_t size) {
+    void* allocated_memory = smalloc(size * num);
+    if (allocated_memory == NULL) {
+        return NULL;
+    }
+    memset(allocated_memory, 0, num * size);
+    return allocated_memory;
+}
+
+void sfree(void* p) {
+    MallocMetadata * ptr = (MallocMetadata*) p;
+    if ((ptr == NULL) || ((ptr - 1)->is_free)) {
         return;
     }
-    MallocMetadata * block_metadata_ptr =(MallocMetadata *)( (char*)p-_size_meta_data());
-    if (block_metadata_ptr->is_free)
-    {
-        return;
-    }
-    num_free_blocks++;
-    block_metadata_ptr->is_free = true;
+    (ptr - 1)->is_free = true;
+    stats.num_of_free_blocks++;
+    stats.num_free_bytes += (ptr - 1)->size;
 }
-/*
-● If ‘size’ is smaller than the current block’s size, reuses the same block. Otherwise,
-finds/allocates ‘size’ bytes for a new space, copies content of oldp into the new
-allocated space and frees the oldp.
-● Return value:
-    i. Success –
-        a. Returns pointer to the first byte in the (newly) allocated space.
-        b. If ‘oldp’ is NULL, allocates space for ‘size’ bytes and returns a pointer to it.
-    ii. Failure –
-        a. If size is 0 returns NULL.
-        b. If ‘size’ if more than 10^8 , return NULL.
-        c. If sbrk fails in allocating the needed space, return NULL.
-        d. Do not free ‘oldp’ if srealloc() fails.
 
-*/
-void* srealloc(void* oldp, size_t size)
-{
-    if (size == 0 || size > SMALLOC_MAX_SIZE)
-    {
+void* srealloc(void* oldp, size_t size) {
+    if ((size == 0) || (size > MAX_SIZE)) {
         return NULL;
     }
-    if (!oldp) 
-    {
-        //b. If ‘oldp’ is NULL, allocates space for ‘size’ bytes and returns a pointer to it.
-        return smalloc(size);
+    if (oldp == NULL) {
+        return smalloc(size); // todo check if should take free block
     }
-    MallocMetadata * block_metadata_ptr =(MallocMetadata *)( (char*)oldp-_size_meta_data());
-    if (size <= block_metadata_ptr->block_size)
-    {
-        // Old block is large enough to contain new size
-        // NUm of free blocks doess not change
+    MallocMetadata * ptr = ((MallocMetadata*) oldp - 1);
+    size_t size_plus_meta = size + stats.size_of_metadata;
+    if (ptr->size >= size) {
         return oldp;
     }
-    // We need to find a new block
-    void* new_block_ptr = smalloc(size);
-    if(!new_block_ptr)
-    {
+    MallocMetadata * new_ptr = (MallocMetadata*) smalloc(size);
+    if (new_ptr == NULL) {
         return NULL;
     }
-    // Found new block, copy content
-    memcpy(new_block_ptr,oldp,block_metadata_ptr->block_size);
+    memcpy((void *)new_ptr, oldp, ptr->size);
     sfree(oldp);
-    return new_block_ptr;
-}
-/*
-● Returns the number of allocated blocks in the heap that are currently free.
-*/
-size_t _num_free_blocks()
-{
-    size_t count=0;
-    MallocMetadata * block_it = block_head;
-    while (block_it)
-    {
-        if(block_it->is_free)
-        {
-            count++;
-        }
-        block_it=block_it->next;
-    }
-    return count;
+    return (void *) new_ptr;
 }
 
-/*
-● Returns the number of bytes in all allocated blocks in the heap that are currently free,
-excluding the bytes used by the meta-data structs.
-*/
-size_t _num_free_bytes()
-{
-   size_t count=0;
-    MallocMetadata * block_it = block_head;
-    while (block_it)
-    {
-        if(block_it->is_free)
-        {
-            count+=block_it->block_size;
-        }
-        block_it=block_it->next;
-    }
-    return count;
-}
-/*
-● Returns the overall (free and used) number of allocated blocks in the heap.
-*/
-size_t _num_allocated_blocks()
-{
-    size_t count = 0;
-    MallocMetadata *block_it = block_head;
-    while (block_it)
-    {
-        count++;
-        block_it = block_it->next;
-    }
-    return count;
+size_t _num_free_blocks() {
+    return stats.num_of_free_blocks;
 }
 
-/*
-● Returns the overall number (free and used) of allocated bytes in the heap, excluding
-the bytes used by the meta-data structs.
-*/
-size_t _num_allocated_bytes()
-{
-    size_t count = 0;
-    MallocMetadata *block_it = block_head;
-    while (block_it)
-    {
-        count += block_it->block_size;
-        block_it = block_it->next;
-    }
-    return count;
+size_t _num_free_bytes() {
+    return stats.num_free_bytes;
 }
-/*
-● Returns the overall number of meta-data bytes currently in the heap.
-*/
-size_t _num_meta_data_bytes()
-{
-   
-    return _num_allocated_blocks()*_size_meta_data();
+
+size_t _num_allocated_blocks(){
+    return stats.num_of_allocated_blocks;
 }
-/*
-● Returns the number of bytes of a single meta-data structure in your system.
-*/
-size_t _size_meta_data()
-{
-    return sizeof(MallocMetadata);
+
+size_t _num_allocated_bytes(){
+    return stats.num_allocated_bytes;
+}
+
+size_t _num_meta_data_bytes(){
+    return stats.num_metadata_bytes;
+}
+
+size_t _size_meta_data(){
+    return stats.size_of_metadata;
 }

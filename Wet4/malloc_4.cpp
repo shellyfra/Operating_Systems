@@ -194,10 +194,15 @@ MallocMetadata *_splitBlocks(MallocMetadata *free_block, size_t size)
     secondary_block_metadata_ptr->prev_free = NULL;
     secondary_block_metadata_ptr->prev = free_block;
     secondary_block_metadata_ptr->next = free_block->next;
+    if(free_block->next)
+    {
+        free_block->next->prev=secondary_block_metadata_ptr;
+    }
     _addToFreelist(secondary_block_metadata_ptr);
     //_insertToHistrogram(secondary_size, secondary_block_metadata_ptr);
 
     free_block->block_size = size;
+    
     free_block->next = secondary_block_metadata_ptr;
     free_block->next_free = NULL;
     free_block->prev_free = NULL;
@@ -214,16 +219,22 @@ MallocMetadata *_splitBlocks(MallocMetadata *free_block, size_t size)
 static MallocMetadata *_getFreeBlock(const size_t &size)
 {
     unsigned short bin_index = size / HISTOGRAM_BIN_SIZE;
-    MallocMetadata *block_it = bins_free[bin_index];
-    while (!block_it && bin_index < HISTOGRAM_BIN_COUNT)
+    MallocMetadata *block_it;
+    while (bin_index < HISTOGRAM_BIN_COUNT)
     {
-        // Fetch next bins block with larger size
         block_it = bins_free[bin_index++];
-    }
-
-    while (block_it && block_it->block_size < size)
-    {
-        block_it = block_it->next_free;
+        if (!block_it)
+        {
+            continue;
+        }
+        while (block_it && block_it->block_size < size)
+        {
+            block_it = block_it->next_free;
+        }
+        if(block_it && block_it->block_size >= size)
+        {
+            return block_it;
+        }
     }
     return block_it;
 }
@@ -499,7 +510,7 @@ void *smalloc(size_t size)
 
         size_t size_for_sbrk = size + _size_meta_data();
         bool wilderness_is_free = false;
-        if (wilderness_chunk)
+        if (wilderness_chunk && wilderness_chunk->block_size<=HISTOGRAM_BIN_COUNT*HISTOGRAM_BIN_SIZE)
         {
             wilderness_is_free = wilderness_chunk->is_free;
             if (wilderness_is_free)
@@ -604,6 +615,9 @@ void _addToFreelist(MallocMetadata *freed_block)
     if (block_it)
     {
         block_it->prev_free = freed_block;
+        if (block_it == bins_free[bin_index]) {
+            bins_free[bin_index] = freed_block;
+        }
     }
     if (prev)
     {
@@ -685,8 +699,9 @@ void *srealloc(void *oldp, size_t size)
         return smalloc(size);
     }
 
-    MallocMetadata *block_metadata_ptr = _voidPtrToMetadata(oldp);
+    MallocMetadata *block_metadata_ptr = _voidPtrToMetadata(oldp);    
     void *new_block_ptr = oldp;
+    bool was_mapped = block_metadata_ptr->is_mmaped;
 
     size_t size_to_copy = block_metadata_ptr->block_size > size ? size : block_metadata_ptr->block_size;
     if (size > MIN_MMAPED_SIZE)
@@ -700,6 +715,7 @@ void *srealloc(void *oldp, size_t size)
         // NUm of free blocks doess not change
         //block_metadata_ptr->real_size = size;
         _trySplitBlock(block_metadata_ptr, size);
+        block_metadata_ptr->is_free = false;
         DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, size););
         return oldp;
     }
@@ -762,7 +778,7 @@ void *srealloc(void *oldp, size_t size)
     {
         // TODO check memcpy values
         memcpy(new_block_ptr, oldp, size_to_copy);
-        if(block_metadata_ptr->is_mmaped)
+         if(was_mapped || _voidPtrToMetadata(new_block_ptr)->is_mmaped)
         {
             sfree(oldp);
         }

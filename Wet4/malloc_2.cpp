@@ -182,7 +182,7 @@ void* srealloc(void* oldp, size_t size)
         return NULL;
     }
     // Found new block, copy content
-    memcpy(new_block_ptr,oldp,block_metadata_ptr->block_size);
+    memmove(new_block_ptr,oldp,block_metadata_ptr->block_size);
     sfree(oldp);
     return new_block_ptr;
 }

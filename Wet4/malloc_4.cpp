@@ -796,7 +796,7 @@ void *srealloc(void *oldp, size_t size)
     if (new_block_ptr != oldp)
     {
         // TODO check memcpy values
-        memcpy(new_block_ptr, oldp, size_to_copy);
+        memmove(new_block_ptr, oldp, size_to_copy);
         if (was_mapped || _voidPtrToMetadata(new_block_ptr)->is_mmaped)
         {
             sfree(oldp);

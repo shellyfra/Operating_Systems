@@ -13,7 +13,7 @@ void printStats()
                     }
                     int main()
                     {
-                        PRINT_POINTER(smalloc(0););
+                        PRINT_POINTER(smalloc(1););
 printStats();
 void* p0 = last_address;
 PRINT_POINTER(scalloc(239,93););

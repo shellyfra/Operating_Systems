@@ -418,6 +418,7 @@ void* srealloc(void* oldp, size_t size) {
         histogramInsert(ptr);
         stats.num_of_free_blocks++;
         stats.num_free_bytes += ptr->size;
+        return (void*) wildernessExpand(size);
     }
     MallocMetadata * new_ptr = (MallocMetadata*) smalloc(size);
     if (new_ptr == NULL) {

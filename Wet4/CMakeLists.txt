@@ -13,7 +13,6 @@ add_executable(MMU_6 tests/test6.cpp)
 add_executable(MMU_7 tests/test7.cpp)
 add_executable(MMU_14 tests/test14.cpp)
 
-add_executable(MMU_247 tests/test247.cpp)
 add_executable(tamuz adjusted_tests_hw4/tamuz_modified_tests_for_malloc_2.cpp)
 add_executable(tamuz_tests_hw4_malloc4 adjusted_tests_hw4/tamuz_tests_hw4_malloc4.cpp)
 add_executable(malloc2_test01 adjusted_tests_hw4/malloc2_test01.cpp)

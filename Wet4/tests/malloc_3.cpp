@@ -259,7 +259,7 @@ MallocMetadata * setAndSplit(MallocMetadata *cur_node, size_t size) {
             stats.num_free_bytes -= cur_node->size;
         }
         return cur_node;
-    }
+    } // remaining_bytes >= Threshold + stats.size_of_metadata
     cur_node->size = size;
     MallocMetadata * new_node = (MallocMetadata *)((char*)cur_node + size + stats.size_of_metadata);
     MetadataInitialize(new_node, remaining_bytes - stats.size_of_metadata, cur_node->next, cur_node);
@@ -346,7 +346,6 @@ void* smalloc(size_t size) {
         tail_of_list = ptr;
     }
     mallocStatsUpdate(size);
-
     return (void *) (ptr + 1);
 }
 
@@ -412,11 +411,13 @@ void* srealloc(void* oldp, size_t size) {
         histogramRemove(ptr->next);
         return (void *) (setAndSplit(expandCombine(ptr->prev, expandCombine(ptr, ptr->next)), size) + 1);
     }
-    if (ptr == tail_of_list) { // might use wilderness
+    // Check if is Wilderness chunk is free
+    if (ptr == tail_of_list) {
         ptr->is_free = true;
         histogramInsert(ptr);
         stats.num_of_free_blocks++;
         stats.num_free_bytes += ptr->size;
+        return (void*) wildernessExpand(size);
     }
     MallocMetadata * new_ptr = (MallocMetadata*) smalloc(size);
     if (new_ptr == NULL) {

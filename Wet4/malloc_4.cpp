@@ -721,7 +721,6 @@ void *srealloc(void *oldp, size_t size)
     MallocMetadata *block_metadata_ptr = _voidPtrToMetadata(oldp);
     void *new_block_ptr = oldp;
     bool was_mapped = block_metadata_ptr->is_mmaped;
-
     size_t size_to_copy = block_metadata_ptr->block_size > size ? size : block_metadata_ptr->block_size;
     if (size > MIN_MMAPED_SIZE)
     {
@@ -732,7 +731,8 @@ void *srealloc(void *oldp, size_t size)
     {
         // Old block is large enough to contain new size
         // NUm of free blocks doess not change
-        //block_metadata_ptr->real_size = size;
+        
+        // a. try use same block
         _trySplitBlock(block_metadata_ptr, size);
         block_metadata_ptr->is_free = false;
         DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, size););
@@ -742,8 +742,7 @@ void *srealloc(void *oldp, size_t size)
     {
         // We need to find a new block
 
-        bool mallocd = false;
-        bool was_wilderness = false;
+        bool mallocd = false;        
         // Try merging left
 
         size_t left_merge_size = block_metadata_ptr->block_size;
@@ -757,36 +756,55 @@ void *srealloc(void *oldp, size_t size)
         //  bool mallocd = false;
         if (left_merge_size >= size)
         {
+            // b. merge lower address
             new_block_ptr = _metadataToPtr(block_metadata_ptr->prev);
             _mergeRightBlock(block_metadata_ptr->prev);
             _trySplitBlock(_voidPtrToMetadata(new_block_ptr), size);
         }
         else if (right_merge_size >= size)
         {
+            // c. merge higher address
             _mergeRightBlock(block_metadata_ptr);
             _trySplitBlock(block_metadata_ptr, size);
         }
         else if (adjacent_merge >= size)
         {
+            // d. merge adjacent
             new_block_ptr = _metadataToPtr(block_metadata_ptr->prev);
             _mergeAdjacentBlocks(block_metadata_ptr);
             _trySplitBlock(_voidPtrToMetadata(new_block_ptr), size);
         }
         else
         {
-            mallocd = true;
+
+            
             if (block_metadata_ptr == wilderness_chunk)
             {
-                was_wilderness = true;
-                wilderness_chunk->is_free = true;
+                // Try enlarging wilderness
+                size_t size_for_sbrk = size-wilderness_chunk->block_size;
+                void *block_ptr = sbrk(size_for_sbrk);
+                if (*((int *)block_ptr) == SBRK_FAILURE)
+                {
+                    DO_IF_DEBUG(_printDebugInfo(__FUNCTION__, size););
+                    return NULL;
+                }
+                // We keep new_block_ptr
+                wilderness_chunk->block_size = size;
+                wilderness_chunk->is_free = false;
+                return new_block_ptr;
             }
-            new_block_ptr = smalloc(size);
+            else
+            {
+                // e. allocate new block
+                mallocd = true;
+                new_block_ptr = smalloc(size);
+            }            
         }
         if (!new_block_ptr)
         {
             return NULL;
         }
-        if (mallocd && !was_wilderness)
+        if (mallocd)
         {
             sfree(oldp);
         }
@@ -795,7 +813,6 @@ void *srealloc(void *oldp, size_t size)
 
     if (new_block_ptr != oldp)
     {
-        // TODO check memcpy values
         memmove(new_block_ptr, oldp, size_to_copy);
         if (was_mapped || _voidPtrToMetadata(new_block_ptr)->is_mmaped)
         {

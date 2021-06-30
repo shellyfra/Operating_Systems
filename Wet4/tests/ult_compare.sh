@@ -65,8 +65,11 @@ do
 			rm $log_prog_2
 	fi
 
-
+	rm "test${test_num}"
 	cd ref_tests
+	
+	rm "test${test_num}_ref"
+	rm "test${test_num}.cpp"
 done
 if [ -f $LOG_NAME ]; then
 	echo ""
